@@ -11,6 +11,11 @@ const authAdmin = (req, res, next) => {
             });
         }
 
+        console.log("atoken", atoken)
+        console.log("jwtsecret", process.env.JWT_SECRET)
+        console.log("ADMIN_EMAIL", process.env.ADMIN_EMAIL)
+        console.log("ADMIN_PASSWORD", process.env.ADMIN_PASSWORD)
+
         const atoken_decode = jwt.verify(atoken, process.env.JWT_SECRET);
         if (atoken_decode !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD) {
             return res.json({
@@ -21,6 +26,7 @@ const authAdmin = (req, res, next) => {
         next();
 
     } catch (error) {
+        console.log("here")
         console.log(error);
         return res.json({
             success: false,
