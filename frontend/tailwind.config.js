@@ -11,8 +11,8 @@ export default {
         light: '#DDEDE6',
         secondary: '#C7CEEA',
         highlight: '#FFF176',
-        background: '#FAF9F6',
-        text: '#424242'
+        background: '#FDF7F3',
+        text: '#424242',
       },
       gridTemplateColumns:{
         'auto':'repeat(auto-fill, minmax(200px,1fr))'
