@@ -51,7 +51,7 @@ const TherapySection = () => {
   ];
 
   return (
-    <section className="flex justify-center items-center min-h-screen bg-[#fdf9f6] px-12">
+    <section className="flex justify-center items-center gap-12 max-w-7xl mx-auto min-h-screen bg-[#fdf9f6]">
       {/* Left Side (Static Text) */}
       <div className="w-1/2 pr-10">
         <h2 className="text-5xl font-serif font-medium text-gray-900 leading-snug">
