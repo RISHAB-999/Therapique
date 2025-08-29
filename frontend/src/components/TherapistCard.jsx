@@ -4,9 +4,14 @@ import { ArrowRight } from "lucide-react";
 const TherapistCard = ({ _id, image, name, speciality }) => {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    navigate(`/appointment/${_id}`);
+    window.scrollTo({ top: 0, behavior: "smooth" }); // 👈 scroll reset
+  };
+
   return (
     <div
-      onClick={() => navigate(`/appointment/${_id}`)}
+      onClick={handleClick}
       className="bg-white rounded-2xl overflow-hidden font-sans group cursor-pointer transition-all duration-300 hover:-translate-y-2"
     >
       {/* Profile Image */}

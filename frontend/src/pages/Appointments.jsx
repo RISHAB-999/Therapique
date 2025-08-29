@@ -3,9 +3,6 @@ import { useParams } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import { assets } from '../assets/assets'
 import RelatedDoctors from '../components/RelatedDoctors'
-import TherapistProfile from '../components/TherapistProfile'
-import DoctorDescription from '../components/DoctorDescription'
-import DoctorPhotos from '../components/DoctorPhotos'
 
 const Appointments = () => {
   const { docId } = useParams()
@@ -67,12 +64,91 @@ const Appointments = () => {
 
   return docInfo && (
     <div className="p-4">
-      <DoctorDescription />
+      <section className="py-16 px-4 text-center font-sans">
+        {/* Subtitle */}
+        <p className="text-gray-600 text-sm mb-4">
+          {docInfo.speciality}
+        </p>
+
+        {/* Name + Title */}
+        <h1 className="text-5xl md:text-6xl font-serif text-gray-900 font-normal">
+          {docInfo.name}
+          <h3 className="ml-2 text-2xl py-2 font-serif font-normal text-gray-900">
+            {docInfo.degree}
+          </h3>
+        </h1>
+
+        {/* Description */}
+        <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-700 leading-relaxed">
+          {docInfo.about}
+        </p>
+
+        {/* -------- Booking Slots -------- */}
+        <div className="w-full flex justify-center mt-8">
+          <div className="w-full max-w-2xl font-medium text-gray-800 text-center">
+            <h3 className="text-xl font-serif mb-4">Booking Slots</h3>
+
+            {/* Date Slots */}
+            <div className="flex gap-4 items-center justify-center w-full overflow-x-auto hide-scrollbar pb-2">
+              {docSlots.length > 0 &&
+                docSlots.map((item, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setSlotIndex(index)}
+                    className={`flex flex-col items-center justify-center min-w-20 px-4 py-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm
+            ${slotIndex === index
+                        ? "bg-text text-white shadow-md scale-105"
+                        : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow"
+                      }`}
+                  >
+                    <p className="font-semibold">
+                      {item[0] && daysOfWeek[item[0].datetime.getDay()]}
+                    </p>
+                    <p className="text-sm mt-1">
+                      {item[0] && item[0].datetime.getDate()}
+                    </p>
+                  </div>
+                ))}
+            </div>
+
+            {/* Time Slots */}
+            <div className="flex items-center justify-center gap-3 w-full overflow-x-auto hide-scrollbar mt-6 pb-2">
+              {docSlots.length > 0 &&
+                docSlots[slotIndex].map((item, index) => (
+                  <p
+                    key={index}
+                    onClick={() => setSlotTime(item.time)}
+                    className={`text-sm flex-shrink-0 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300
+            ${item.time === slotTime
+                        ? "bg-text text-white shadow-md scale-105"
+                        : "bg-gray-50 text-gray-600 border border-gray-300 hover:border-gray-400 hover:shadow"
+                      }`}
+                  >
+                    {item.time.toLowerCase()}
+                  </p>
+                ))}
+            </div>
+
+            {/* Button */}
+            <button className="mt-6 px-8 py-3 rounded-full bg-[#1c1917] text-white font-semibold text-sm hover:bg-gray-800 transition duration-300">
+              Book an appointment
+            </button>
+          </div>
+        </div>
+
+
+        {/* Button */}
+        {/* <div className="mt-8">
+          <button className="px-8 py-3 rounded-full bg-[#1c1917] text-white font-semibold text-sm hover:bg-gray-800 transition duration-300">
+            Book a consultation
+          </button>
+        </div> */}
+      </section>
       <div className="flex justify-center items-center">
         <img
-          src="https://images.unsplash.com/photo-1506863530036-1efeddceb993?q=80&w=1044&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" // replace with your doctor image
+          src={docInfo.image} // replace with your doctor image
           alt="Doctor"
-          className="rounded-2xl w-[500px] object-cover shadow-md"
+          className="rounded-2xl w-[500px] object-cover shadow-md bg-secondary"
         />
       </div>
       {/* -------- Doctor Details -------- */}
@@ -107,41 +183,56 @@ const Appointments = () => {
         </div>
       </div> */}
 
-      {/* -------- Booking Slots -------- */}
-      {/* <div className='sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700'>
-        <p>Booking slots</p>
-        <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
-          {docSlots.length && docSlots.map((item, index) => (
-            <div
-              onClick={() => setSlotIndex(index)}
-              className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-primary text-white' : 'border border-gray-200'}`}
-              key={index}
-            >
-              <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
-              <p>{item[0] && item[0].datetime.getDate()}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
-          {docSlots.length && docSlots[slotIndex].map((item, index) => (
-            <p
-              onClick={() => setSlotTime(item.time)}
-              className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`}
-              key={index}
-            >
-              {item.time.toLowerCase()}
-            </p>
-          ))}
-        </div>
-
-        <button className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>
-          Book an appointment
-        </button>
-      </div> */}
 
       {/* -------- Credentials, Modalities, Areas of Focus -------- */}
-      <TherapistProfile />
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
+
+          {/* Credentials */}
+          <div className="md:col-span-2 bg-white rounded-2xl p-6">
+            <h2 className="text-xl font-serif mb-3">Credentials</h2>
+
+            {docInfo.credential &&
+              Object.values(docInfo.credential)
+                .filter((line) => line && line.trim() !== "") // ✅ ignore empty/null lines
+                .map((line, index) => (
+                  <p key={index} className="text-gray-700 mt-1">
+                    {line}
+                  </p>
+                ))}
+          </div>
+
+          {/* Modalities */}
+          <div className="bg-white shadow-sm rounded-2xl p-6">
+            <h2 className="text-xl font-serif mb-3">Modalities</h2>
+            <ul className="list-disc list-inside space-y-2 text-gray-700">
+              {docInfo.modalities &&
+                Object.values(docInfo.modalities)
+                  .filter((line) => line && line.trim() !== "") // ✅ ignore empty/null lines
+                  .map((line, index) => (
+                    <li key={index} className="text-gray-700 mt-1">
+                      {line}
+                    </li>
+                  ))}
+            </ul>
+          </div>
+
+          {/* Areas of Focus */}
+          <div className="bg-white shadow-sm rounded-2xl p-6">
+            <h2 className="text-xl font-serif mb-3">Areas of Focus</h2>
+            <ul className="list-disc list-inside space-y-2 text-gray-700">
+              {docInfo.areaoffocus &&
+                Object.values(docInfo.areaoffocus)
+                  .filter((line) => line && line.trim() !== "") // ✅ ignore empty/null lines
+                  .map((line, index) => (
+                    <li key={index} className="text-gray-700 mt-1">
+                      {line}
+                    </li>
+                  ))}
+            </ul>
+          </div>
+        </div>
+      </div>
 
       {/* -------- Related Doctors -------- */}
       <RelatedDoctors docId={docId} speciality={docInfo.speciality} />

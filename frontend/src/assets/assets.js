@@ -38,6 +38,7 @@ import Gynecologist from './Gynecologist.svg'
 import Neurologist from './Neurologist.svg'
 import Pediatricians from './Pediatricians.svg'
 import home from './home.png'
+import { m } from 'motion/react'
 
 
 export const assets = {
@@ -101,6 +102,19 @@ export const doctors = [
         address: {
             line1: '17th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -115,6 +129,19 @@ export const doctors = [
         address: {
             line1: '27th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School',
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -129,6 +156,19 @@ export const doctors = [
         address: {
             line1: '37th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -143,6 +183,19 @@ export const doctors = [
         address: {
             line1: '47th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -157,6 +210,19 @@ export const doctors = [
         address: {
             line1: '57th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -171,6 +237,19 @@ export const doctors = [
         address: {
             line1: '57th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -185,6 +264,19 @@ export const doctors = [
         address: {
             line1: '17th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -199,6 +291,19 @@ export const doctors = [
         address: {
             line1: '27th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -213,6 +318,19 @@ export const doctors = [
         address: {
             line1: '37th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -227,6 +345,19 @@ export const doctors = [
         address: {
             line1: '47th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -241,6 +372,19 @@ export const doctors = [
         address: {
             line1: '57th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -255,6 +399,19 @@ export const doctors = [
         address: {
             line1: '57th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -269,6 +426,19 @@ export const doctors = [
         address: {
             line1: '17th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -283,6 +453,19 @@ export const doctors = [
         address: {
             line1: '27th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -297,6 +480,19 @@ export const doctors = [
         address: {
             line1: '37th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
     {
@@ -311,6 +507,19 @@ export const doctors = [
         address: {
             line1: '48th Cross, Richmond',
             line2: 'Circle, Ring Road, London'
+        },
+        credential: {
+            line1: 'MBBS - London University',
+            line2: 'MD - Harvard Medical School'
+        },
+        modalities: {
+            line1: 'In-person',
+            line2: 'Online'
+        },
+        areaoffocus: {
+            line1: 'Pregnancy and childbirth',
+            line2: 'Menstrual disorders',
+            line3: 'Hormonal imbalances'
         }
     },
 ]

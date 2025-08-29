@@ -8,9 +8,12 @@ const Navbar = () => {
 
     return (
         <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400'>
-            <h1 className="font-therapique text-4xl text-gray-800">
-                therapique
-            </h1>
+            <NavLink to='/'>
+                <h1 className="font-therapique text-4xl text-gray-800">
+                    therapique
+                </h1>
+            </NavLink>
+            {/* -------- Menu Items -------- */}
 
             <ul className='hidden md:flex items-start gap-5 font-medium '>
                 <NavLink to='/'>
