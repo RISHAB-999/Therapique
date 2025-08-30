@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import userModel from "../models/userModel.js";
+import contactModel from "../models/contactModel.js";
 import { v2 as cloudinary } from 'cloudinary'
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
@@ -347,4 +348,48 @@ const verifyStripe = async (req, res) => {
 
 }
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentStripe, verifyStripe , paymentRazorpay, verifyRazorpay }
+// API to handle contact form submission
+const contactForm = async (req, res) => {
+    try {
+        const { firstName, lastName, email, phone, message, userId } = req.body;
+        
+        // Check if all required fields are provided
+        if (!firstName || !lastName || !email || !phone || !message) {
+            return res.json({ success: false, message: 'All fields are required' });
+        }
+
+        // Validate email format
+        if (!validator.isEmail(email)) {
+            return res.json({ success: false, message: 'Please enter a valid email' });
+        }
+        
+        // Validate phone number (basic validation)
+        if (phone.length < 10) {
+            return res.json({ success: false, message: 'Please enter a valid phone number' });
+        }
+
+        // Create new contact entry in database
+        const contactData = new contactModel({
+            userId,
+            firstName,
+            lastName,
+            email,
+            phone,
+            message
+        });
+
+        const savedContact = await contactData.save();
+
+        res.json({ 
+            success: true, 
+            message: 'Thank you for contacting us! We will get back to you soon.',
+            contactId: savedContact._id
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+}
+
+export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentStripe, verifyStripe , paymentRazorpay, verifyRazorpay, contactForm }
