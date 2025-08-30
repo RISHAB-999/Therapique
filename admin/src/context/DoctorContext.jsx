@@ -42,7 +42,7 @@ const DoctorContextProvider = (props) => {
         toast.success(data.message)
         getAppointments()
         // after creating dashboard
-        // getDashData()
+        getDashData()
       } else {
         toast.error(data.message)
       }
@@ -65,7 +65,7 @@ const DoctorContextProvider = (props) => {
         toast.success(data.message)
         getAppointments()
         // Later after creating getDashData Function
-        // getDashData()
+        getDashData()
       } else {
         toast.error(data.message)
       }
