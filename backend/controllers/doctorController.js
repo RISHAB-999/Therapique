@@ -92,9 +92,7 @@ const appointmentComplete = async (req, res) => {
 // API to get all doctors list for Frontend
 const doctorList = async (req, res) => {
     try {
-        console.log("here")
         const doctors = await doctorModel.find({}).select(['-password', '-email'])
-        console.log("doctors", doctors)
         res.json({ success: true, doctors })
 
     } catch (error) {

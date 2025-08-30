@@ -36,7 +36,6 @@ const AppContextProvider = (props) => {
         try {
 
             const { data } = await axios.get(backendUrl + '/api/user/get-profile', { headers: { token } })
-            console.log("The data fetched from backend of user is", data)
             if (data.success) {
                 setUserData(data.userData)
             } else {

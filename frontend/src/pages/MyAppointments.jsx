@@ -70,8 +70,6 @@ const MyAppointments = () => {
       receipt: order.receipt,
       handler: async (response) => {
 
-        console.log(response)
-
         try {
           const { data } = await axios.post(backendUrl + "/api/user/verifyRazorpay", response, { headers: { token } });
           if (data.success) {

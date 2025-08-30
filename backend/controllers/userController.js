@@ -101,17 +101,6 @@ const updateProfile = async (req, res) => {
         const { userId, name, phone, address, dob, gender } = req.body
         const imageFile = req.file
 
-        console.log('=== UPDATE PROFILE DEBUG ===')
-        console.log('userId:', userId)
-        console.log('name:', name)
-        console.log('phone:', phone)
-        console.log('address:', address)
-        console.log('dob:', dob)
-        console.log('gender:', gender)
-        console.log('imageFile:', imageFile)
-        console.log('req.body:', req.body)
-        console.log('=============================')
-
         if (!name || !phone || !dob || !gender) {
             return res.json({ success: false, message: "Data Missing" })
         }

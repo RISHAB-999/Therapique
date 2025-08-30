@@ -43,13 +43,7 @@ const AddDoctor = () => {
       formData.append('degree', degree)
       formData.append('address', JSON.stringify({ line1: address1, line2: address2 }))
 
-      // console log formdata            
-      formData.forEach((value, key) => {
-        console.log(`${key}: ${value}`);
-      });
-      console.log(backendUrl)
       const { data } = await axios.post(backendUrl + '/api/admin/add-doctor', formData, { headers: { aToken } })
-      console.log(data)
       if (data.success) {
         toast.success(data.message)
         setDocImg(false)

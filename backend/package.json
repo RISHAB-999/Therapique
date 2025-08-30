@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "echo \"No build step required for backend\"",
+    "build": "npm install",
     "start": "node server.js",
     "server": "nodemon server.js"
   },
