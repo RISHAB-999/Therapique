@@ -18,8 +18,8 @@ const Login = () => {
         e.preventDefault()
         // Handle login logic here
         if (state === 'Admin') {
-
             const { data } = await axios.post(backendUrl + '/api/admin/login', { email, password })
+            console.log(data)
             if (data.success) {
                 setAToken(data.token)
                 localStorage.setItem('aToken', data.token)
@@ -28,7 +28,6 @@ const Login = () => {
             }
 
         } else {
-
             const { data } = await axios.post(backendUrl + '/api/doctor/login', { email, password })
             if (data.success) {
                 setDToken(data.token)
