@@ -1,7 +1,8 @@
 import React from 'react'
-import { assets } from '../assets/assets'
+import { useNavigate } from 'react-router-dom'
 
 const Footer = () => {
+    const navigate = useNavigate()
     return (
         <div className="bg-[#856C5B] text-gray-300 md:mx-0">
             <div className="max-w-6xl mx-auto flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 px-6 py-16">
@@ -21,10 +22,10 @@ const Footer = () => {
                 <div>
                     <p className="text-lg font-semibold text-white mb-5">Company</p>
                     <ul className="flex flex-col gap-2 text-sm">
-                        <li className="hover:text-white cursor-pointer">Home</li>
-                        <li className="hover:text-white cursor-pointer">About Us</li>
-                        <li className="hover:text-white cursor-pointer">Contact Us</li>
-                        <li className="hover:text-white cursor-pointer">Privacy Policy</li>
+                        <li onClick={() => { window.scrollTo(0, 0); navigate('/') }} className="hover:text-white cursor-pointer">Home</li>
+                        <li onClick={() => { window.scrollTo(0, 0); navigate('/about') }} className="hover:text-white cursor-pointer">About Us</li>
+                        <li onClick={() => { window.scrollTo(0, 0); navigate('/contact') }} className="hover:text-white cursor-pointer">Contact Us</li>
+                        <li onClick={() => { window.scrollTo(0, 0); navigate('/') }} className="hover:text-white cursor-pointer">Privacy Policy</li>
                     </ul>
                 </div>
 

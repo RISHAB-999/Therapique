@@ -3,7 +3,7 @@ import header_img from './header_img.png'
 import group_profiles from './group_profiles.png'
 import profile_pic from './profile_pic.png'
 import contact_image from './contact_image.jpg'
-import about_image from './about_image.png'
+import about_image from './about_image.jpg'
 import logo from './logo.svg'
 import dropdown_icon from './dropdown_icon.svg'
 import menu_icon from './menu_icon.svg'
@@ -38,8 +38,15 @@ import Gynecologist from './Gynecologist.svg'
 import Neurologist from './Neurologist.svg'
 import Pediatricians from './Pediatricians.svg'
 import home from './home.png'
-import { m } from 'motion/react'
 
+import Clinical_psychologist from './Clinical_psychologist.webp'
+import Counseling_psychologist from './Counseling_psychologist.jpg'
+import Child_therapist from './Child_therapist.webp'
+import Family_therapist from './Family_therapist.webp'
+import Trauma_therapist from './Trauma_therapist.webp'
+import Addiction_counselor from './Addiction_counselor.webp'
+import CBT_therapist from './CBT_therapist.webp'
+import Art_music_therapist from './Art_music_therapist.webp'
 
 export const assets = {
     home,
@@ -64,462 +71,35 @@ export const assets = {
 
 export const specialityData = [
     {
-        speciality: 'General physician',
-        image: General_physician
+        speciality: 'Clinical Psychologist',
+        image: Clinical_psychologist
     },
     {
-        speciality: 'Gynecologist',
-        image: Gynecologist
+        speciality: 'Counseling Psychologist',
+        image: Counseling_psychologist
     },
     {
-        speciality: 'Dermatologist',
-        image: Dermatologist
+        speciality: 'Child & Adolescent Therapist',
+        image: Child_therapist
     },
     {
-        speciality: 'Pediatricians',
-        image: Pediatricians
+        speciality: 'Marriage & Family Therapist',
+        image: Family_therapist
     },
     {
-        speciality: 'Neurologist',
-        image: Neurologist
+        speciality: 'Trauma Therapist',
+        image: Trauma_therapist
     },
     {
-        speciality: 'Gastroenterologist',
-        image: Gastroenterologist
-    },
-]
-
-export const doctors = [
-    {
-        _id: 'doc1',
-        name: 'Dr. Richard James',
-        image: doc1,
-        speciality: 'General physician',
-        degree: 'MBBS',
-        experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
-        address: {
-            line1: '17th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
+        speciality: 'Addiction Counselor',
+        image: Addiction_counselor
     },
     {
-        _id: 'doc2',
-        name: 'Dr. Emily Larson',
-        image: doc2,
-        speciality: 'Gynecologist',
-        degree: 'MBBS',
-        experience: '3 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 60,
-        address: {
-            line1: '27th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School',
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
+        speciality: 'Cognitive Behavioral Therapist (CBT)',
+        image: CBT_therapist
     },
     {
-        _id: 'doc3',
-        name: 'Dr. Sarah Patel',
-        image: doc3,
-        speciality: 'Dermatologist',
-        degree: 'MBBS',
-        experience: '1 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 30,
-        address: {
-            line1: '37th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc4',
-        name: 'Dr. Christopher Lee',
-        image: doc4,
-        speciality: 'Pediatricians',
-        degree: 'MBBS',
-        experience: '2 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 40,
-        address: {
-            line1: '47th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc5',
-        name: 'Dr. Jennifer Garcia',
-        image: doc5,
-        speciality: 'Neurologist',
-        degree: 'MBBS',
-        experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
-        address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc6',
-        name: 'Dr. Andrew Williams',
-        image: doc6,
-        speciality: 'Neurologist',
-        degree: 'MBBS',
-        experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
-        address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc7',
-        name: 'Dr. Christopher Davis',
-        image: doc7,
-        speciality: 'General physician',
-        degree: 'MBBS',
-        experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
-        address: {
-            line1: '17th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc8',
-        name: 'Dr. Timothy White',
-        image: doc8,
-        speciality: 'Gynecologist',
-        degree: 'MBBS',
-        experience: '3 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 60,
-        address: {
-            line1: '27th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc9',
-        name: 'Dr. Ava Mitchell',
-        image: doc9,
-        speciality: 'Dermatologist',
-        degree: 'MBBS',
-        experience: '1 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 30,
-        address: {
-            line1: '37th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc10',
-        name: 'Dr. Jeffrey King',
-        image: doc10,
-        speciality: 'Pediatricians',
-        degree: 'MBBS',
-        experience: '2 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 40,
-        address: {
-            line1: '47th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc11',
-        name: 'Dr. Zoe Kelly',
-        image: doc11,
-        speciality: 'Neurologist',
-        degree: 'MBBS',
-        experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
-        address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc12',
-        name: 'Dr. Patrick Harris',
-        image: doc12,
-        speciality: 'Neurologist',
-        degree: 'MBBS',
-        experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
-        address: {
-            line1: '57th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc13',
-        name: 'Dr. Chloe Evans',
-        image: doc13,
-        speciality: 'General physician',
-        degree: 'MBBS',
-        experience: '4 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 50,
-        address: {
-            line1: '17th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc14',
-        name: 'Dr. Ryan Martinez',
-        image: doc14,
-        speciality: 'Gynecologist',
-        degree: 'MBBS',
-        experience: '3 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 60,
-        address: {
-            line1: '27th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc15',
-        name: 'Dr. Amelia Hill',
-        image: doc15,
-        speciality: 'Dermatologist',
-        degree: 'MBBS',
-        experience: '1 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 30,
-        address: {
-            line1: '37th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
-    {
-        _id: 'doc16',
-        name: 'Dr. Chris Martin',
-        image: doc16,
-        speciality: 'Gastroenterologist',
-        degree: 'MBBS',
-        experience: '8 Years',
-        about: 'Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies. Dr. Davis has a strong commitment to delivering comprehensive medical care, focusing on preventive medicine, early diagnosis, and effective treatment strategies.',
-        fees: 30,
-        address: {
-            line1: '48th Cross, Richmond',
-            line2: 'Circle, Ring Road, London'
-        },
-        credential: {
-            line1: 'MBBS - London University',
-            line2: 'MD - Harvard Medical School'
-        },
-        modalities: {
-            line1: 'In-person',
-            line2: 'Online'
-        },
-        areaoffocus: {
-            line1: 'Pregnancy and childbirth',
-            line2: 'Menstrual disorders',
-            line3: 'Hormonal imbalances'
-        }
-    },
+        speciality: 'Art & Music Therapist',
+        image: Art_music_therapist
+    }
 ]

@@ -7,13 +7,11 @@ const Header = () => {
         <div className='flex flex-col md:flex-row flex-wrap bg-primary rounded-lg px-6 md:px-10 lg:px-20'>
 
             {/* -------- left Side -------- */}
-            <div className='md:w-1/2 flex flex-col items-start justify-center gap-4 py-10 m-auto md:py-[10vw] md:mb-[-30px]'>
+            <div className="md:w-1/2 flex flex-col items-center justify-center gap-4 py-10 m-auto md:py-[10vw] md:mb-[-30px] text-center">
                 <h4 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
                     Empowering change <br />
                     through personalized <br />
-                    therapy and 
-                    {" "}
-                    counseling
+                    therapy and counseling
                     <span className="inline-flex gap-1">
                         <span className="text-pink-400">✿</span>
                         <span className="text-orange-400">✿</span>
@@ -52,7 +50,7 @@ const Header = () => {
             <div className='md:w-1/2 relative'>
                 <img className='w-full md:absolute bottom-0 h-auto rounded-lg' src={assets.header_img} alt="" />
             </div>
-        </div>
+        </div >
     )
 }
 

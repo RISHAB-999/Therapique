@@ -19,7 +19,7 @@ const AddDoctor = () => {
   const [address1, setAddress1] = useState('')
   const [address2, setAddress2] = useState('')
 
-  const { backendUrl,aToken } = useContext(AdminContext)
+  const { backendUrl, aToken } = useContext(AdminContext)
 
   const onSubmitHandler = async (event) => {
     event.preventDefault()
@@ -50,11 +50,13 @@ const AddDoctor = () => {
         setName('')
         setPassword('')
         setEmail('')
+        setExperience('1 Year')
+        setFees('')
+        setAbout('')
+        setSpeciality('Clinical Psychologist')
+        setDegree('')
         setAddress1('')
         setAddress2('')
-        setDegree('')
-        setAbout('')
-        setFees('')
       } else {
         toast.error(data.message)
       }
@@ -127,15 +129,16 @@ const AddDoctor = () => {
             <div className='flex-1 flex flex-col gap-1'>
               <p>Speciality</p>
               <select onChange={e => setSpeciality(e.target.value)} value={speciality} className='border rounded px-2 py-2'>
-                <option value="General physician">General physician</option>
-                <option value="Gynecologist">Gynecologist</option>
-                <option value="Dermatologist">Dermatologist</option>
-                <option value="Pediatricians">Pediatricians</option>
-                <option value="Neurologist">Neurologist</option>
-                <option value="Gastroenterologist">Gastroenterologist</option>
+                <option value="Clinical Psychologist">Clinical Psychologist</option>
+                <option value="Counseling Psychologist">Counseling Psychologist</option>
+                <option value="Child & Adolescent Therapist">Child & Adolescent Therapist</option>
+                <option value="Marriage & Family Therapist">Marriage & Family Therapist</option>
+                <option value="Trauma Therapist">Trauma Therapist</option>
+                <option value="Addiction Counselor">Addiction Counselor</option>
+                <option value="Cognitive Behavioral Therapist (CBT)">Cognitive Behavioral Therapist (CBT)</option>
+                <option value="Art & Music Therapist">Art & Music Therapist</option>
               </select>
             </div>
-
 
             <div className='flex-1 flex flex-col gap-1'>
               <p>Degree</p>

@@ -71,7 +71,7 @@ const Contact = () => {
         <p>CONTACT <span className='text-gray-700 font-semibold'>Us</span></p>
       </div>
       <div className='my-10 flex flex-col justify-center lg:flex-row gap-10 mb-28 text-sm'>
-        <img className='w-full lg:max-w-[360px]' src={assets.contact_image} alt="" />
+        <img className=' rounded-3xl shadow-xl w-full max-w-md md:max-w-lg' src={assets.contact_image} alt="" />
 
         <div className='flex flex-col justify-center item-center gap-6 '>
           <p className='font-semibold text-lg text-gray-600'>Our OFFICE</p>
