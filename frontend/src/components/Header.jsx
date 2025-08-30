@@ -1,6 +1,7 @@
 import React from 'react'
 import { assets } from '../assets/assets'
 import { Link } from 'react-router-dom'
+import {specialityData} from '../assets/assets'
 
 const Header = () => {
     return (
@@ -31,18 +32,11 @@ const Header = () => {
                 </Link>
                 {/* Therapy Types */}
                 <div className="grid grid-cols-2 md:grid-cols-2 gap-4 text-lg mt-6">
-                    <a href="#" className="text-gray-800 hover:text-black">
-                        Individual Therapy →
-                    </a>
-                    <a href="#" className="text-gray-800 hover:text-black">
-                        Family Therapy →
-                    </a>
-                    <a href="#" className="text-gray-800 hover:text-black">
-                        Couple Therapy →
-                    </a>
-                    <a href="#" className="text-gray-800 hover:text-black">
-                        Adolescent Therapy →
-                    </a>
+                    {specialityData.slice(0,4).map((item, index) => (
+                        <Link key={index} to={`/doctors/${item.speciality}`} className="text-gray-800 hover:text-black">
+                            {item.speciality} →
+                        </Link>
+                    ))}
                 </div>
             </div>
 

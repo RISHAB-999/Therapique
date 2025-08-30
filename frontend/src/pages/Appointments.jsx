@@ -169,7 +169,11 @@ const Appointments = () => {
         <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
           {
             docSlots.length && docSlots.map((item, index) => (
-              <div onClick={() => setSlotIndex(index)} className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-primary text-white' : 'border border-gray-200'}`} key={index}>
+              <div onClick={() => setSlotIndex(index)} className={`flex flex-col items-center justify-center min-w-20 px-4 py-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm
+            ${slotIndex === index
+                  ? "bg-text text-white shadow-md scale-105"
+                  : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow"
+                }`} key={index}>
                 <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]} </p>
                 <p>{item[0] && item[0].datetime.getDate()}</p>
               </div>
@@ -179,12 +183,16 @@ const Appointments = () => {
 
         <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
           {docSlots.length && docSlots[slotIndex].map((item, index) => (
-            <p onClick={() => setSlotTime(item.time)} className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-primary text-white' : 'text-gray-400 border border-gray-300'}`} key={index}>
+            <p onClick={() => setSlotTime(item.time)} className={`text-sm flex-shrink-0 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300
+            ${item.time === slotTime
+                ? "bg-text text-white shadow-md scale-105"
+                : "bg-gray-50 text-gray-600 border border-gray-300 hover:border-gray-400 hover:shadow"
+              }`} key={index}>
               {item.time.toLowerCase()}
             </p>
           ))}
         </div>
-        <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6'>Book an appointment</button>
+        <button onClick={bookAppointment} className="mt-6 px-8 py-3 rounded-full bg-[#1c1917] text-white font-semibold text-sm hover:bg-gray-800 transition duration-300">Book an appointment</button>
       </div>
       {/* -------- Listing Related Doctors -------- */}
       <RelatedDoctors docId={docId} speciality={docInfo.speciality} />

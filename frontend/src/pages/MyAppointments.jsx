@@ -128,6 +128,7 @@ const MyAppointments = () => {
     <div>
       <p className='pb-3 mt-12 text-lg font-medium text-gray-600 border-b'>My appointments</p>
       <div className=''>
+        {appointments.length === 0 && <p className='h-[40vh] text-gray-600 text-center my-10'>No Appointments booked yet!</p>}
         {appointments.map((item, index) => (
           <div key={index} className='grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-4 border-b'>
             <div>
