@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    font-family: Outfit;
+}
+
+.active hr {
+    @apply block
+}
+
+::-webkit-scrollbar {
+    @apply hidden
+}
+
+@media (max-width:740px) {
+    .active p {
+        @apply text-white bg-primary
+    }
+}
+
+
+body {
+    user-select: none;
+}
+
+/* Default: hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    /* IE & Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Show scrollbar on hover */
+.show-scrollbar:hover::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.show-scrollbar:hover::-webkit-scrollbar-thumb {
+    background-color: #9ca3af;
+    /* gray-400 */
+    border-radius: 9999px;
+}
+
+.show-scrollbar:hover::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+/* Firefox */
+.show-scrollbar:hover {
+    scrollbar-width: thin;
+    scrollbar-color: #9ca3af transparent;
+}
