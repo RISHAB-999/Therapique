@@ -1,5 +1,5 @@
 import express from 'express';
-import { getProfile, loginUser, registerUser, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, paymentStripe, verifyStripe, contactForm } from '../controllers/userController.js';
+import { getProfile, loginUser, registerUser, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, bookAppointmentWithCoins } from '../controllers/userController.js';
 import upload from '../middlewares/multer.js';
 import authUser from '../middlewares/authUser.js';
 const userRouter = express.Router();
@@ -16,7 +16,9 @@ userRouter.post("/cancel-appointment", authUser, cancelAppointment)
 
 userRouter.post("/payment-razorpay", authUser, paymentRazorpay)
 userRouter.post("/verifyRazorpay", authUser, verifyRazorpay)
-userRouter.post("/payment-stripe", authUser, paymentStripe)
-userRouter.post("/verifyStripe", authUser, verifyStripe)
+
+// Coin-related routes
+userRouter.post("/book-appointment-coins", authUser, bookAppointmentWithCoins)
+userRouter.post("/purchase-coins", authUser, purchaseCoins)
 
 export default userRouter;

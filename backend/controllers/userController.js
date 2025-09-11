@@ -6,7 +6,6 @@ import contactModel from "../models/contactModel.js";
 import { v2 as cloudinary } from 'cloudinary'
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
-import stripe from "stripe";
 import razorpay from 'razorpay';
 
 
@@ -286,68 +285,6 @@ const verifyRazorpay = async (req, res) => {
     }
 }
 
-// Gateway Initialize
-// const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY)
-//Api to make payment of appointment using Stripe
-const paymentStripe = async (req, res) => {
-    try {
-
-        const { appointmentId } = req.body
-        const { origin } = req.headers
-
-        const appointmentData = await appointmentModel.findById(appointmentId)
-
-        if (!appointmentData || appointmentData.cancelled) {
-            return res.json({ success: false, message: 'Appointment Cancelled or not found' })
-        }
-
-        const currency = process.env.CURRENCY.toLocaleLowerCase()
-
-        const line_items = [{
-            price_data: {
-                currency,
-                product_data: {
-                    name: "Appointment Fees"
-                },
-                unit_amount: appointmentData.amount * 100
-            },
-            quantity: 1
-        }]
-
-        const session = await stripeInstance.checkout.sessions.create({
-            success_url: `${origin}/verify?success=true&appointmentId=${appointmentData._id}`,
-            cancel_url: `${origin}/verify?success=false&appointmentId=${appointmentData._id}`,
-            line_items: line_items,
-            mode: 'payment',
-        })
-
-        res.json({ success: true, session_url: session.url });
-
-    } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
-    }
-}
-
-const verifyStripe = async (req, res) => {
-    try {
-
-        const { appointmentId, success } = req.body
-
-        if (success === "true") {
-            await appointmentModel.findByIdAndUpdate(appointmentId, { payment: true })
-            return res.json({ success: true, message: 'Payment Successful' })
-        }
-
-        res.json({ success: false, message: 'Payment Failed' })
-
-    } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
-    }
-
-}
-
 // API to handle contact form submission
 const contactForm = async (req, res) => {
     try {
@@ -392,4 +329,131 @@ const contactForm = async (req, res) => {
     }
 }
 
-export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentStripe, verifyStripe , paymentRazorpay, verifyRazorpay, contactForm }
+// API to purchase Therapique coins
+const purchaseCoins = async (req, res) => {
+    try {
+        const { userId, coinPackage } = req.body;
+        
+        // Define coin packages with prices and bonus coins
+        const coinPackages = {
+            basic: { coins: 100, price: 99, bonus: 0 },
+            standard: { coins: 500, price: 499, bonus: 50 },
+            premium: { coins: 1000, price: 999, bonus: 150 },
+            mega: { coins: 2000, price: 1899, bonus: 400 }
+        };
+
+        if (!coinPackages[coinPackage]) {
+            return res.json({ success: false, message: 'Invalid coin package' });
+        }
+
+        const packageData = coinPackages[coinPackage];
+        const totalCoins = packageData.coins + packageData.bonus;
+
+        // Update user's coin balance
+        const user = await userModel.findById(userId);
+        user.therapiqueCoins += totalCoins;
+        
+        // Add transaction record
+        user.coinsTransactions.push({
+            type: 'purchase',
+            amount: totalCoins,
+            description: `Purchased ${coinPackage} package (${packageData.coins} + ${packageData.bonus} bonus coins)`
+        });
+
+        await user.save();
+
+        res.json({ 
+            success: true, 
+            message: `Successfully purchased ${totalCoins} Therapique coins!`,
+            newBalance: user.therapiqueCoins
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to book appointment with coins
+const bookAppointmentWithCoins = async (req, res) => {
+    try {
+        const { userId, docId, slotDate, slotTime } = req.body;
+        const docData = await doctorModel.findById(docId).select("-password");
+
+        if (!docData.available) {
+            return res.json({ success: false, message: 'Doctor Not Available' });
+        }
+
+        const user = await userModel.findById(userId);
+        const appointmentCost = docData.fees; // Cost in coins equals the fee amount
+
+        // Check if user has enough coins
+        if (user.therapiqueCoins < appointmentCost) {
+            return res.json({ 
+                success: false, 
+                message: `Insufficient coins. You need ${appointmentCost} coins but have only ${user.therapiqueCoins}` 
+            });
+        }
+
+        let slots_booked = docData.slots_booked;
+
+        // Check for slot availability 
+        if (slots_booked[slotDate]) {
+            if (slots_booked[slotDate].includes(slotTime)) {
+                return res.json({ success: false, message: 'Slot Not Available' });
+            } else {
+                slots_booked[slotDate].push(slotTime);
+            }
+        } else {
+            slots_booked[slotDate] = [];
+            slots_booked[slotDate].push(slotTime);
+        }
+
+        const userData = await userModel.findById(userId).select("-password");
+        delete docData.slots_booked;
+
+        const appointmentData = {
+            userId,
+            docId,
+            userData,
+            docData,
+            amount: docData.fees,
+            slotTime,
+            slotDate,
+            date: Date.now(),
+            payment: true, // Mark as paid since coins were used
+            paidWithCoins: true
+        };
+
+        const newAppointment = new appointmentModel(appointmentData);
+        await newAppointment.save();
+
+        // Deduct coins from user account
+        user.therapiqueCoins -= appointmentCost;
+        
+        // Add transaction record
+        user.coinsTransactions.push({
+            type: 'spend',
+            amount: appointmentCost,
+            description: `Appointment with ${docData.name}`,
+            appointmentId: newAppointment._id
+        });
+
+        await user.save();
+
+        // Save new slots data in docData
+        await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+        res.json({ 
+            success: true, 
+            message: 'Appointment Booked with Therapique Coins!',
+            remainingCoins: user.therapiqueCoins
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export { registerUser, loginUser, getProfile, updateProfile, bookAppointment, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, bookAppointmentWithCoins }

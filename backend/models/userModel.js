@@ -36,7 +36,30 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
         default: "000000000000"
-    }
+    },
+    therapiqueCoins: {
+        type: Number,
+        default: 0
+    },
+    coinsTransactions: [{
+        type: {
+            type: String,
+            enum: ['purchase', 'spend'],
+            required: true
+        },
+        amount: {
+            type: Number,
+            required: true
+        },
+        description: {
+            type: String,
+            required: true
+        },
+        date: {
+            type: Date,
+            default: Date.now
+        }
+    }]
 
 });
 
