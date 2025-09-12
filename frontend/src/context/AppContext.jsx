@@ -48,7 +48,6 @@ const AppContextProvider = (props) => {
         }
 
     }
-
     useEffect(() => {
         getDoctorData()
     }, [])

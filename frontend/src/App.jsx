@@ -1,5 +1,5 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import Doctors from './pages/Doctors'
 import Login from './pages/Login'
@@ -15,6 +15,11 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify.jsx'
 const App = () => {
+  const location = useLocation();
+
+  // Define routes that should NOT have navbar/footer
+  const hideLayoutRoutes = ["/login", "/verify"];
+  const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
   return (
     <div className='mx-4 sm:mx-[10%]'>
       <ToastContainer />
@@ -32,7 +37,7 @@ const App = () => {
         <Route path='/coins-shop' element={<CoinsShop />} />
         <Route path='/verify' element={<Verify />} />
       </Routes>
-      <Footer />
+      {!shouldHideLayout && <Footer />}
     </div>
   )
 }

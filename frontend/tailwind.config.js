@@ -22,8 +22,11 @@ export default {
         therapique: ["Fraunces", "serif"],
         heading: ["Fraunces", "serif"],
         body: ["Inter", "sans-serif"],
+        display: ["Playfair Display", "serif"],
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'),
+  ],
 }

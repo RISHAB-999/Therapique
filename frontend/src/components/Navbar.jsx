@@ -19,7 +19,11 @@ const Navbar = () => {
 
     return (
         <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-[#ADADAD]'>
-            <img onClick={() => navigate('/')} className='w-44 cursor-pointer' src={assets.logo} alt="" />
+            <NavLink to='/'>
+                <h1 className="font-therapique text-4xl text-gray-800">
+                    therapique
+                </h1>
+            </NavLink>
             <ul className='md:flex items-start gap-5 font-medium hidden'>
                 <NavLink to='/' >
                     <li className='py-1'>HOME</li>
@@ -42,7 +46,7 @@ const Navbar = () => {
             <div className='flex items-center gap-4 '>
                 {
                     token && userData
-                        ? <div className='flex items-center gap-4'>
+                        ? <div className='flex items-center gap-2 cursor-pointer group relative'>
                             <CoinsWallet />
                             <div className='flex items-center gap-2 cursor-pointer group relative'>
                                 <img className='w-8 rounded-full' src={userData.image} alt="" />
@@ -57,7 +61,7 @@ const Navbar = () => {
                                 </div>
                             </div>
                         </div>
-                        : <button onClick={() => navigate('/login')} className='bg-primary text-white px-8 py-3 rounded-full font-light hidden md:block'>Create account</button>
+                        : <button onClick={() => navigate('/login')} className='bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-800 transition hidden md:block'>Create account</button>
                 }
                 <img onClick={() => setShowMenu(true)} className='w-6 md:hidden' src={assets.menu_icon} alt="" />
 

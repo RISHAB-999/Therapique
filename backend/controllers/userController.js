@@ -9,7 +9,6 @@ import appointmentModel from "../models/appointmentModel.js";
 import razorpay from 'razorpay';
 import crypto from 'crypto';
 
-
 // API to register user
 const registerUser = async (req, res) => {
 

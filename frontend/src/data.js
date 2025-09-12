@@ -1,3 +1,5 @@
+import { assets } from "./assets/assets";
+
 export const coinPackages = [
     {
         id: 'basic',
@@ -40,3 +42,18 @@ export const coinPackages = [
         button: 'bg-orange-600 hover:bg-orange-700'
     }
 ]
+
+export  const teamMembers = [
+    {
+      image: assets.founder2,
+      name: "Ishaan Jain",
+      title: "B.Tech",
+      description: "Founder & Backend Developer",
+    },
+    {
+      image: assets.founder1,
+      name: "Rishab Negi",
+      title: "B.Tech",
+      description: "Co-Founder & Clinical Director",
+    },
+  ];

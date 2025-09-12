@@ -1,39 +1,50 @@
 import React from 'react'
 import { assets } from '../assets/assets'
 import { useNavigate } from "react-router-dom"
+import ProfileCard from '../components/ProfileCard'
+import { teamMembers } from '../data'
+
 const About = () => {
   const navigate = useNavigate()
   return (
-    <div>
-      <div className='text-center font-heading text-4xl md:text-5xl  pt-10 text-gray-500'>
-        <p>ABOUT <span className='text-gray-700 font-medium'>Therapique</span></p>
-      </div>
+    <>
+      {/* Hero Section */}
+      <section className="bg-[#fdf7f3] py-20 px-6 text-center">
+        {/* Heading */}
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          About Therapique
+        </h1>
 
-      <div className='my-10 flex text-center flex-col md:flex-row gap-12'>
-        <img className='w-full md:max-w-[360px] rounded-3xl shadow-xl w-full max-w-md md:max-w-lg' src={assets.about_image} alt="" />
-        <div className='flex flex-col justify-center gap-6 md:w-2/4 text-sm text-gray-600'>
-          <p className="text-gray-700 max-w-2xl mx-auto text-lg mb-6 leading-relaxed">
-            At <span className="font-semibold text-gray-900">Therapique</span>, we
-            are committed to helping individuals overcome the weight of depression
-            and mental health struggles by making therapy accessible and personal.
-          </p>
-          <b className='font-heading text-2xl md:text-3xl  text-gray-800'>Our Vision</b>
-          <p> Our mission is to connect people with compassionate, licensed
-            professionals who can guide them toward healing, resilience, and
-            lasting well-being.</p>
-          {/* CTA Button */}
-          <div className="flex justify-center">
-            <button onClick={() => { navigate('/contact') }} className="group inline-flex items-center justify-between px-4 py-2 bg-background text-text rounded-full border border-text transition hover:bg-black hover:text-white max-w-fit">
-              <span className="text-sm md:text-base font-medium whitespace-nowrap">
-                Learn more about our team
-              </span>
-              <span className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-black text-white transition group-hover:bg-white group-hover:text-black ml-3">
-                →
-              </span>
-            </button>
+        {/* Beautiful Statement */}
+        <p className="text-gray-700 max-w-2xl mx-auto text-lg mb-6 leading-relaxed">
+          At <span className="font-semibold text-gray-900">Therapique</span>, we
+          are committed to helping individuals overcome the weight of depression
+          and mental health struggles by making therapy accessible and personal.
+          Our mission is to connect people with compassionate, licensed
+          professionals who can guide them toward healing, resilience, and
+          lasting well-being.
+        </p>
+
+        {/* CTA Button */}
+        <button onClick={() => { navigate('/contact') }} className="group  px-5 py-2 bg-background text-text rounded-full border border-text transition hover:bg-black hover:text-white">
+          <span className='inline-flex items-center gap-6'><span className="text-base font-medium">Learn more about our team</span>
+            <span className="flex items-center justify-center w-12 h-12 rounded-full bg-black text-white transition group-hover:bg-white group-hover:text-black">
+              →
+            </span></span>
+        </button>
+
+
+        {/* Hero Image */}
+        <div className="mt-10 flex justify-center">
+          <div className="w-full max-w-8xl aspect-[21/7]">
+            <img
+              src="https://images.unsplash.com/photo-1499728603263-13726abce5fd?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              alt="Therapist and client"
+              className="rounded-3xl shadow-lg w-full h-full object-cover"
+            />
           </div>
         </div>
-      </div>
+      </section>
       <section className="bg-[#fdf7f3] py-20 px-6 text-center">
         <blockquote className="max-w-3xl mx-auto relative">
           <p className="text-2xl md:text-3xl italic text-gray-800 leading-relaxed">
@@ -47,7 +58,36 @@ const About = () => {
           </p>
         </blockquote>
       </section>
-      <section className="bg-[#fdf7f3] px-6 my-12 font-body">
+
+      {/* Founders */}
+
+      <section className="pt-10 px-6 text-center">
+        {/* Heading */}
+        <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-4">
+          Guided by <span className="italic">passion</span>, Driven by{" "}
+          <span className="italic">purpose</span>
+        </h2>
+        <p className="max-w-2xl mx-auto text-gray-600 mb-12">
+          At Therapique, we pride ourselves on our exceptional client care. Our therapists ensure that the Sofia values are upheld by each of our team members.
+        </p>
+
+        {/* Cards */}
+        <div className="flex flex-wrap justify-center gap-8">
+          {teamMembers.map((member, index) => (
+            <ProfileCard
+              key={index}
+              image={member.image}
+              name={member.name}
+              title={member.title}
+              description={member.description}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Who We Are Section */}
+
+      <section className="bg-[#fdf7f3] py-24 px-6 my-24 font-body">
         <div className="max-w-6xl mx-auto">
           {/* Heading */}
           <h2 className="font-heading text-4xl md:text-5xl font-semibold text-center text-gray-900 mb-8 tracking-tight">
@@ -93,24 +133,7 @@ const About = () => {
           </div>
         </div>
       </section>
-      <div className='text-center font-heading text-4xl md:text-5xl my-10'>
-        <p>WHY <span className='text-gray-700 font-semibold'>CHOOSE US</span></p>
-      </div>
-      <div className='flex flex-col md:flex-row mb-20'>
-        <div className='border px-10 md:px-16 py-8 sm:py-16 flex flex-col gap-5 text-[15px] hover:bg-primary hover:text-white transition-all duration-300 text-gray-600 cursor-pointer'>
-          <b>Efficiency:</b>
-          <p>Streamlined appointment scheduling that fits into your busy lifestyle.</p>
-        </div>
-        <div className='border px-10 md:px-16 py-8 sm:py-16 flex flex-col gap-5 text-[15px] hover:bg-primary hover:text-white transition-all duration-300 text-gray-600 cursor-pointer'>
-          <b>Convenience:</b>
-          <p>Access to a network of trusted healthcare professionals in your area.</p>
-        </div>
-        <div className='border px-10 md:px-16 py-8 sm:py-16 flex flex-col gap-5 text-[15px] hover:bg-primary hover:text-white transition-all duration-300 text-gray-600 cursor-pointer'>
-          <b>Personalization:</b>
-          <p>Tailored recommendations and reminders to help you stay on top of your health.</p>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 

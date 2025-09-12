@@ -67,23 +67,56 @@ const Contact = () => {
 
   return (
     <div>
-      <div className='text-center text-2xl pt-10 text-gray-500'>
-        <p>CONTACT <span className='text-gray-700 font-semibold'>Us</span></p>
-      </div>
-      <div className='my-10 flex flex-col justify-center lg:flex-row gap-10 mb-28 text-sm'>
-        <img className=' rounded-3xl shadow-xl w-full max-w-md md:max-w-lg' src={assets.contact_image} alt="" />
+      <section
+        className="py-20 px-6 rounded-t-[40%] mt-20
+  bg-[linear-gradient(to_bottom,theme(colors.violet.400),theme(colors.violet.200),theme(colors.violet.50),theme(colors.background))] 
+  text-text"
+      >
 
-        <div className='flex flex-col justify-center item-center gap-6 '>
-          <p className='font-semibold text-lg text-gray-600'>Our OFFICE</p>
-          <p className='text-gray-500'>Hauz Khaz Main Market<br /> New Delhi-110016</p>
-          <p className='text-gray-500'>Tel: (+91 ) 8920-800-490 <br /> Email: therapiue@gmail.com</p>
-          <p className='font-semibold text-lg text-gray-600'>Careers at Therapique</p>
-          <p className='text-gray-500'>Learn more about our teams and job openings.</p>
-          <button onClick={() => { navigate('/about') }} className='border border-black px-8 py-4 text-sm hover:bg-black hover:text-white transition-all duration-500'>Get to know us</button>
+        <div className="max-w-5xl mx-auto text-center">
+          {/* Heading */}
+          <h2 className="text-4xl mt-10 md:text-5xl font-heading font-bold text-gray-900 mb-6">
+            How we work
+          </h2>
+
+          {/* Sub-heading */}
+          <p className="text-gray-700 font-body text-lg md:text-xl leading-relaxed max-w-4xl mx-auto mb-10">
+            We follow a structured yet flexible approach designed to make collaboration smooth and results-driven.
+            From understanding your vision to delivering the final outcome, our goal is to keep the process
+            clear, transparent, and aligned with your expectations.
+          </p>
+
+          {/* Paragraphs */}
+          <div className="space-y-6 text-base md:text-lg font-body text-gray-600 leading-relaxed max-w-4xl mx-auto mb-14">
+            <p>
+              Every project begins with an in-depth discovery session where we listen carefully to your
+              ideas, challenges, and goals. By identifying your priorities from the start, we can
+              create a plan that feels tailor-made — not just a generic solution. This ensures
+              that the foundation we build together is solid and focused on what truly matters.
+            </p>
+            <p>
+              Once we move forward, our team works in well-defined stages with consistent check-ins
+              and progress updates. This way, you always have visibility into what’s happening,
+              and you can confidently share feedback along the way. Our structured process
+              balances efficiency with creativity, so the end result not only meets your needs
+              but also exceeds your expectations.
+            </p>
+          </div>
+
+          {/* Image */}
+          <div className="flex justify-center w-screen relative left-1/2 right-1/2 -mx-[50vw] ">
+            <img
+              src="https://images.unsplash.com/photo-1573496267526-08a69e46a409?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              alt="Team discussion"
+              className="rounded-2xl w-full max-w-6xl h-96 object-cover"
+            />
+          </div>
         </div>
-      </div>
-      <div className="flex justify-center items-center py-10 px-6 bg-[#fdfaf7]">
-        <div className="w-full max-w-6xl rounded-3xl bg-gradient-to-b from-[#bce6f9] to-[#ffffff] p-10 flex flex-col lg:flex-row gap-10">
+      </section>
+
+      {/* Contact Us Box */}
+      <div className="flex justify-center items-center py-10 px-6">
+        <div className="w-full max-w-6xl rounded-3xl bg-gradient-to-b from-[#bce6f9] to-background p-10 flex flex-col lg:flex-row gap-10">
 
           {/* Left Section */}
           <div className="flex-1">

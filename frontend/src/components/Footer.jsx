@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 const Footer = () => {
     const navigate = useNavigate()
     return (
-        <div className="bg-[#856C5B] text-gray-300 md:mx-0">
+        <div className="bg-[#856C5B] text-gray-300 md:mx-0 mt-20">
             <div className="max-w-6xl mx-auto flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 px-6 py-16">
                 {/* -------- left Section -------- */}
                 <div>
