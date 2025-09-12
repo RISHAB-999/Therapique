@@ -7,6 +7,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import razorpay from 'razorpay';
+import crypto from 'crypto';
 
 
 // API to register user
@@ -355,24 +356,80 @@ const purchaseCoins = async (req, res) => {
         const packageData = coinPackages[coinPackage];
         const totalCoins = packageData.coins + packageData.bonus;
 
-        // Update user's coin balance
-        const user = await userModel.findById(userId);
-        user.therapiqueCoins += totalCoins;
-        
-        // Add transaction record
-        user.coinsTransactions.push({
-            type: 'purchase',
-            amount: totalCoins,
-            description: `Purchased ${coinPackage} package (${packageData.coins} + ${packageData.bonus} bonus coins)`
-        });
+        // Create Razorpay order for coin purchase
+        const receiptId = `coins_${Date.now().toString().slice(-8)}`;
+        const options = {
+            amount: packageData.price * 100, // amount in paise
+            currency: process.env.CURRENCY,
+            receipt: receiptId,
+            notes: {
+                userId: userId,
+                coinPackage: coinPackage,
+                totalCoins: totalCoins
+            }
+        };
 
-        await user.save();
+        const order = await razorpayInstance.orders.create(options);
 
         res.json({ 
             success: true, 
-            message: `Successfully purchased ${totalCoins} Therapique coins!`,
-            newBalance: user.therapiqueCoins
+            order,
+            packageData: {
+                ...packageData,
+                totalCoins
+            }
         });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to verify coin purchase payment
+const verifyCoinsPayment = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        
+        // Verify the payment signature
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest('hex');
+
+        if (expectedSignature === razorpay_signature) {
+            // Payment is verified, get order details
+            const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+            
+            if (orderInfo.status === 'paid') {
+                const { userId, coinPackage, totalCoins } = orderInfo.notes;
+                
+                // Update user's coin balance
+                const user = await userModel.findById(userId);
+                user.therapiqueCoins += parseInt(totalCoins);
+                
+                // Add transaction record
+                user.coinsTransactions.push({
+                    type: 'purchase',
+                    amount: parseInt(totalCoins),
+                    description: `Purchased ${coinPackage} package`,
+                    paymentId: razorpay_payment_id,
+                    orderId: razorpay_order_id
+                });
+
+                await user.save();
+
+                res.json({ 
+                    success: true, 
+                    message: `Successfully purchased ${totalCoins} Therapique coins!`,
+                    newBalance: user.therapiqueCoins
+                });
+            } else {
+                res.json({ success: false, message: 'Payment not completed' });
+            }
+        } else {
+            res.json({ success: false, message: 'Invalid payment signature' });
+        }
 
     } catch (error) {
         console.log(error);
@@ -462,4 +519,4 @@ const bookAppointmentWithCoins = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getProfile, updateProfile, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, bookAppointmentWithCoins, bookAppointmentWithPayment }
+export { registerUser, loginUser, getProfile, updateProfile, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, verifyCoinsPayment, bookAppointmentWithCoins, bookAppointmentWithPayment }

@@ -2,27 +2,69 @@ import React, { useContext, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import { toast } from 'react-toastify'
 import { coinPackages } from '../data'
-
+import axios from 'axios'
 const CoinsShop = () => {
-  const { currencySymbol, purchaseCoins, loadUserProfileData, userData } = useContext(AppContext)
+  const { currencySymbol, backendUrl, token, loadUserProfileData, userData } = useContext(AppContext)
   const [loading, setLoading] = useState('')
 
   // Coin packages with pricing and bonus
-
-
   const handlePurchase = async (packageId) => {
     setLoading(packageId)
     try {
-      const result = await purchaseCoins(packageId)
-      if (result.success) {
-        await loadUserProfileData()
+      const { data } = await axios.post(backendUrl + '/api/user/purchase-coins',
+        { coinPackage: packageId },
+        { headers: { token } }
+      )
+      if (data.success) {
+        // Initialize Razorpay payment
+        initCoinsPay(data.order, data.packageData)
+      } else {
+        toast.error(data.message)
       }
     } catch (error) {
-      toast.error('Purchase failed')
+      console.log(error)
+      toast.error(error.message)
     } finally {
       setLoading('')
     }
   }
+
+  // Function to initialize Razorpay Payment for coins
+  const initCoinsPay = (order, packageData) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
+      name: 'Therapique Coins',
+      description: `Purchase ${packageData.totalCoins} Therapique Coins`,
+      order_id: order.id,
+      receipt: order.receipt,
+      handler: async (response) => {
+        try {
+          const { data } = await axios.post(backendUrl + "/api/user/verify-coins-payment", response, { headers: { token } });
+          if (data.success) {
+            toast.success(data.message)
+            loadUserProfileData() // Refresh coins data
+          } else {
+            toast.error("Payment verification failed")
+          }
+        } catch (error) {
+          console.log(error)
+          toast.error(error.message)
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          toast.info("Payment cancelled")
+        }
+      },
+      theme: {
+        color: "#F59E0B"
+      }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
 
   return (
     <div className="min-h-screen py-12">
@@ -108,7 +150,12 @@ const CoinsShop = () => {
                       Processing...
                     </div>
                   ) : (
-                    'Purchase'
+                    <div className="flex items-center justify-center">
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd"/>
+                      </svg>
+                      Buy Now
+                    </div>
                   )}
                 </button>
               </div>

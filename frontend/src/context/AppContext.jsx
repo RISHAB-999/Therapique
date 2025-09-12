@@ -49,27 +49,6 @@ const AppContextProvider = (props) => {
 
     }
 
-    // Purchase Coins API
-    const purchaseCoins = async (coinPackage) => {
-        try {
-            const { data } = await axios.post(backendUrl + '/api/user/purchase-coins',
-                { coinPackage },
-                { headers: { token } }
-            )
-            if (data.success) {
-                toast.success(data.message)
-                loadUserProfileData() // Refresh coins data
-                return data
-            } else {
-                toast.error(data.message)
-                return data
-            }
-        } catch (error) {
-            console.log(error)
-            toast.error(error.message)
-            return { success: false, message: error.message }
-        }
-    }
     useEffect(() => {
         getDoctorData()
     }, [])
@@ -85,7 +64,7 @@ const AppContextProvider = (props) => {
         currencySymbol,
         backendUrl,
         token, setToken,
-        userData, setUserData, loadUserProfileData, purchaseCoins
+        userData, setUserData, loadUserProfileData
     }
     return (
         <AppContext.Provider value={value}>
