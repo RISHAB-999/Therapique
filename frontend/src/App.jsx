@@ -14,34 +14,47 @@ import Footer from './components/Footer'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify.jsx'
+
+import { SocketProvider } from '../../shared/sessions/providers/Socket.jsx'
+// import { PeerProvider } from '../../shared/sessions/providers/Peer'
+import RoomPage from '../../shared/sessions/Room'
+
 const App = () => {
   const location = useLocation();
 
   // Define routes that should NOT have navbar/footer
   const hideLayoutRoutes = ["/login", "/verify"];
-  const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
+
+  // Check if current path is in hideLayoutRoutes OR starts with /session
+  const shouldHideLayout =
+    hideLayoutRoutes.includes(location.pathname) ||
+    location.pathname.startsWith("/session");
+
   return (
     <>
-      <div className='mx-4 sm:mx-[10%]'>
+      <div className="mx-4 sm:mx-[10%]">
         <ToastContainer />
-        <Navbar />
-        <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/doctors' element={<Doctors />} />
-          <Route path='/doctors/:speciality' element={<Doctors />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/about' element={<About />} />
-          <Route path='/contact' element={<Contact />} />
-          <Route path='/appointment/:docId' element={<Appointments />} />
-          <Route path='/my-appointments' element={<MyAppointments />} />
-          <Route path='/my-profile' element={<MyProfile />} />
-          <Route path='/coins-shop' element={<CoinsShop />} />
-          <Route path='/verify' element={<Verify />} />
-        </Routes>
+        {!shouldHideLayout && <Navbar />}
+        <SocketProvider>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/doctors" element={<Doctors />} />
+              <Route path="/doctors/:speciality" element={<Doctors />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/appointment/:docId" element={<Appointments />} />
+              <Route path="/my-appointments" element={<MyAppointments />} />
+              <Route path="/my-profile" element={<MyProfile />} />
+              <Route path="/coins-shop" element={<CoinsShop />} />
+              <Route path="/verify" element={<Verify />} />
+              <Route path="/session/:roomId" element={<RoomPage />} />
+            </Routes>
+        </SocketProvider>
       </div>
       {!shouldHideLayout && <Footer />}
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

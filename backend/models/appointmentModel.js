@@ -12,8 +12,13 @@ const appointmentSchema = new mongoose.Schema({
     cancelled: { type: Boolean, default: false },
     payment: { type: Boolean, default: false },
     isCompleted: { type: Boolean, default: false },
-    paidWithCoins: { type: Boolean, default: false }
+    paidWithCoins: { type: Boolean, default: false },
+
+    // 🔥 New field
+    roomId: { type: String, required: true, unique: true }
 })
 
-const appointmentModel = mongoose.models.appointment || mongoose.model("appointment", appointmentSchema)
+const appointmentModel =
+  mongoose.models.appointment || mongoose.model("appointment", appointmentSchema)
+
 export default appointmentModel

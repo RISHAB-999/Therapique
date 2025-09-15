@@ -8,6 +8,8 @@ import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import razorpay from 'razorpay';
 import crypto from 'crypto';
+import { v4 as uuidv4 } from "uuid";  // 🔥 add this at the top
+
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -240,12 +242,11 @@ const bookAppointmentWithPayment = async (req, res) => {
 
         let slots_booked = docData.slots_booked
 
-        // checking for slot availablity 
+        // checking for slot availability 
         if (slots_booked[slotDate]) {
             if (slots_booked[slotDate].includes(slotTime)) {
                 return res.json({ success: false, message: 'Slot Not Available' })
-            }
-            else {
+            } else {
                 slots_booked[slotDate].push(slotTime)
             }
         } else {
@@ -265,7 +266,8 @@ const bookAppointmentWithPayment = async (req, res) => {
             amount: docData.fees,
             slotTime,
             slotDate,
-            date: Date.now()
+            date: Date.now(),
+            roomId: uuidv4()  // ✅ generate and attach unique roomId here
         }
 
         const newAppointment = new appointmentModel(appointmentData)
@@ -283,13 +285,20 @@ const bookAppointmentWithPayment = async (req, res) => {
 
         const order = await razorpayInstance.orders.create(options)
 
-        res.json({ success: true, message: 'Appointment Booked', order, appointmentId: newAppointment._id })
+        res.json({
+            success: true,
+            message: 'Appointment Booked',
+            order,
+            appointmentId: newAppointment._id,
+            roomId: newAppointment.roomId  // ✅ return it to frontend
+        })
 
     } catch (error) {
         console.log(error)
         res.json({ success: false, message: error.message })
     }
 }
+
 
 // API to handle contact form submission
 const contactForm = async (req, res) => {
