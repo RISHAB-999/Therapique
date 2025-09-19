@@ -1,11 +1,14 @@
-import { useRef } from "react";
-
 class PeerService {
   constructor() {
     if (!this.peer) {
       this.peer = new RTCPeerConnection({
         iceServers: [
-          { urls: ["stun:stun.l.google.com:19302", "stun:global.stun.twilio.com:3478"] },
+          {
+            urls: [
+              "stun:stun.l.google.com:19302",
+              "stun:global.stun.twilio.com:3478",
+            ],
+          },
         ],
       });
     }
@@ -26,6 +29,16 @@ class PeerService {
 
   async setRemoteDescription(answer) {
     await this.peer.setRemoteDescription(answer);
+  }
+
+  async addIceCandidate(candidate) {
+    if (candidate) {
+      try {
+        await this.peer.addIceCandidate(candidate);
+      } catch (err) {
+        console.error("Error adding ICE candidate:", err);
+      }
+    }
   }
 }
 

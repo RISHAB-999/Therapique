@@ -54,6 +54,7 @@ const MyAppointments = () => {
   const handleJoinSession = (appointment) => {
     const roomId = appointment.roomId || appointment._id;
     const userEmail = appointment.userData?.email || "user@therapique.com";
+    console.log("Navigating to room:", roomId, "with email:", userEmail);
     navigate(`/session/${roomId}`, {
       state: { userEmail, role: "user" }
     });

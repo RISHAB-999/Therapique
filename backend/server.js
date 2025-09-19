@@ -1,11 +1,11 @@
-import express from 'express';
-import cors from 'cors';
-import 'dotenv/config';
-import connectDB from './config/mongodb.js';
-import connectCloudinary from './config/cloudinary.js';
-import adminRouter from './routes/adminRoutes.js';
-import doctorRouter from './routes/doctorRoutes.js';
-import userRouter from './routes/userRoutes.js';
+import express from "express";
+import cors from "cors";
+import "dotenv/config";
+import connectDB from "./config/mongodb.js";
+import connectCloudinary from "./config/cloudinary.js";
+import adminRouter from "./routes/adminRoutes.js";
+import doctorRouter from "./routes/doctorRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 import bodyParser from "body-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
@@ -16,9 +16,6 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
-
-const emailToSocketMapping = new Map();
-const socketToEmailMapping = new Map();
 
 connectDB();
 connectCloudinary();
@@ -31,6 +28,10 @@ io.on("connection", (socket) => {
   console.log(`Socket Connected: ${socket.id}`);
 
   socket.on("room:join", ({ email, room }) => {
+    if (!email || !room) {
+      console.log("Invalid join attempt", { email, room });
+      return;
+    }
     socket.join(room);
     console.log(`${email} joined room ${room}`);
     io.to(room).emit("user:joined", { email, id: socket.id });
@@ -44,13 +45,21 @@ io.on("connection", (socket) => {
   socket.on("call:accepted", ({ to, ans }) => {
     io.to(to).emit("call:accepted", { from: socket.id, ans });
   });
+
+  socket.on("ice:candidate", ({ to, candidate }) => {
+    io.to(to).emit("ice:candidate", { from: socket.id, candidate });
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+  });
 });
 
-app.use('/api/admin', adminRouter);
-app.use('/api/doctor', doctorRouter);
-app.use('/api/user', userRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/doctor", doctorRouter);
+app.use("/api/user", userRouter);
 
-app.get('/', (req, res) => res.send('Hello World!'));
+app.get("/", (req, res) => res.send("Hello World!"));
 
 server.listen(PORT, () => {
   console.log(`HTTP + Socket.IO server running on port ${PORT}`);

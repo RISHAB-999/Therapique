@@ -23,36 +23,42 @@ const App = () => {
   const location = useLocation();
 
   // Define routes that should NOT have navbar/footer
-  const hideLayoutRoutes = ["/login", "/verify"];
+  const hideLayoutNavbar = ["/verify"];
+  const hideLayoutFooter = ["/login", "/verify"];
 
-  // Check if current path is in hideLayoutRoutes OR starts with /session
-  const shouldHideLayout =
-    hideLayoutRoutes.includes(location.pathname) ||
+  // Navbar should be hidden if current path is in hideLayoutNavbar OR starts with /session
+  const shouldHideNavbar =
+    hideLayoutNavbar.includes(location.pathname) ||
+    location.pathname.startsWith("/session");
+
+  // Footer should be hidden if current path is in hideLayoutFooter OR starts with /session
+  const shouldHideFooter =
+    hideLayoutFooter.includes(location.pathname) ||
     location.pathname.startsWith("/session");
 
   return (
     <>
       <div className="mx-4 sm:mx-[10%]">
         <ToastContainer />
-        {!shouldHideLayout && <Navbar />}
+        {!shouldHideNavbar && <Navbar />}
         <SocketProvider>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/doctors" element={<Doctors />} />
-              <Route path="/doctors/:speciality" element={<Doctors />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/appointment/:docId" element={<Appointments />} />
-              <Route path="/my-appointments" element={<MyAppointments />} />
-              <Route path="/my-profile" element={<MyProfile />} />
-              <Route path="/coins-shop" element={<CoinsShop />} />
-              <Route path="/verify" element={<Verify />} />
-              <Route path="/session/:roomId" element={<RoomPage />} />
-            </Routes>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/doctors" element={<Doctors />} />
+            <Route path="/doctors/:speciality" element={<Doctors />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/appointment/:docId" element={<Appointments />} />
+            <Route path="/my-appointments" element={<MyAppointments />} />
+            <Route path="/my-profile" element={<MyProfile />} />
+            <Route path="/coins-shop" element={<CoinsShop />} />
+            <Route path="/verify" element={<Verify />} />
+            <Route path="/session/:roomId" element={<RoomPage />} />
+          </Routes>
         </SocketProvider>
       </div>
-      {!shouldHideLayout && <Footer />}
+      {!shouldHideFooter && <Footer />}
     </>
   );
 };
