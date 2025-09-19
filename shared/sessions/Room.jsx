@@ -18,6 +18,10 @@ const Room = () => {
   const [connectionError, setConnectionError] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
 
+  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [micEnabled, setMicEnabled] = useState(true);
+
+
   const email = role === "doctor" ? doctorEmail : userEmail;
 
   // Attach local stream tracks to connection
@@ -96,6 +100,19 @@ const Room = () => {
     },
     [sendStreams]
   );
+
+  const toggleVideo = () => {
+    if (!myStream) return;
+    myStream.getVideoTracks().forEach(track => (track.enabled = !videoEnabled));
+    setVideoEnabled(!videoEnabled);
+  };
+
+  const toggleMic = () => {
+    if (!myStream) return;
+    myStream.getAudioTracks().forEach(track => (track.enabled = !micEnabled));
+    setMicEnabled(!micEnabled);
+  };
+
 
   // Join the room (signal server)
   useEffect(() => {
@@ -205,29 +222,49 @@ const Room = () => {
           </div>
 
           {/* bottom controls */}
-          <div className="video-controls">
-            <div className="controls-left">
-              <button className="control-btn">🎥 Toggle Video</button>
-              <button className="control-btn">🔈 Toggle Mic</button>
+          <div className="flex items-center justify-between gap-3 mt-4">
+            {/* Left controls */}
+            <div className="flex gap-2">
+              <button
+                onClick={toggleVideo}
+                className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition ${videoEnabled
+                    ? "bg-white/10 text-white hover:bg-white/20"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                  }`}
+              >
+                {videoEnabled ? "🎥 Camera On" : "🎥 Camera Off"}
+              </button>
+
+              <button
+                onClick={toggleMic}
+                className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition ${micEnabled
+                    ? "bg-white/10 text-white hover:bg-white/20"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                  }`}
+              >
+                {micEnabled ? "🔈 Mic On" : "🔈 Mic Off"}
+              </button>
             </div>
 
-            <div className="controls-center">
-              {/* If you want add end-call etc */}
-              <button className="end-call-btn">End Call</button>
+            {/* End call button */}
+            <div>
+              <button className="px-5 py-2 rounded-full bg-gradient-to-b from-red-500 to-red-800 text-white">
+                End Call
+              </button>
             </div>
 
-            <div className="controls-right">
-              <div className="status-badge">
-                {connectionError ? (
-                  <span className="status-error">{connectionError}</span>
-                ) : remoteStream ? (
-                  <span className="status-ok">Connected</span>
-                ) : (
-                  <span className="status-wait">Waiting...</span>
-                )}
-              </div>
+            {/* Connection status */}
+            <div>
+              {connectionError ? (
+                <span className="text-red-400 text-sm">{connectionError}</span>
+              ) : remoteStream ? (
+                <span className="text-green-400 text-sm">Connected</span>
+              ) : (
+                <span className="text-yellow-400 text-sm">Waiting...</span>
+              )}
             </div>
           </div>
+
         </section>
 
         {/* Right sidebar placeholder for extra widgets */}
