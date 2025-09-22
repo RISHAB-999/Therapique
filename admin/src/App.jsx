@@ -15,8 +15,8 @@ import DoctorDashboard from './pages/Doctor/DoctorDashboard';
 import DoctorAppointments from './pages/Doctor/DoctorAppointments';
 import DoctorProfile from './pages/Doctor/DoctorProfile';
 
-import { SocketProvider } from '../../shared/sessions/providers/Socket.jsx'
-import RoomPage from '../../shared/sessions/Room'
+import { SocketProvider } from './pages/sessions/providers/Socket'
+import RoomPage from './pages/sessions/Room'
 
 const App = () => {
   const { dToken } = useContext(DoctorContext)

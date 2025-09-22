@@ -15,9 +15,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify.jsx'
 
-import { SocketProvider } from '../../shared/sessions/providers/Socket.jsx'
-// import { PeerProvider } from '../../shared/sessions/providers/Peer'
-import RoomPage from '../../shared/sessions/Room'
+import { SocketProvider } from './pages/sessions/providers/Socket.jsx'
+import RoomPage from './pages/sessions/Room.jsx'
 
 const App = () => {
   const location = useLocation();
