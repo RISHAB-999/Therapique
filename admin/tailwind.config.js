@@ -7,11 +7,18 @@ export default {
   theme: {
     extend: {
       colors:{
-        primary: '#5f6FFF'
+        primary: '#576cc0',
+        text: '#424242',
       },
       gridTemplateColumns:{
         'auto':'repeat(auto-fill, minmax(200px,1fr))'
-      }
+      },
+      fontFamily: {
+        therapique: ["Fraunces", "serif"],
+        heading: ["Fraunces", "serif"],
+        body: ["Inter", "sans-serif"],
+        display: ["Playfair Display", "serif"],
+      },
     },
   },
   plugins: [],
