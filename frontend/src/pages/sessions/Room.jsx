@@ -1,5 +1,5 @@
 // src/pages/sessions/Room.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { useSocket } from "./providers/Socket";
 import peer from "./providers/Peer";
@@ -16,6 +16,9 @@ const Room = () => {
   const [remoteSocketId, setRemoteSocketId] = useState(null);
   const [connectionError, setConnectionError] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [remoteMicEnabled, setRemoteMicEnabled] = useState(true);
+
 
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
@@ -84,13 +87,45 @@ const Room = () => {
 
   const toggleMic = () => {
     if (!myStream) return;
-    myStream.getAudioTracks().forEach(track => (track.enabled = !micEnabled));
-    setMicEnabled(!micEnabled);
+    const newState = !micEnabled;
+    myStream.getAudioTracks().forEach(track => (track.enabled = newState));
+    setMicEnabled(newState);
+
+    // Only notify the remote peer
+    if (remoteSocketId) {
+      socket.emit("mic:status", { to: remoteSocketId, enabled: newState });
+    }
   };
+
+  // New message handler
+  const handleNewMessage = () => {
+    if (!chatOpen) setUnreadMessages(prev => prev + 1);
+  };
+
+  const toggleChat = () => {
+    setChatOpen(prev => !prev);
+    if (!chatOpen) setUnreadMessages(0);
+  };
+
+  useEffect(() => {
+    socket.on("mic:status", ({ enabled }) => setRemoteMicEnabled(enabled));
+    return () => socket.off("mic:status");
+  }, [socket]);
 
   useEffect(() => {
     if (email && roomId) socket.emit("room:join", { email, room: roomId });
   }, [socket, email, roomId]);
+
+  useEffect(() => {
+    socket.on("call:ended", () => {
+      alert("The call has ended.");
+      if (myStream) myStream.getTracks().forEach(track => track.stop());
+      window.location.href = "/";
+    });
+
+    return () => socket.off("call:ended");
+  }, [socket, myStream]);
+
 
   useEffect(() => {
     peer.peer.onicecandidate = (event) => {
@@ -114,7 +149,6 @@ const Room = () => {
     };
   }, [socket, handleUserJoined, handleIncommingCall, handleCallAccepted, remoteSocketId]);
 
-  const toggleChat = () => setChatOpen((s) => !s);
 
   return (
     <div className="flex flex-col min-h-screen font-inter bg-gray-900 text-white">
@@ -129,11 +163,17 @@ const Room = () => {
         </div>
         <button
           onClick={toggleChat}
-          className="mt-2 sm:mt-0 p-3 rounded-full bg-teal-600 hover:bg-teal-500 transition"
+          className="mt-2 sm:mt-0 p-3 rounded-full bg-teal-600 hover:bg-teal-500 relative transition"
           aria-label={chatOpen ? "Close chat" : "Open chat"}
         >
           💬
+          {unreadMessages > 0 && (
+            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+              {unreadMessages}
+            </span>
+          )}
         </button>
+
       </header>
 
       {/* Main area */}
@@ -142,7 +182,7 @@ const Room = () => {
         <section className="flex-1 relative bg-gray-800 rounded-lg p-4 flex flex-col justify-between min-h-[60vh]">
           <div className="relative flex justify-center items-center flex-1">
             {/* Remote video */}
-            <div className="w-full max-w-5xl h-[60vh] bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-white/5 flex justify-center items-center">
+            <div className="w-full max-w-5xl h-[60vh] bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-white/5 flex justify-center items-center relative">
               {!remoteStream && <div className="text-gray-400">Waiting for participant...</div>}
               {remoteStream && (
                 <video
@@ -152,7 +192,10 @@ const Room = () => {
                   className="w-full h-full object-cover"
                 />
               )}
-              <div className="absolute left-3 bottom-3 bg-black/50 px-3 py-1 rounded text-xs">Participant</div>
+              <div className="absolute left-3 bottom-3 bg-black/50 px-3 py-1 rounded text-xs flex items-center gap-1">
+                Participant
+                {!remoteMicEnabled && <span className="text-red-400 text-xs">🔇</span>}
+              </div>
             </div>
 
             {/* Local preview */}
@@ -167,7 +210,7 @@ const Room = () => {
                   className="w-full h-full object-cover"
                 />
               )}
-              <div className="absolute left-2 top-2 bg-black/25 px-2 py-1 rounded text-xs">You</div>
+              <div className="absolute left-2 top-2 bg-black/25 px-2 py-1 rounded text-xs">You {!micEnabled && <span className="text-red-400 text-xs">🔇</span>}</div>
             </div>
           </div>
 
@@ -187,7 +230,17 @@ const Room = () => {
                 {micEnabled ? "🔈 On" : "🔈 Off"}
               </button>
             </div>
-            <button className="px-5 py-2 rounded-full bg-gradient-to-b from-red-500 to-red-800 text-white">End Call</button>
+            <button
+              onClick={() => {
+                if (myStream) myStream.getTracks().forEach(track => track.stop());
+                if (roomId) socket.emit("call:ended", { room: roomId });
+                window.location.href = "/";
+              }}
+              className="px-5 py-2 rounded-full bg-gradient-to-b from-red-500 to-red-800 text-white"
+            >
+              End Call
+            </button>
+
             <div className="text-sm">
               {connectionError ? (
                 <span className="text-red-400">{connectionError}</span>
@@ -199,23 +252,15 @@ const Room = () => {
             </div>
           </div>
         </section>
-
-        {/* Right panel */}
-        <aside className="w-80 flex-shrink-0 space-y-4">
-          <div className="bg-gray-800 p-4 rounded-lg border border-white/5 space-y-2">
-            <h4 className="text-sm font-semibold">Session Info</h4>
-            <p><strong>Doctor:</strong> {doctorEmail || "-"}</p>
-            <p><strong>Patient:</strong> {userEmail || "-"}</p>
-            <p><strong>Room:</strong> {roomId}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <button className="px-3 py-1 bg-gray-700 rounded text-xs hover:bg-gray-600">Share Screen</button>
-              <button className="px-3 py-1 bg-gray-700 rounded text-xs hover:bg-gray-600">Recording</button>
-            </div>
-          </div>
-        </aside>
       </main>
 
-      <ChatBox open={chatOpen} onClose={() => setChatOpen(false)} />
+      <ChatBox
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        roomId={roomId}
+        user={email}
+        onNewMessage={handleNewMessage}
+      />
     </div>
   );
 };

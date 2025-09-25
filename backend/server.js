@@ -17,6 +17,8 @@ const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] },
 });
 
+const rooms = {};
+
 connectDB();
 connectCloudinary();
 
@@ -52,6 +54,39 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log(`Socket disconnected: ${socket.id}`);
+    // Notify all rooms this socket was part of
+    for (const room of Object.keys(rooms)) {
+      if (rooms[room].has(socket.id)) {
+        rooms[room].delete(socket.id);
+
+        // Notify remaining participants that call ended
+        io.to(room).emit("call:ended");
+
+        // Close the room if empty
+        if (rooms[room].size === 0) delete rooms[room];
+      }
+    }
+  });
+
+  // Optional: manual End Call from client
+  socket.on("call:ended", ({ room }) => {
+    if (!room) return;
+    io.to(room).emit("call:ended");
+    if (rooms[room]) delete rooms[room];
+  });
+
+
+  // Message System
+  socket.on("send:message", ({ room, sender, text }) => {
+    if (!room || !text) return;
+    const message = { id: Date.now(), text, sender };
+    io.to(room).emit("receive:message", message);
+  });
+
+  // Mic status relay
+  socket.on("mic:status", ({ to, enabled }) => {
+    if (!to) return;
+    io.to(to).emit("mic:status", { enabled, from: socket.id }); // add from
   });
 });
 
