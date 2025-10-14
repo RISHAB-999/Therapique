@@ -494,6 +494,7 @@ const bookAppointmentWithCoins = async (req, res) => {
             date: Date.now(),
             payment: true, // Mark as paid since coins were used
             paidWithCoins: true
+,            roomId: uuidv4()  // ✅ generate and attach unique roomId here
         };
 
         const newAppointment = new appointmentModel(appointmentData);
