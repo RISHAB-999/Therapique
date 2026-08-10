@@ -15,15 +15,14 @@ const PopularBooks = () => {
   // Getting popular books data
   useEffect(() => {
     const data = books.filter((item) => item.popular)
-    setpopularBooks(data.slice(0, 11))
+    setpopularBooks(data.length > 0 ? data.slice(0, 11) : books.slice(0, 10))
   }, [books])
 
   return (
-    <section className='max-padd-container py-16'>
+    <section className='py-16'>
       <Title
         title1={"Popular"}
         title2={"Books"}
-        title1Styles={"pb-10"}
         para={"Check out our newest books arriving weekly with fresh ideas, exciting plots and vibrant voices."} />
       {/* CONTAINER */}
       <Swiper
@@ -50,7 +49,7 @@ const PopularBooks = () => {
           }
         }}
         modules={[Autoplay]}
-        className="min-h-[333px] ">
+        className="min-h-[380px] mt-4 py-6 px-1">
         {
           popularBooks.map((book) => (
             <SwiperSlide key={book._id}>

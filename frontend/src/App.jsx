@@ -16,6 +16,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify.jsx'
 import Library from './pages/Library.jsx'
 import Shop from './pages/Shop.jsx'
+import CategoryShop from './pages/CategoryShop.jsx'
+import ProductDetail from './pages/ProductDetail.jsx'
+import Cart from './pages/Cart.jsx'
+import AddressForm from './pages/AddressForm.jsx'
+import MyOrders from './pages/MyOrders.jsx'
+import TrackOrder from './pages/TrackOrder.jsx'
+
 const App = () => {
   const location = useLocation();
 
@@ -23,26 +30,34 @@ const App = () => {
   const hideLayoutRoutes = ["/login", "/verify"];
   const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
   return (
-    <div className='mx-4 sm:mx-[10%]'>
-      <ToastContainer />
-      <Navbar />
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/doctors' element={<Doctors />} />
-        <Route path='/doctors/:speciality' element={<Doctors />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/about' element={<About />} />
-        <Route path='/contact' element={<Contact />} />
-        <Route path='/appointment/:docId' element={<Appointments />} />
-        <Route path='/my-appointments' element={<MyAppointments />} />
-        <Route path='/my-profile' element={<MyProfile />} />
-        <Route path='/coins-shop' element={<CoinsShop />} />
-        <Route path='/verify' element={<Verify />} />
-        <Route path='/Library' element={<Library />} />
-        <Route path='/Shop' element={<Shop />} />
-      </Routes>
-      {!shouldHideLayout && <Footer />}
-    </div>
+    <>
+      <div className='mx-4 sm:mx-[10%]'>
+        <ToastContainer />
+        <Navbar />
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/doctors' element={<Doctors />} />
+          <Route path='/doctors/:speciality' element={<Doctors />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/about' element={<About />} />
+          <Route path='/contact' element={<Contact />} />
+          <Route path='/appointment/:docId' element={<Appointments />} />
+          <Route path='/my-appointments' element={<MyAppointments />} />
+          <Route path='/my-profile' element={<MyProfile />} />
+          <Route path='/coins-shop' element={<CoinsShop />} />
+          <Route path='/verify' element={<Verify />} />
+          <Route path='/Library' element={<Library />} />
+          <Route path='/Shop' element={<Shop />} />
+          <Route path='/Shop/:category' element={<CategoryShop />} />
+          <Route path='/Shop/:category/:id' element={<ProductDetail />} />
+          <Route path='/cart' element={<Cart />} />
+          <Route path='/address-form' element={<AddressForm />} />
+          <Route path='/my-orders' element={<MyOrders />} />
+          <Route path='/track-order/:orderId' element={<TrackOrder />} />
+        </Routes>
+      </div>
+        {!shouldHideLayout && <Footer />}
+    </>
   )
 }
 

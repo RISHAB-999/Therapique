@@ -93,7 +93,7 @@ body {
   }
 
   .btn-dark {
-    @apply text-sm font-medium bg-black/80 text-white px-7 py-3 rounded-full cursor-pointer transition;
+    @apply text-sm font-medium bg-gray-400 text-white px-7 py-3 rounded-full cursor-pointer transition;
   }
 
   /* ❌ Old: 
@@ -104,7 +104,7 @@ body {
 
   /* ✅ New: keeps text white, only changes bg opacity slightly */
   .btn-light {
-    @apply text-sm font-medium bg-primary text-white px-7 py-3 rounded-full hover:bg-opacity-90 transition cursor-pointer;
+    @apply text-sm font-medium bg-blue-200 text-white px-7 py-3 rounded-full hover:bg-opacity-90 transition cursor-pointer;
   }
 
   /* ❌ Old:

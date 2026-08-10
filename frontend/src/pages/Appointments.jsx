@@ -25,10 +25,9 @@ const Appointments = () => {
   }
 
   const getAvailableSlots = async () => {
-    setDocSlots([])
-
     //geting current date
     let today = new Date()
+    let allSlots = []
 
     for (let i = 0; i < 7; i++) {
 
@@ -77,8 +76,17 @@ const Appointments = () => {
         currentDate.setMinutes(currentDate.getMinutes() + 30)
       }
 
-      setDocSlots(prev => ([...prev, timeSlots]))
+      // Store the date and slots for this day
+      const dayDate = new Date(today)
+      dayDate.setDate(today.getDate() + i)
+
+      allSlots.push({
+        date: dayDate,
+        slots: timeSlots
+      })
     }
+
+    setDocSlots(allSlots)
   }
 
 
@@ -89,7 +97,7 @@ const Appointments = () => {
       return navigate('/login')
     }
 
-    const date = docSlots[slotIndex][0].datetime
+    const date = docSlots[slotIndex].date
 
     let day = date.getDate()
     let month = date.getMonth() + 1
@@ -205,7 +213,7 @@ const Appointments = () => {
           <img className='bg-primary w-full sm:max-w-72 rounded-lg' src={docInfo.image} alt="" />
         </div>
 
-        <div className='flex-1 border border-gray-400 rounded-lg p-8 py-7 bg-white mx-2 sm:mx-0 mt-[-80px] sm:mt-0'>
+        <div className='flex-1 border border-gray-400 rounded-lg p-8 py-7 bg-white mx-2 sm:mx-0 mt-[-30px] sm:mt-0'>
           {/* -------- Doc Info -------- */}
           <p className='flex items-center gap-2 text-2xl font-medium text-gray-900'>
             {docInfo.name}
@@ -234,31 +242,35 @@ const Appointments = () => {
       {/* -------- Booking Slots -------- */}
       <div className='sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700'>
         <p>Booking slots</p>
-        <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
+        <div className='flex gap-3 items-center w-full overflow-x-scroll hide-scrollbar mt-4'>
           {
-            docSlots.length && docSlots.map((item, index) => (
+            docSlots.length > 0 && docSlots.map((item, index) => (
               <div onClick={() => setSlotIndex(index)} className={`flex flex-col items-center justify-center min-w-20 px-4 py-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm
             ${slotIndex === index
                   ? "bg-text text-white shadow-md scale-105"
                   : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow"
                 }`} key={index}>
-                <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]} </p>
-                <p>{item[0] && item[0].datetime.getDate()}</p>
+                <p className={slotIndex === index ? 'text-white' : 'text-gray-500'}>{daysOfWeek[item.date.getDay()]} </p>
+                <p className={slotIndex === index ? 'text-white' : 'text-gray-800'}>{item.date.getDate()}</p>
               </div>
             ))
           }
         </div>
 
-        <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
-          {docSlots.length && docSlots[slotIndex].map((item, index) => (
-            <p onClick={() => setSlotTime(item.time)} className={`text-sm flex-shrink-0 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300
-            ${item.time === slotTime
-                ? "bg-text text-white shadow-md scale-105"
-                : "bg-gray-50 text-gray-600 border border-gray-300 hover:border-gray-400 hover:shadow"
-              }`} key={index}>
-              {item.time.toLowerCase()}
-            </p>
-          ))}
+        <div className='flex items-center gap-3 w-full overflow-x-scroll hide-scrollbar mt-4'>
+          {docSlots.length > 0 && docSlots[slotIndex].slots.length > 0 ? (
+            docSlots[slotIndex].slots.map((item, index) => (
+              <p onClick={() => setSlotTime(item.time)} className={`text-sm flex-shrink-0 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300
+              ${item.time === slotTime
+                  ? "bg-text text-white shadow-md scale-105"
+                  : "bg-gray-50 text-gray-600 border border-gray-300 hover:border-gray-400 hover:shadow"
+                }`} key={index}>
+                {item.time.toLowerCase()}
+              </p>
+            ))
+          ) : (
+            <p className='text-sm text-gray-500 py-2'>No booking slots available for this day.</p>
+          )}
         </div>
 
         {/* Payment Method Selection */}

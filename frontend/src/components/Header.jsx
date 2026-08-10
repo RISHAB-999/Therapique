@@ -27,7 +27,7 @@ const Header = () => {
                         expert team of licensed therapists and counselors in Ontario and
                         throughout Canada.
                     </p>
-                    <button className="bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-800 transition">
+                    <button className="bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-800 transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-lg">
                         <Link to="/doctors">Book a FREE consultation →</Link>
                     </button>
 
@@ -44,7 +44,7 @@ const Header = () => {
                 {/* -------- Right Side -------- */}
                 < div className="flex justify-center items-center" >
                     <img
-                        className="w-64 sm:w-72 md:w-[650px] h-auto object-cover rounded-xl shadow-lg"
+                        className="w-64 sm:w-72 md:w-[650px] h-auto object-cover rounded-xl shadow-lg transition-all duration-500 hover:scale-[1.03] hover:-translate-y-2 hover:shadow-2xl cursor-pointer"
                         src={assets.header_img}
                         alt="" />
                 </div >

@@ -60,10 +60,13 @@ const AddDoctor = () => {
   }
 
   return (
-    <form onSubmit={onSubmitHandler} className="w-full px-4 sm:px-6 lg:px-8 py-6">
-      <p className="mb-4 text-lg font-semibold">Add Doctor</p>
+    <form onSubmit={onSubmitHandler} className="space-y-6 w-full max-w-5xl mx-auto">
+      <div className="border-b border-slate-200/80 pb-3">
+        <h1 className='text-xl sm:text-2xl font-black text-gray-800 tracking-tight'>Add Doctor</h1>
+        <p className="text-xs text-gray-500 font-medium mt-0.5">Register a new therapist or medical specialist to the platform</p>
+      </div>
 
-      <div className="bg-white px-6 sm:px-8 py-8 border rounded-lg w-full max-w-5xl mx-auto max-h-[85vh] overflow-y-auto shadow-sm">
+      <div className="bg-white p-6 sm:p-8 border border-slate-200/80 rounded-3xl w-full shadow-xs">
         {/* Upload */}
         <div className="flex items-center gap-4 mb-8 text-gray-500">
           <label htmlFor="doc-img" className="cursor-pointer">

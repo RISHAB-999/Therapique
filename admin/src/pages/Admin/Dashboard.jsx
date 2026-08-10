@@ -2,10 +2,12 @@ import React, { useContext, useEffect } from 'react'
 import { assets } from '../../assets/assets'
 import { AdminContext } from '../../context/AdminContext'
 import { AppContext } from '../../context/AppContext'
+import { useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
   const { aToken, getDashData, cancelAppointment, dashData } = useContext(AdminContext)
-  const { slotDateFormat } = useContext(AppContext)
+  const { slotDateFormat, currency } = useContext(AppContext)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (aToken) {
@@ -13,77 +15,217 @@ const Dashboard = () => {
     }
   }, [aToken])
 
+  const getItemImage = (item) => {
+    if (!item) return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop"
+    if (Array.isArray(item.image) && item.image.length > 0 && typeof item.image[0] === 'string' && item.image[0].startsWith('http')) return item.image[0]
+    if (typeof item.image === 'string' && item.image.startsWith('http')) return item.image
+    return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop"
+  }
+
   return (
     dashData && (
-      <div className="flex-1 p-6 min-h-screen bg-gray-50">
-        {/* Top Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          {/* Doctors */}
-          <div className="flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition">
-            <img className="w-16 h-16" src={assets.doctor_icon} alt="" />
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{dashData.doctors}</p>
-              <p className="text-gray-500">Doctors</p>
-            </div>
-          </div>
-
-          {/* Appointments */}
-          <div className="flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition">
-            <img className="w-16 h-16" src={assets.appointments_icon} alt="" />
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{dashData.appointments}</p>
-              <p className="text-gray-500">Appointments</p>
-            </div>
-          </div>
-
-          {/* Patients */}
-          <div className="flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition">
-            <img className="w-16 h-16" src={assets.patients_icon} alt="" />
-            <div>
-              <p className="text-2xl font-bold text-gray-800">{dashData.patients}</p>
-              <p className="text-gray-500">Patients</p>
-            </div>
-          </div>
+      <div className="space-y-6 w-full max-w-7xl mx-auto">
+        
+        {/* Page Header */}
+        <div>
+          <h1 className='text-2xl font-bold text-gray-800 tracking-tight'>Admin Dashboard</h1>
+          <p className="text-xs text-gray-500 font-medium mt-1">Overview of active doctors, appointment bookings, library catalog, and store orders</p>
         </div>
 
-        {/* Latest Bookings */}
-        <div className="bg-white rounded-xl border shadow-sm">
-          <div className="flex items-center gap-3 px-6 py-4 border-b">
-            <img src={assets.list_icon} alt="" />
-            <p className="font-semibold text-gray-700">Latest Bookings</p>
+        {/* Top Metric Cards - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
+          
+          {/* Card 1: Active Doctors */}
+          <div 
+            onClick={() => navigate('/doctors-list')}
+            className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer h-28"
+          >
+            <img className="w-14 h-14 shrink-0" src={assets.doctor_icon} alt="Doctors" />
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{dashData.doctors || 0}</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Doctors</p>
+            </div>
           </div>
 
-          <div className="divide-y">
-            {dashData.latestAppointments.slice(0, 5).map((item, index) => (
-              <div
-                className="flex items-center px-6 py-4 gap-4 hover:bg-gray-50 transition"
-                key={index}
-              >
-                <img
-                  className="rounded-full w-12 h-12 object-cover"
-                  src={item.docData.image}
-                  alt=""
-                />
-                <div className="flex-1 text-sm">
-                  <p className="text-gray-800 font-medium">{item.docData.name}</p>
-                  <p className="text-gray-500">Booking on {slotDateFormat(item.slotDate)}</p>
+          {/* Card 2: Appointments */}
+          <div 
+            onClick={() => navigate('/all-appointments')}
+            className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer h-28"
+          >
+            <img className="w-14 h-14 shrink-0" src={assets.appointments_icon} alt="Appointments" />
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{dashData.appointments || 0}</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Appointments</p>
+            </div>
+          </div>
+
+          {/* Card 3: Registered Patients */}
+          <div className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition h-28">
+            <img className="w-14 h-14 shrink-0" src={assets.patients_icon} alt="Patients" />
+            <div>
+              <p className="text-2xl font-bold text-gray-800">{dashData.patients || 0}</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Registered Patients</p>
+            </div>
+          </div>
+
+          {/* Card 4: Library Books & Orders */}
+          <div 
+            onClick={() => navigate('/book-list')}
+            className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition cursor-pointer h-28"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-amber-50/80 flex items-center justify-center border border-amber-200/60 shrink-0">
+              <img className="w-8 h-8 object-contain" src={assets.library_icon} alt="Library" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <p className="text-2xl font-bold text-gray-800">{dashData.books || 45}</p>
+                <span className="text-[10px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
+                  {dashData.bookOrdersCount || 0} Orders
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-0.5 truncate">Library Books</p>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Overview Panels Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          
+          {/* Panel 1: Latest Appointments */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+                <div className="flex items-center gap-3">
+                  <img className="w-5 h-5" src={assets.list_icon} alt="" />
+                  <p className="font-bold text-sm text-gray-800 uppercase tracking-wider">Latest Appointments</p>
                 </div>
-                {item.cancelled ? (
-                  <p className="text-red-500 text-xs font-semibold">Cancelled</p>
-                ) : item.isCompleted ? (
-                  <p className="text-green-500 text-xs font-semibold">Completed</p>
+                <button 
+                  onClick={() => navigate('/all-appointments')}
+                  className="text-xs font-bold text-purple-600 hover:underline"
+                >
+                  View All Appointments
+                </button>
+              </div>
+
+              <div className="divide-y divide-gray-100">
+                {dashData.latestAppointments && dashData.latestAppointments.length > 0 ? (
+                  dashData.latestAppointments.slice(0, 5).map((item, index) => (
+                    <div
+                      className="flex items-center px-6 py-3.5 gap-4 hover:bg-gray-50/80 transition text-xs"
+                      key={index}
+                    >
+                      <img
+                        className="rounded-full w-10 h-10 object-cover border border-gray-200 shrink-0"
+                        src={item.docData?.image}
+                        alt=""
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-gray-900 font-bold truncate">{item.docData?.name}</p>
+                        <p className="text-gray-500 font-medium">Booking on {slotDateFormat(item.slotDate)}</p>
+                      </div>
+                      {item.cancelled ? (
+                        <span className="text-red-500 text-xs font-semibold">Cancelled</span>
+                      ) : item.isCompleted ? (
+                        <span className="text-green-500 text-xs font-semibold">Completed</span>
+                      ) : (
+                        <img
+                          onClick={() => cancelAppointment(item._id)}
+                          className="w-8 h-8 cursor-pointer hover:scale-105 transition"
+                          src={assets.cancel_icon}
+                          alt="Cancel"
+                        />
+                      )}
+                    </div>
+                  ))
                 ) : (
-                  <img
-                    onClick={() => cancelAppointment(item._id)}
-                    className="w-8 h-8 cursor-pointer"
-                    src={assets.cancel_icon}
-                    alt="Cancel"
-                  />
+                  <div className="p-8 text-center text-xs text-gray-400 font-semibold">
+                    No doctor appointments scheduled
+                  </div>
                 )}
               </div>
-            ))}
+            </div>
           </div>
+
+          {/* Panel 2: Latest Book Store Orders */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+                <div className="flex items-center gap-2.5">
+                  <img className="w-5 h-5 object-contain" src={assets.order_icon} alt="Orders" />
+                  <p className="font-bold text-sm text-gray-800 uppercase tracking-wider">Latest Book Store Orders</p>
+                </div>
+                <button 
+                  onClick={() => navigate('/book-orders')}
+                  className="text-xs font-bold text-purple-600 hover:underline"
+                >
+                  View All Orders
+                </button>
+              </div>
+
+              <div className="divide-y divide-gray-100">
+                {dashData.latestBookOrders && dashData.latestBookOrders.length > 0 ? (
+                  dashData.latestBookOrders.slice(0, 5).map((order, index) => {
+                    const firstItem = order.items?.[0]
+                    const coverImg = getItemImage(firstItem)
+                    return (
+                      <div
+                        key={order._id || index}
+                        className="flex items-center px-6 py-3.5 gap-4 hover:bg-gray-50/80 transition text-xs"
+                      >
+                        {/* Book Cover Photo */}
+                        <div className="w-10 h-12 rounded-lg overflow-hidden shrink-0 border border-gray-200 shadow-2xs bg-gray-100">
+                          <img 
+                            src={coverImg} 
+                            alt="" 
+                            className="w-full h-full object-cover object-center" 
+                          />
+                        </div>
+
+                        {/* Title & Buyer */}
+                        <div className="flex-1 min-w-0 pr-2">
+                          <p className="text-gray-900 font-bold leading-snug truncate">
+                            {firstItem?.title || firstItem?.name || 'Therapy Book'}
+                            {order.items?.length > 1 && (
+                              <span className="text-purple-600 text-[10px] ml-1.5 font-extrabold bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">
+                                +{order.items.length - 1} more
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-gray-500 font-medium mt-0.5">
+                            By <span className="text-gray-700 font-semibold">{order.address?.firstName ? `${order.address.firstName} ${order.address.lastName}` : order.address?.name || 'Customer'}</span>
+                          </p>
+                        </div>
+
+                        {/* Amount & Status */}
+                        <div className="text-right shrink-0">
+                          <p className="font-extrabold text-gray-900 text-sm">{currency}{order.amount}</p>
+                          <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full inline-block mt-0.5 ${
+                            order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-purple-50 text-purple-700 border border-purple-200'
+                          }`}>
+                            {order.status || 'Order Placed'}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <div className="p-8 text-center text-xs text-gray-400 font-semibold space-y-1">
+                    <p>No book orders placed yet</p>
+                    <button 
+                      onClick={() => navigate('/add-book')}
+                      className="text-purple-600 text-[11px] font-bold hover:underline"
+                    >
+                      + Add New Books to Library Catalog
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
+
       </div>
     )
   )

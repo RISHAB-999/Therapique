@@ -36,7 +36,7 @@ const About = () => {
 
         {/* Hero Image */}
         <div className="mt-10 flex justify-center">
-          <div className="w-full max-w-8xl aspect-[21/7]">
+          <div className="w-full max-w-8xl aspect-[3/2] sm:aspect-[16/9] md:aspect-[21/7]">
             <img
               src="https://images.unsplash.com/photo-1499728603263-13726abce5fd?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               alt="Therapist and client"

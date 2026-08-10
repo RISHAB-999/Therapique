@@ -11,6 +11,13 @@ import tick_icon from './tick_icon.svg'
 import appointments_icon from './appointments_icon.svg'
 import earning_icon from './earning_icon.svg'
 import patients_icon from './patients_icon.svg'
+import book_list_icon from './book-list.svg'
+import order_icon from './order.svg'
+import delete_icon from './delete.svg'
+import books_icon from './books.svg'
+import location_icon from './location.svg'
+import purchase_order_icon from './purchase-order.svg'
+import library_icon from './library.svg'
 
 export const assets = {
     add_icon,
@@ -25,5 +32,12 @@ export const assets = {
     list_icon,
     tick_icon,
     appointments_icon,
-    earning_icon
+    earning_icon,
+    book_list_icon,
+    order_icon,
+    delete_icon,
+    books_icon,
+    location_icon,
+    purchase_order_icon,
+    library_icon
 }

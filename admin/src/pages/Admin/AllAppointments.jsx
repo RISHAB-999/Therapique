@@ -14,10 +14,13 @@ const AllAppointments = () => {
   }, [aToken])
 
   return (
-    <div className="flex-1 p-6 min-h-screen bg-gray-50">
-      <p className="mb-5 text-2xl font-semibold text-gray-800">All Appointments</p>
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
+      <div className="border-b border-slate-200/80 pb-3">
+        <h1 className='text-xl sm:text-2xl font-black text-gray-800 tracking-tight'>All Appointments</h1>
+        <p className="text-xs text-gray-500 font-medium mt-0.5">Manage patient bookings, doctor schedules, fees, and appointment statuses</p>
+      </div>
 
-      <div className="bg-white border rounded-xl shadow-sm text-sm max-h-[80vh] overflow-y-auto">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs text-sm overflow-hidden">
         {/* Table Header */}
         <div className="hidden sm:grid grid-cols-[0.5fr_3fr_1fr_3fr_3fr_1fr_1fr] py-3 px-6 border-b bg-gray-50 text-gray-600 font-medium">
           <p>#</p>

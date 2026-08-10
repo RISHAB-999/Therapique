@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
     coinsTransactions: [{
         type: {
             type: String,
-            enum: ['purchase', 'spend'],
+            enum: ['purchase', 'spend', 'earn'],
             required: true
         },
         amount: {

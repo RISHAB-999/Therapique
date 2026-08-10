@@ -3,14 +3,16 @@ import { assets } from '../assets/assets'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import CoinsWallet from './CoinsWallet'
+import { ShopContext } from '../context/ShopContext'
 
 const Navbar = () => {
 
     const navigate = useNavigate();
 
+
     const [showMenu, setShowMenu] = useState(false)
     const { token, setToken, userData } = useContext(AppContext)
-
+    const { getCartCount } = useContext(ShopContext)
     const logout = () => {
         localStorage.removeItem('token')
         setToken(false)
@@ -20,7 +22,7 @@ const Navbar = () => {
     return (
         <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-[#ADADAD]'>
             <NavLink to='/'>
-                <h1 className="font-therapique text-4xl text-gray-800">
+                <h1 className="font-therapique text-2xl sm:text-3xl md:text-4xl text-gray-800">
                     therapique
                 </h1>
             </NavLink>
@@ -33,6 +35,10 @@ const Navbar = () => {
                     <li className='py-1'>ALL DOCTORS</li>
                     <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
                 </NavLink>
+                <NavLink to='/Library' >
+                    <li className='py-1'>LIBRARY</li>
+                    <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+                </NavLink>
                 <NavLink to='/about' >
                     <li className='py-1'>ABOUT</li>
                     <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
@@ -41,33 +47,37 @@ const Navbar = () => {
                     <li className='py-1'>CONTACT</li>
                     <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
                 </NavLink>
-                <NavLink to='/Library' >
-                    <li className='py-1'>LIBRARY</li>
-                    <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
-                </NavLink>
             </ul>
-
-            <div className='flex items-center gap-4 '>
-                {
-                    token && userData
-                        ? <div className='flex items-center gap-2 cursor-pointer group relative'>
-                            <CoinsWallet />
-                            <div className='flex items-center gap-2 cursor-pointer group relative'>
-                                <img className='w-8 rounded-full' src={userData.image} alt="" />
-                                <img className='w-2.5' src={assets.dropdown_icon} alt="" />
-                                <div className='absolute top-0 right-0 pt-14 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
-                                    <div className='min-w-48 bg-gray-50 rounded flex flex-col gap-4 p-4'>
-                                        <p onClick={() => navigate('/my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
-                                        <p onClick={() => navigate('/my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p>
-                                        <p onClick={() => navigate('/Shop')} className='hover:text-black cursor-pointer'>Shop</p>
-                                        <p onClick={() => navigate('/coins-shop')} className='hover:text-black cursor-pointer'>Buy Coins</p>
-                                        <p onClick={logout} className='hover:text-black cursor-pointer'>Logout</p>
-                                    </div>
+            <div className='flex items-center gap-2 sm:gap-3 md:gap-8'>
+                {/* Cart icon: visible on md+ only */}
+                <NavLink to='/cart' className="flex relative hidden md:flex">
+                    <div className='font-medium '>
+                        Cart
+                        <span className='bg-purple-400 text-white text-[12px] font-semibold absolute -top-3.5 -right-2 flexCenter w-4 h-4 rounded-full shadow-md'>{getCartCount()}</span>
+                    </div>
+                </NavLink>
+                {token && userData ? (
+                    <div className='flex items-center gap-2 cursor-pointer relative'>
+                        <CoinsWallet />
+                        <div className='flex items-center gap-2 cursor-pointer group relative'>
+                            <img className='w-8 h-8 rounded-full object-cover object-top' src={userData.image} alt="" />
+                            <img className='w-2.5' src={assets.dropdown_icon} alt="" />
+                            <div className='absolute top-full right-0 pt-2 text-base font-medium text-gray-600 z-20 hidden group-hover:block'>
+                                <div className='min-w-48 bg-gray-50 rounded flex flex-col gap-4 p-4'>
+                                    <p onClick={() => navigate('/my-profile')} className='hover:text-black cursor-pointer'>My Profile</p>
+                                    <p onClick={() => navigate('/my-appointments')} className='hover:text-black cursor-pointer'>My Appointments</p>
+                                    <p onClick={() => navigate('/Shop')} className='hover:text-black cursor-pointer'>Shop</p>
+                                    <p onClick={() => navigate('/my-orders')} className='hover:text-black cursor-pointer'>Order</p>
+                                    <p onClick={() => navigate('/cart')} className='flex relative md:hidden hover:text-black cursor-pointer'>Cart</p>
+                                    <p onClick={() => navigate('/coins-shop')} className='hover:text-black cursor-pointer'>Buy Coins</p>
+                                    <p onClick={logout} className='hover:text-black cursor-pointer'>Logout</p>
                                 </div>
                             </div>
                         </div>
-                        : <button onClick={() => navigate('/login')} className='bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-800 transition hidden md:block'>Create account</button>
-                }
+                    </div>
+                ) : (
+                    <button onClick={() => navigate('/login')} className='bg-black text-white px-6 py-3 rounded-full shadow-md hover:bg-gray-800 transition hidden md:block'>Create account</button>
+                )}
                 <img onClick={() => setShowMenu(true)} className='w-6 md:hidden' src={assets.menu_icon} alt="" />
 
                 {/* ---- Mobile Menu ---- */}
@@ -81,6 +91,7 @@ const Navbar = () => {
                         <NavLink onClick={() => setShowMenu(false)} to='/doctors' ><p className='px-4 py-2 rounded full inline-block'>ALL DOCTORS</p></NavLink>
                         <NavLink onClick={() => setShowMenu(false)} to='/about' ><p className='px-4 py-2 rounded full inline-block'>ABOUT</p></NavLink>
                         <NavLink onClick={() => setShowMenu(false)} to='/contact' ><p className='px-4 py-2 rounded full inline-block'>CONTACT</p></NavLink>
+                        <NavLink onClick={() => setShowMenu(false)} to='/Library' ><p className='px-4 py-2 rounded full inline-block'>LIBRARY</p></NavLink>
                     </ul>
                 </div>
             </div>

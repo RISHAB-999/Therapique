@@ -6,7 +6,7 @@ export const AdminContext = createContext();
 
 
 const AdminContextProvider = (props) => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
   const [aToken, setAToken] = useState(localStorage.getItem('aToken') || null);
 
   const [appointments, setAppointments] = useState([])
@@ -21,9 +21,11 @@ const AdminContextProvider = (props) => {
         }
       });
       if (data.success) {
-        setDoctors(data.data);
+        setDoctors(data.doctors || data.data || []);
       } else {
         toast.error(data.message);
+        setAToken(null);
+        localStorage.removeItem('aToken');
       }
     } catch (error) {
       toast.error(error.message);
@@ -58,6 +60,8 @@ const AdminContextProvider = (props) => {
         setAppointments(data.appointments.reverse())
       } else {
         toast.error(data.message)
+        setAToken(null)
+        localStorage.removeItem('aToken')
       }
 
     } catch (error) {
@@ -98,6 +102,8 @@ const AdminContextProvider = (props) => {
         setDashData(data.dashData)
       } else {
         toast.error(data.message)
+        setAToken(null)
+        localStorage.removeItem('aToken')
       }
 
     } catch (error) {

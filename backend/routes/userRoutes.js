@@ -1,5 +1,5 @@
 import express from 'express';
-import { getProfile, loginUser, registerUser, updateProfile, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, verifyCoinsPayment, bookAppointmentWithCoins, bookAppointmentWithPayment } from '../controllers/userController.js';
+import { getProfile, loginUser, registerUser, updateProfile, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, verifyCoinsPayment, bookAppointmentWithCoins, bookAppointmentWithPayment, createBookOrderRazorpay, verifyBookOrderRazorpay, placeBookOrderCOD, placeBookOrderTokens, getUserOrders, getSingleOrder, updateOrderStatus } from '../controllers/userController.js';
 import upload from '../middlewares/multer.js';
 import authUser from '../middlewares/authUser.js';
 const userRouter = express.Router();
@@ -21,5 +21,14 @@ userRouter.post("/verifyRazorpay", authUser, verifyRazorpay)
 userRouter.post("/book-appointment-coins", authUser, bookAppointmentWithCoins)
 userRouter.post("/purchase-coins", authUser, purchaseCoins)
 userRouter.post("/verify-coins-payment", authUser, verifyCoinsPayment)
+
+// Book Order routes
+userRouter.post("/create-book-order-razorpay", authUser, createBookOrderRazorpay)
+userRouter.post("/verify-book-order-razorpay", authUser, verifyBookOrderRazorpay)
+userRouter.post("/place-book-order-cod", authUser, placeBookOrderCOD)
+userRouter.post("/place-book-order-tokens", authUser, placeBookOrderTokens)
+userRouter.get("/user-orders", authUser, getUserOrders)
+userRouter.get("/order/:orderId", authUser, getSingleOrder)
+userRouter.post("/update-order-status", updateOrderStatus)
 
 export default userRouter;

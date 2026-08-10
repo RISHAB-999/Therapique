@@ -40,6 +40,8 @@ const AppContextProvider = (props) => {
                 setUserData(data.userData)
             } else {
                 toast.error(data.message)
+                setToken('')
+                localStorage.removeItem('token')
             }
 
         } catch (error) {

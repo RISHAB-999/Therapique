@@ -16,11 +16,10 @@ const NewArrivals = () => {
     setNewArrivals(books.slice(0, 10))
   }, [books])
   return (
-    <section className='max-padd-container py-16'>
+    <section className='py-16'>
       <Title
         title1={"New"}
         title2={"Arrivals"}
-        title1Styles={"pb-10"}
         para={"Check out our newest books arriving weekly with fresh ideas, exciting plots and vibrant voices."} />
       {/* CONTAINER */}
       {
@@ -48,7 +47,7 @@ const NewArrivals = () => {
             }
           }}
           modules={[Autoplay]}
-          className="min-h-[333px] ">
+          className="min-h-[380px] mt-4 py-6 px-1">
           {
             newArrivals.map((book) => (
               <SwiperSlide key={book._id}>

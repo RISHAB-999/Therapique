@@ -23,6 +23,8 @@ const DoctorContextProvider = (props) => {
         setAppointments(data.appointments.reverse())
       } else {
         toast.error(data.message)
+        setDToken('')
+        localStorage.removeItem('dToken')
       }
 
     } catch (error) {
@@ -81,8 +83,14 @@ const DoctorContextProvider = (props) => {
     try {
 
       const { data } = await axios.get(backendUrl + '/api/doctor/profile', { headers: { dToken } })
-      console.log(data.profileData)
-      setProfileData(data.profileData)
+      if (data.success) {
+        console.log(data.profileData)
+        setProfileData(data.profileData)
+      } else {
+        toast.error(data.message)
+        setDToken('')
+        localStorage.removeItem('dToken')
+      }
 
     } catch (error) {
       console.log(error)
@@ -101,6 +109,8 @@ const DoctorContextProvider = (props) => {
         setDashData(data.dashData)
       } else {
         toast.error(data.message)
+        setDToken('')
+        localStorage.removeItem('dToken')
       }
 
     } catch (error) {

@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "baseline-browser-mapping": "^2.10.34",
+    "caniuse-lite": "^1.0.30001797",
     "mongodb": "^6.19.0"
   }
 }

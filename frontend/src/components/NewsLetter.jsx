@@ -2,7 +2,7 @@ import React from 'react'
 import { FaFacebookF, FaGithub, FaInstagram } from 'react-icons/fa6'
 const NewsLetter = () => {
   return (
-    <section className='max-padd-container py-8 mt-2'>
+    <section className='py-8 mt-2'>
       <div className='flexBetween flex-wrap gap-7'>
         <div>
           <h4 className='bold-14 uppercase tracking-wider'>Subscribe NewsLetter</h4>

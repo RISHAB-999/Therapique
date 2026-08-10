@@ -3,6 +3,24 @@ import { AppContext } from '../context/AppContext'
 import { toast } from 'react-toastify'
 import { coinPackages } from '../data'
 import axios from 'axios'
+import AnimatedCounter from '../components/AnimatedCounter'
+import TiltCard from '../components/TiltCard'
+
+const getGlowColor = (id) => {
+  switch (id) {
+    case 'basic':
+      return 'rgba(59, 130, 246, 0.45)';
+    case 'standard':
+      return 'rgba(34, 197, 94, 0.45)';
+    case 'premium':
+      return 'rgba(168, 85, 247, 0.45)';
+    case 'mega':
+      return 'rgba(249, 115, 22, 0.45)';
+    default:
+      return 'rgba(255, 255, 255, 0.45)';
+  }
+};
+
 const CoinsShop = () => {
   const { currencySymbol, backendUrl, token, loadUserProfileData, userData } = useContext(AppContext)
   const [loading, setLoading] = useState('')
@@ -95,7 +113,9 @@ const CoinsShop = () => {
                     <circle cx="12" cy="12" r="7" stroke="#FFF8DC" strokeWidth="1" />
                   </svg>
                 </div>
-                <span className="text-3xl font-bold text-gray-900">{userData.therapiqueCoins}</span>
+                <span className="text-3xl font-bold text-gray-900">
+                  <AnimatedCounter value={userData?.therapiqueCoins || 0} />
+                </span>
                 <span className="text-lg text-gray-500 ml-2">coins</span>
               </div>
             </div>
@@ -105,14 +125,13 @@ const CoinsShop = () => {
         {/* Coin Packages */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {coinPackages.map((pkg) => (
-            <div key={pkg.id} className={`relative rounded-xl border-2 p-6 ${pkg.color} ${pkg.popular ? 'transform scale-105' : ''}`}>
-              {pkg.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </span>
-                </div>
-              )}
+            <TiltCard 
+              key={pkg.id} 
+              isPopular={pkg.popular}
+              glowColor={getGlowColor(pkg.id)}
+              className={`relative rounded-xl border-2 p-6 transition-all duration-300 cursor-pointer ${pkg.color}`}
+            >
+
 
               <div className="text-center">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{pkg.name}</h3>
@@ -159,7 +178,7 @@ const CoinsShop = () => {
                   )}
                 </button>
               </div>
-            </div>
+            </TiltCard>
           ))}
         </div>
 
@@ -202,9 +221,9 @@ const CoinsShop = () => {
         {/* Recent Transactions */}
         {userData.coinsTransactions && userData.coinsTransactions.length > 0 && (
           <div className="bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Transactions</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Transactions & Refund History</h2>
             <div className="space-y-4">
-              {userData.coinsTransactions.reverse().slice(0, 5).map((transaction, index) => (
+              {[...userData.coinsTransactions].reverse().slice(0, 10).map((transaction, index) => (
                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center">
                     <div className={`p-2 rounded-full mr-4 bg-green-100`}>
@@ -219,10 +238,10 @@ const CoinsShop = () => {
                       </p>
                     </div>
                   </div>
-                  <div className={`text-lg font-semibold ${transaction.type === 'purchase' ? 'text-green-600' :
-                    transaction.type === 'spend' ? 'text-red-600' : 'text-blue-600'
-                    }`}>
-                    {transaction.type === 'purchase' ? '+' : transaction.type === 'spend' ? '-' : ''}{transaction.amount}
+                  <div className={`text-lg font-bold ${
+                    transaction.type === 'purchase' || transaction.type === 'earn' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {transaction.type === 'purchase' || transaction.type === 'earn' ? '+' : '-'}{transaction.amount} Tokens
                   </div>
                 </div>
               ))}

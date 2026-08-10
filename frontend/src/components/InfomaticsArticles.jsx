@@ -44,28 +44,28 @@ const InfomaticArticles = () => {
       description:
         "We provide guidance that helps you navigate challenges, build resilience, and grow through self-discovery.",
       imageUrl:
-        "https://images.unsplash.com/photo-1493244040629-496f6d136cc3?w=100",
+        "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=300&q=80",
       altText: "Growth",
     },
   ];
 
   return (
-    <section className="flex justify-center items-center gap-12 max-w-7xl mx-auto min-h-[80vh]">
+    <section className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-12 max-w-7xl mx-auto min-h-[60vh] md:min-h-[80vh] py-12 md:py-0 px-4 sm:px-6">
       {/* Left Side (Static Text) */}
-      <div className="w-1/2 pr-10">
-        <h2 className="text-5xl font-serif font-medium text-gray-900 leading-snug">
-          We're here to help <br />
-          you find <span className="italic">balance</span> <br /> and{" "}
+      <div className="w-full md:w-1/2 pr-0 md:pr-10 text-center md:text-left">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-medium text-gray-900 leading-snug">
+          We're here to help <br className="hidden md:inline" />
+          you find <span className="italic">balance</span> <br className="hidden md:inline" /> and{" "}
           <span className="italic">strength.</span>
         </h2>
-        <p className="mt-6 text-lg text-gray-600 font-sans">
+        <p className="mt-4 md:mt-6 text-base md:text-lg text-gray-600 font-sans max-w-lg mx-auto md:mx-0">
           Our team of trained psychotherapists are equipped to work with most of
           life’s challenges and transitions.
         </p>
       </div>
 
       {/* Right Side (Scrolling Cards) */}
-      <div className="w-1/2 overflow-hidden h-[450px] relative">
+      <div className="w-full md:w-1/2 overflow-hidden h-[380px] md:h-[450px] relative">
         <div
           ref={scrollRef}
           className="overflow-y-hidden h-full space-y-6 pb-12"
@@ -90,15 +90,19 @@ export default InfomaticArticles;
 
 const ScrollingCard = ({ title, description, imageUrl, altText }) => {
   return (
-    <div className="bg-white rounded-2xl p-6 flex items-start space-x-4">
-      <div>
-        <h3 className="text-2xl font-serif text-gray-800">{title}</h3>
-        <p className="mt-2 text-gray-600">{description}</p>
+    <div className="bg-white rounded-2xl p-4 md:p-6 flex items-start space-x-4 shadow-sm border border-gray-100">
+      <div className="flex-1">
+        <h3 className="text-lg md:text-2xl font-serif text-gray-800">{title}</h3>
+        <p className="mt-1 md:mt-2 text-xs md:text-sm text-gray-600">{description}</p>
       </div>
       <img
         src={imageUrl}
         alt={altText}
-        className="w-20 h-20 rounded-lg object-cover"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=300&q=80';
+        }}
+        className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover flex-shrink-0"
       />
     </div>
   );

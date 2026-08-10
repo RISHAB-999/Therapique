@@ -9,29 +9,43 @@ import { assets } from "../assets/assets";
 const TopDoctors = () => {
 
   const [index, setIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % doctors.length);
-    }, 3000);
-    return () => clearInterval(interval);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const navigate = useNavigate()
   const { doctors } = useContext(AppContext)
+  const displayedDoctors = doctors ? doctors.slice(0, 10) : [];
+
+  useEffect(() => {
+    if (displayedDoctors.length === 0) return;
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % displayedDoctors.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [displayedDoctors.length]);
+
   return (
-    <section className="py-12 text-center min-h-[70vh] mt-12">
+    <section className="py-12 text-center min-h-[70vh] mt-12 px-4 sm:px-6">
       {/* Title */}
-      <h2 className="text-5xl font-bold text-text font-display">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text font-display">
         Choose Help. Not Suffering.
       </h2>
       <div className="w-16 h-1 bg-peach mx-auto my-4 rounded"></div>
 
-      <div className="flex flex-col md:flex-row items-center justify-center mt-8 gap-20">
+      <div className="flex flex-col md:flex-row items-center justify-center mt-8 gap-12 md:gap-20">
         {/* Image Slider */}
-        <div className="relative w-[500px] h-[350px] flex items-center justify-center overflow-hidden">
-          {doctors.slice(0, 10).map((c, i) => {
-            const position = (i - index + doctors.length) % doctors.length;
+        <div className="relative w-full max-w-[500px] h-[350px] flex items-center justify-center overflow-hidden">
+          {displayedDoctors.map((c, i) => {
+            const total = displayedDoctors.length;
+            const position = (i - index + total) % total;
 
             // Default values (hidden)
             let x = 0;
@@ -39,33 +53,36 @@ const TopDoctors = () => {
             let opacity = 0;
             let zIndex = 0;
 
+            const offset = isMobile ? 100 : 180;
+            const hiddenOffset = isMobile ? -250 : -400;
+
             if (position === 0) {
               // Center
               x = 0;
               scale = 1.1;
               opacity = 1;
               zIndex = 10;
-            } else if (position === 1) {
+            } else if (position === 1 && total > 1) {
               // Right
-              x = 180;
+              x = offset;
               scale = 0.9;
               opacity = 0.8;
               zIndex = 5;
-            } else if (position === doctors.length - 1) {
+            } else if (position === total - 1 && total > 2) {
               // Left
-              x = -180;
+              x = -offset;
               scale = 0.9;
               opacity = 0.8;
               zIndex = 5;
             } else {
               // Hidden
-              x = -400;
+              x = hiddenOffset;
               opacity = 0;
             }
 
             return (
               <motion.div
-                key={i}
+                key={c._id || i}
                 className="absolute flex flex-col items-center"
                 animate={{ x, scale, opacity, zIndex }}
                 transition={{ duration: 0.6, ease: "easeInOut" }}
@@ -89,11 +106,11 @@ const TopDoctors = () => {
           })}
         </div>
         {/* Right Content */}
-        <div className="max-w-xl text-left">
-          <h3 className="text-3xl font-bold text-text mb-7">
+        <div className="max-w-xl text-center md:text-left">
+          <h3 className="text-2xl sm:text-3xl font-bold text-text mb-5">
             Counselling Therapy Sessions With Licensed & Verified Experts
           </h3>
-          <p className="text-gray-600 text-lg mb-6">
+          <p className="text-gray-600 text-base sm:text-lg mb-6">
             Highly qualified team of some of the best names in psychology who
             deliver improved well-being to you. Carefully vetted through a
             rigorous selection process. Trained and experienced in all
@@ -101,23 +118,23 @@ const TopDoctors = () => {
           </p>
 
           {/* Features */}
-          <div className="flex items-center gap-10 mb-6 text-orange-500">
-            <div className="text-center text-4xl">
+          <div className="flex items-center justify-center md:justify-start gap-6 sm:gap-10 mb-6 text-orange-500">
+            <div className="text-center text-3xl sm:text-4xl">
               🎥
-              <p className="text-lg font-medium text-gray-700">Video Session</p>
+              <p className="text-sm sm:text-lg font-medium text-gray-700">Video Session</p>
             </div>
-            <div className="text-center text-4xl">
+            <div className="text-center text-3xl sm:text-4xl">
               🎤
-              <p className="text-lg font-medium text-gray-700">Audio Session</p>
+              <p className="text-sm sm:text-lg font-medium text-gray-700">Audio Session</p>
             </div>
-            <div className="text-center text-4xl">
+            <div className="text-center text-3xl sm:text-4xl">
               💬
-              <p className="text-lg font-medium text-gray-700">Chat Session</p>
+              <p className="text-sm sm:text-lg font-medium text-gray-700">Chat Session</p>
             </div>
           </div>
 
           {/* More Info */}
-          <ul className="space-y-2 text-text font-semibold text-lg">
+          <ul className="space-y-2 text-text font-semibold text-base sm:text-lg">
             <li>English And All Regional Indian Languages</li>
             <li>100% Private & Secure Platform</li>
             <li>24/7 Support</li>

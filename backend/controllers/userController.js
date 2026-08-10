@@ -8,6 +8,7 @@ import doctorModel from "../models/doctorModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import razorpay from 'razorpay';
 import crypto from 'crypto';
+import orderModel from "../models/orderModel.js";
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -143,8 +144,12 @@ const listAppointment = async (req, res) => {
 const cancelAppointment = async (req, res) => {
     try {
 
-        const { userId, appointmentId } = req.body
+        const { userId, appointmentId, refundChoice } = req.body
         const appointmentData = await appointmentModel.findById(appointmentId)
+
+        if (!appointmentData || appointmentData.cancelled) {
+            return res.json({ success: false, message: 'Appointment already cancelled or not found' })
+        }
 
         // verify appointment user 
         if (appointmentData.userId !== userId) {
@@ -154,15 +159,63 @@ const cancelAppointment = async (req, res) => {
         await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true })
 
         // releasing doctor slot 
-        const { docId, slotDate, slotTime } = appointmentData
+        const { docId, slotDate, slotTime, payment, amount, paidWithCoins } = appointmentData
 
         const doctorData = await doctorModel.findById(docId)
 
-        let slots_booked = doctorData.slots_booked
+        let slots_booked = doctorData.slots_booked || {}
 
-        slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime)
+        if (slots_booked[slotDate]) {
+            slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime)
+            await doctorModel.findByIdAndUpdate(docId, { slots_booked })
+        }
 
-        await doctorModel.findByIdAndUpdate(docId, { slots_booked })
+        // Handle Refunds if payment was completed
+        if (payment && amount) {
+            if (paidWithCoins || refundChoice === 'tokens') {
+                // Refund as Tokens directly to user wallet
+                const user = await userModel.findById(userId)
+                if (user) {
+                    user.therapiqueCoins = (user.therapiqueCoins || 0) + amount
+                    user.coinsTransactions.push({
+                        type: 'earn',
+                        amount: amount,
+                        description: `Refund for Cancelled Appointment (Dr. ${doctorData?.name || 'Doctor'})`,
+                        date: new Date()
+                    })
+                    await user.save()
+                    return res.json({ success: true, message: `Appointment Cancelled. ${amount} Therapique Tokens refunded to your wallet!` })
+                }
+            } else {
+                // User chose direct Bank / UPI Refund via Razorpay
+                try {
+                    if (appointmentData.paymentId && razorpayInstance) {
+                        await razorpayInstance.payments.refund(appointmentData.paymentId, {
+                            amount: amount * 100,
+                            speed: "optimum",
+                            notes: { reason: "Appointment cancelled by user" }
+                        })
+                        return res.json({ success: true, message: `Appointment Cancelled. ₹${amount} refund initiated directly to your bank / UPI account via Razorpay!` })
+                    }
+                } catch (razorpayErr) {
+                    console.log("Razorpay Bank Refund API fallback to wallet:", razorpayErr.message)
+                }
+
+                // Fallback: If Razorpay API key is in test mode or no paymentId exists, refund as 1:1 Tokens
+                const user = await userModel.findById(userId)
+                if (user) {
+                    user.therapiqueCoins = (user.therapiqueCoins || 0) + amount
+                    user.coinsTransactions.push({
+                        type: 'earn',
+                        amount: amount,
+                        description: `Refund for Cancelled Appointment (Dr. ${doctorData?.name || 'Doctor'})`,
+                        date: new Date()
+                    })
+                    await user.save()
+                    return res.json({ success: true, message: `Appointment Cancelled. ₹${amount} credited as ${amount} Tokens to your wallet!` })
+                }
+            }
+        }
 
         res.json({ success: true, message: 'Appointment Cancelled' })
 
@@ -212,11 +265,14 @@ const paymentRazorpay = async (req, res) => {
 //Api to make verify payment of appointment using Razorpay
 const verifyRazorpay = async (req, res) => {
     try {
-        const { razorpay_order_id } = req.body
+        const { razorpay_order_id, razorpay_payment_id } = req.body
         const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
 
         if (orderInfo.status === 'paid') {
-            await appointmentModel.findByIdAndUpdate(orderInfo.receipt, { payment: true })
+            await appointmentModel.findByIdAndUpdate(orderInfo.receipt, { 
+                payment: true,
+                paymentId: razorpay_payment_id || orderInfo.id || ""
+            })
             res.json({ success: true, message: "Payment Successful" })
         }
         else {
@@ -518,4 +574,233 @@ const bookAppointmentWithCoins = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getProfile, updateProfile, listAppointment, cancelAppointment, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, verifyCoinsPayment, bookAppointmentWithCoins, bookAppointmentWithPayment }
+// API to create book order with Razorpay
+const createBookOrderRazorpay = async (req, res) => {
+    try {
+        const { userId, items, amount, address } = req.body;
+        if (!items || items.length === 0 || !amount || !address) {
+            return res.json({ success: false, message: 'Invalid order details' });
+        }
+
+        const orderData = {
+            userId,
+            items,
+            amount,
+            address,
+            paymentMethod: "RazorPay",
+            payment: false,
+            date: Date.now()
+        };
+
+        const newOrder = new orderModel(orderData);
+        await newOrder.save();
+
+        const options = {
+            amount: Math.round(amount * 100), // amount in paise
+            currency: process.env.CURRENCY || 'INR',
+            receipt: newOrder._id.toString(),
+        };
+
+        const razorpayOrder = await razorpayInstance.orders.create(options);
+
+        res.json({
+            success: true,
+            order: razorpayOrder,
+            orderId: newOrder._id
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to verify book order Razorpay payment
+const verifyBookOrderRazorpay = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
+
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest('hex');
+
+        if (expectedSignature === razorpay_signature) {
+            await orderModel.findByIdAndUpdate(orderId, { payment: true, status: 'Paid' });
+            res.json({ success: true, message: "Payment Successful & Order Placed!" });
+        } else {
+            res.json({ success: false, message: 'Invalid Signature. Payment Failed' });
+        }
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to place COD book order
+const placeBookOrderCOD = async (req, res) => {
+    try {
+        const { userId, items, amount, address } = req.body;
+        if (!items || items.length === 0 || !amount || !address) {
+            return res.json({ success: false, message: 'Invalid order details' });
+        }
+
+        const orderData = {
+            userId,
+            items,
+            amount,
+            address,
+            paymentMethod: "COD",
+            payment: false,
+            date: Date.now()
+        };
+
+        const newOrder = new orderModel(orderData);
+        await newOrder.save();
+
+        res.json({ success: true, message: 'Order Placed Successfully via Cash on Delivery!' });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to place Book Order using Therapique Tokens
+const placeBookOrderTokens = async (req, res) => {
+    try {
+        const { userId, items, amount, address } = req.body;
+        if (!items || items.length === 0 || !amount || !address) {
+            return res.json({ success: false, message: 'Invalid order details' });
+        }
+
+        const userData = await userModel.findById(userId);
+        if (!userData) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        if (userData.therapiqueCoins < amount) {
+            return res.json({ 
+                success: false, 
+                message: `Insufficient Therapique Tokens balance! Required: T ${amount}, Available: T ${userData.therapiqueCoins}.` 
+            });
+        }
+
+        // Deduct token amount as clean integer and record transaction
+        userData.therapiqueCoins = Math.round(userData.therapiqueCoins - amount);
+        userData.coinsTransactions.push({
+            type: 'spend',
+            amount: Math.round(amount),
+            description: `Book Order Purchase (${items.length} items)`,
+            date: new Date()
+        });
+
+        await userData.save();
+
+        const orderData = {
+            userId,
+            items,
+            amount: Math.round(amount),
+            address,
+            paymentMethod: "Therapique Tokens",
+            payment: true,
+            date: Date.now()
+        };
+
+        const newOrder = new orderModel(orderData);
+        await newOrder.save();
+
+        res.json({ 
+            success: true, 
+            message: `Order Placed Successfully using T ${Math.round(amount)} Therapique Tokens!`,
+            remainingCoins: Math.round(userData.therapiqueCoins)
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to get user book orders
+const getUserOrders = async (req, res) => {
+    try {
+        const { userId } = req.body;
+        let orders = await orderModel.find({ userId }).sort({ date: -1 });
+        
+        for (let order of orders) {
+            if (order.status !== 'Cancelled') {
+                const elapsedMinutes = (Date.now() - new Date(order.date).getTime()) / (1000 * 60);
+                let autoStatus = 'Order Placed';
+                if (elapsedMinutes >= 15) autoStatus = 'Delivered';
+                else if (elapsedMinutes >= 10) autoStatus = 'Out for Delivery';
+                else if (elapsedMinutes >= 5) autoStatus = 'Shipped';
+                else if (elapsedMinutes >= 2) autoStatus = 'Packing & Preparing';
+
+                if (order.status !== autoStatus) {
+                    order.status = autoStatus;
+                    await order.save();
+                }
+            }
+        }
+
+        res.json({ success: true, orders });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to get single order details by orderId
+const getSingleOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { userId } = req.body;
+        const order = await orderModel.findOne({ _id: orderId, userId });
+        if (!order) {
+            return res.json({ success: false, message: 'Order not found' });
+        }
+        res.json({ success: true, order });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to update order status (for Admin / Live Simulator)
+const updateOrderStatus = async (req, res) => {
+    try {
+        const { orderId, status } = req.body;
+        if (!orderId || !status) {
+            return res.json({ success: false, message: 'Missing orderId or status' });
+        }
+        await orderModel.findByIdAndUpdate(orderId, { status });
+        res.json({ success: true, message: `Order status updated to "${status}"` });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+export { 
+    registerUser, 
+    loginUser, 
+    getProfile, 
+    updateProfile, 
+    listAppointment, 
+    cancelAppointment, 
+    paymentRazorpay, 
+    verifyRazorpay, 
+    contactForm, 
+    purchaseCoins, 
+    verifyCoinsPayment, 
+    bookAppointmentWithCoins, 
+    bookAppointmentWithPayment,
+    createBookOrderRazorpay,
+    verifyBookOrderRazorpay,
+    placeBookOrderCOD,
+    placeBookOrderTokens,
+    getUserOrders,
+    getSingleOrder,
+    updateOrderStatus
+}
