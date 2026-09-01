@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import bookModel from '../models/bookModel.js';
 import orderModel from '../models/orderModel.js';
+import userModel from '../models/userModel.js';
 
 const multiImageBooks48 = [
   // 1. Mental Health (6)
@@ -814,23 +815,18 @@ const addBook = async (req, res) => {
 // Controller to List All Books (Seeds 48 books if database is empty)
 const listBooks = async (req, res) => {
     try {
-        let books = await bookModel.find({}).sort({ date: -1 });
+        // Use .lean() for faster serialization (returns plain JS objects, not Mongoose docs)
+        let books = await bookModel.find({}).sort({ date: -1 }).lean();
         if (books.length === 0) {
             await bookModel.insertMany(multiImageBooks48);
-            books = await bookModel.find({}).sort({ date: -1 });
-        } else {
-            let hasUpdated = false;
-            for (let b of books) {
-                if (b.sizes && Array.isArray(b.sizes) && !b.sizes.includes("Pocket / Travel Edition")) {
-                    b.sizes.push("Pocket / Travel Edition");
-                    b.markModified('sizes');
-                    await b.save();
-                    hasUpdated = true;
-                }
-            }
-            if (hasUpdated) {
-                books = await bookModel.find({}).sort({ date: -1 });
-            }
+            books = await bookModel.find({}).sort({ date: -1 }).lean();
+        } else if (books.some(b => Array.isArray(b.sizes) && !b.sizes.includes("Pocket / Travel Edition"))) {
+            // One-time bulk migration: $addToSet is idempotent — safe to run, never creates duplicates
+            await bookModel.updateMany(
+                { sizes: { $exists: true, $not: { $elemMatch: { $eq: "Pocket / Travel Edition" } } } },
+                { $addToSet: { sizes: "Pocket / Travel Edition" } }
+            );
+            books = await bookModel.find({}).sort({ date: -1 }).lean();
         }
         res.json({ success: true, books });
     } catch (error) {
@@ -871,13 +867,14 @@ const toggleStock = async (req, res) => {
     }
 };
 
-const computeAutoStatus = (orderDate, currentStatus) => {
+const computeAutoStatus = (orderDate, currentStatus, isManualStatus = false) => {
+    if (isManualStatus) return currentStatus;
     if (currentStatus === 'Cancelled') return 'Cancelled';
-    const elapsedMinutes = (Date.now() - new Date(orderDate).getTime()) / (1000 * 60);
-    if (elapsedMinutes < 2) return 'Order Placed';
-    if (elapsedMinutes < 5) return 'Packing & Preparing';
-    if (elapsedMinutes < 10) return 'Shipped';
-    if (elapsedMinutes < 15) return 'Out for Delivery';
+    const elapsedHours = (Date.now() - new Date(orderDate).getTime()) / (1000 * 60 * 60);
+    if (elapsedHours < 2) return 'Order Placed';
+    if (elapsedHours < 6) return 'Packing & Preparing';
+    if (elapsedHours < 24) return 'Shipped';
+    if (elapsedHours < 48) return 'Out for Delivery';
     return 'Delivered';
 };
 
@@ -886,10 +883,10 @@ const allOrders = async (req, res) => {
     try {
         let orders = await orderModel.find({}).populate('userId', 'name email phone').sort({ date: -1 });
         
-        // Auto update & persist order status based on time elapsed
+        // Auto update & persist dynamic order status based on time elapsed if not manually set
         for (let order of orders) {
-            if (order.status !== 'Cancelled') {
-                const autoStatus = computeAutoStatus(order.date, order.status);
+            if (order.status !== 'Cancelled' && !order.isManualStatus) {
+                const autoStatus = computeAutoStatus(order.date, order.status, order.isManualStatus);
                 if (order.status !== autoStatus) {
                     order.status = autoStatus;
                     await order.save();
@@ -897,7 +894,39 @@ const allOrders = async (req, res) => {
             }
         }
 
-        res.json({ success: true, orders });
+        // Enrich items with book categories from book catalog
+        const bookIds = [];
+        orders.forEach(o => {
+            if (Array.isArray(o.items)) {
+                o.items.forEach(it => {
+                    if (it._id) bookIds.push(it._id);
+                });
+            }
+        });
+        const books = await bookModel.find({ _id: { $in: bookIds } }, 'category title').lean();
+        const bookCategoryMap = new Map(books.map(b => [b._id.toString(), b.category]));
+
+        // Fetch live user profile data (name, email, phone, profile image) for each customer
+        const userIds = [...new Set(orders.map(o => o.userId).filter(Boolean))];
+        const users = await userModel.find({ _id: { $in: userIds } }, 'name email phone image').lean();
+        const userMap = new Map(users.map(u => [u._id.toString(), u]));
+
+        const enrichedOrders = orders.map(order => {
+            const orderObj = order.toObject ? order.toObject() : order;
+
+            // Live customer profile data
+            orderObj.userData = (orderObj.userId && userMap.get(orderObj.userId.toString())) || null;
+
+            if (Array.isArray(orderObj.items)) {
+                orderObj.items = orderObj.items.map(it => {
+                    const cat = it.category || (it._id ? bookCategoryMap.get(it._id.toString()) : null) || 'Mental Health';
+                    return { ...it, category: cat };
+                });
+            }
+            return orderObj;
+        });
+
+        res.json({ success: true, orders: enrichedOrders });
     } catch (error) {
         console.log("Error in allOrders:", error);
         res.json({ success: false, message: error.message });
@@ -911,7 +940,7 @@ const updateOrderStatus = async (req, res) => {
         if (!orderId || !status) {
             return res.json({ success: false, message: "Order ID and status required" });
         }
-        await orderModel.findByIdAndUpdate(orderId, { status });
+        await orderModel.findByIdAndUpdate(orderId, { status, isManualStatus: true });
         res.json({ success: true, message: `Order status updated to '${status}'` });
     } catch (error) {
         console.log("Error in updateOrderStatus:", error);

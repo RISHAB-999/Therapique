@@ -107,35 +107,35 @@ const ProductDescription = ({ book }) => {
     const sizeSpecs = getSizeSpecs(book)
 
     return (
-        <div className='mt-14 ring-1 ring-slate-900/10 rounded-2xl bg-white shadow-sm overflow-hidden'>
+        <div className='mt-14 rounded-3xl bg-[#FAF5EE] border border-[#EADBCE] shadow-[0_4px_24px_rgba(70,56,48,0.04)] overflow-hidden'>
             {/* Tab Header Buttons */}
-            <div className='flex gap-2 p-2 sm:p-3 bg-slate-50/70 border-b border-gray-200 overflow-x-auto'>
+            <div className='flex gap-2 p-2 sm:p-3 bg-[#F3E8DE] border-b border-[#EADBCE] overflow-x-auto'>
                 <button
                     onClick={() => setActiveTab('description')}
-                    className={`flex items-center justify-center gap-2 medium-14 py-2.5 px-6 rounded-xl transition-all duration-300 cursor-pointer shrink-0 ${
+                    className={`flex items-center justify-center gap-2 text-xs sm:text-sm font-bold py-2.5 px-5 sm:px-6 rounded-2xl transition-all duration-300 cursor-pointer shrink-0 ${
                         activeTab === 'description'
-                            ? 'bg-purple-600 text-white font-bold shadow-md'
-                            : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                            ? 'bg-black text-white shadow-sm'
+                            : 'text-gray-700 hover:text-black hover:bg-[#EADBCE]'
                     }`}
                 >
                     <FaBookOpen className='text-xs' /> Description
                 </button>
                 <button
                     onClick={() => setActiveTab('color')}
-                    className={`flex items-center justify-center gap-2 medium-14 py-2.5 px-6 rounded-xl transition-all duration-300 cursor-pointer shrink-0 ${
+                    className={`flex items-center justify-center gap-2 text-xs sm:text-sm font-bold py-2.5 px-5 sm:px-6 rounded-2xl transition-all duration-300 cursor-pointer shrink-0 ${
                         activeTab === 'color'
-                            ? 'bg-purple-600 text-white font-bold shadow-md'
-                            : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                            ? 'bg-black text-white shadow-sm'
+                            : 'text-gray-700 hover:text-black hover:bg-[#EADBCE]'
                     }`}
                 >
                     <FaPalette className='text-xs' /> Color Guide
                 </button>
                 <button
                     onClick={() => setActiveTab('size')}
-                    className={`flex items-center justify-center gap-2 medium-14 py-2.5 px-6 rounded-xl transition-all duration-300 cursor-pointer shrink-0 ${
+                    className={`flex items-center justify-center gap-2 text-xs sm:text-sm font-bold py-2.5 px-5 sm:px-6 rounded-2xl transition-all duration-300 cursor-pointer shrink-0 ${
                         activeTab === 'size'
-                            ? 'bg-purple-600 text-white font-bold shadow-md'
-                            : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                            ? 'bg-black text-white shadow-sm'
+                            : 'text-gray-700 hover:text-black hover:bg-[#EADBCE]'
                     }`}
                 >
                     <FaRulerCombined className='text-xs' /> Size Guide
@@ -143,34 +143,34 @@ const ProductDescription = ({ book }) => {
             </div>
 
             {/* Tab Content Panels */}
-            <div className='p-6 sm:p-8'>
+            <div className='p-5 sm:p-8'>
                 {/* 1. DESCRIPTION TAB */}
                 {activeTab === 'description' && (
                     <div className='space-y-6 animate-fadeIn'>
                         <div>
-                            <h4 className="text-lg font-bold text-gray-800 mb-2">Book Overview & Insights</h4>
-                            <p className='text-sm text-gray-600 leading-relaxed'>
+                            <h4 className="text-base sm:text-lg font-bold text-gray-900 mb-2">Book Overview & Insights</h4>
+                            <p className='text-xs sm:text-sm text-gray-600 leading-relaxed'>
                                 {book?.description || "Discover a transformative reading experience packed with actionable insights, expert exercises, and engaging narrative guidance carefully crafted for deep personal growth."}
                             </p>
                         </div>
 
-                        <div className='bg-purple-50/50 p-5 rounded-xl border border-purple-100'>
-                            <h5 className="font-bold text-gray-800 text-sm mb-3">Key Reading Benefits & Features</h5>
+                        <div className='bg-[#FDF7F3] p-4 sm:p-5 rounded-2xl border border-[#EADBCE]'>
+                            <h5 className="font-bold text-gray-900 text-xs sm:text-sm mb-3">Key Reading Benefits & Features</h5>
                             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-gray-700">
-                                <li className='flex items-center gap-2'>
-                                    <span className='p-1 bg-green-100 text-green-600 rounded-md shrink-0'><FaCheck className='text-xs' /></span>
+                                <li className='flex items-center gap-2.5'>
+                                    <span className='p-1 bg-green-100 text-green-700 rounded-lg shrink-0'><FaCheck className='text-xs' /></span>
                                     <span>High-grade FSC-certified archival acid-free paper</span>
                                 </li>
-                                <li className='flex items-center gap-2'>
-                                    <span className='p-1 bg-green-100 text-green-600 rounded-md shrink-0'><FaCheck className='text-xs' /></span>
+                                <li className='flex items-center gap-2.5'>
+                                    <span className='p-1 bg-green-100 text-green-700 rounded-lg shrink-0'><FaCheck className='text-xs' /></span>
                                     <span>Ergonomic lay-flat binding for effortless hands-free reading</span>
                                 </li>
-                                <li className='flex items-center gap-2'>
-                                    <span className='p-1 bg-green-100 text-green-600 rounded-md shrink-0'><FaCheck className='text-xs' /></span>
+                                <li className='flex items-center gap-2.5'>
+                                    <span className='p-1 bg-green-100 text-green-700 rounded-lg shrink-0'><FaCheck className='text-xs' /></span>
                                     <span>Includes guided journal prompts and chapter reflection summaries</span>
                                 </li>
-                                <li className='flex items-center gap-2'>
-                                    <span className='p-1 bg-green-100 text-green-600 rounded-md shrink-0'><FaCheck className='text-xs' /></span>
+                                <li className='flex items-center gap-2.5'>
+                                    <span className='p-1 bg-green-100 text-green-700 rounded-lg shrink-0'><FaCheck className='text-xs' /></span>
                                     <span>Glare-free 11.5pt Garamond typography optimized for zero eye strain</span>
                                 </li>
                             </ul>
@@ -182,8 +182,8 @@ const ProductDescription = ({ book }) => {
                 {activeTab === 'color' && (
                     <div className='space-y-6 animate-fadeIn'>
                         <div>
-                            <h4 className="text-lg font-bold text-gray-800 mb-1">
-                                Extracted Cover Palette & Print Guide for <span className='text-purple-600'>"{book?.name}"</span>
+                            <h4 className="text-base sm:text-lg font-bold text-gray-900 mb-1">
+                                Extracted Cover Palette & Print Guide for <span className='text-purple-700'>"{book?.name}"</span>
                             </h4>
                             <p className='text-xs sm:text-sm text-gray-500'>
                                 Exact color tones extracted directly from this book's cover image.
@@ -193,29 +193,29 @@ const ProductDescription = ({ book }) => {
                         {/* Swatches Grid */}
                         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
                             {colorVariants.map((item, index) => (
-                                <div key={index} className='p-4 rounded-xl border border-gray-200 bg-slate-50/50 hover:shadow-md transition-all duration-300'>
+                                <div key={index} className='p-4 rounded-2xl border border-[#EADBCE] bg-[#FDF7F3] hover:shadow-md transition-all duration-300'>
                                     <div className='flex items-center gap-3 mb-3'>
                                         <span 
                                             className='w-9 h-9 rounded-full border border-black/15 shadow-md shrink-0' 
                                             style={item.bgStyle} 
                                         />
                                         <div>
-                                            <h5 className='font-bold text-gray-800 text-xs sm:text-sm leading-tight'>{item.name}</h5>
+                                            <h5 className='font-bold text-gray-900 text-xs sm:text-sm leading-tight'>{item.name}</h5>
                                             <p className='text-[11px] font-mono text-gray-500 font-bold mt-0.5'>{item.hex}</p>
                                         </div>
                                     </div>
-                                    <div className='space-y-1 text-xs text-gray-600 border-t border-gray-200 pt-2'>
-                                        <p><span className='font-semibold text-gray-700'>Finish:</span> {item.finish}</p>
-                                        <p><span className='font-semibold text-gray-700'>Details:</span> {item.highlight}</p>
+                                    <div className='space-y-1 text-xs text-gray-600 border-t border-[#EADBCE] pt-2'>
+                                        <p><span className='font-semibold text-gray-800'>Finish:</span> {item.finish}</p>
+                                        <p><span className='font-semibold text-gray-800'>Details:</span> {item.highlight}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <div className='bg-blue-50/60 p-4 rounded-xl border border-blue-100 text-xs text-gray-600 flex items-start gap-3'>
-                            <FaPalette className='text-blue-500 text-base shrink-0 mt-0.5' />
+                        <div className='bg-[#FDF7F3] p-4 rounded-2xl border border-[#EADBCE] text-xs text-gray-600 flex items-start gap-3'>
+                            <FaPalette className='text-purple-600 text-base shrink-0 mt-0.5' />
                             <div>
-                                <span className='font-bold text-gray-800 block mb-0.5'>Exact Cover Color Matching Guarantee</span>
+                                <span className='font-bold text-gray-900 block mb-0.5'>Exact Cover Color Matching Guarantee</span>
                                 Printed using high-precision CMYK ink calibration to guarantee 100% color fidelity to the cover design shown above.
                             </div>
                         </div>
@@ -226,8 +226,8 @@ const ProductDescription = ({ book }) => {
                 {activeTab === 'size' && (
                     <div className='space-y-6 animate-fadeIn'>
                         <div>
-                            <h4 className="text-lg font-bold text-gray-800 mb-1">
-                                Book Specifications & Format Size for <span className='text-purple-600'>"{book?.name}"</span>
+                            <h4 className="text-base sm:text-lg font-bold text-gray-900 mb-1">
+                                Book Specifications & Format Size for <span className='text-purple-700'>"{book?.name}"</span>
                             </h4>
                             <p className='text-xs sm:text-sm text-gray-500'>
                                 Exact page counts, dimensions, and weights customized for this exact book.
@@ -235,9 +235,9 @@ const ProductDescription = ({ book }) => {
                         </div>
 
                         {/* Specs Table */}
-                        <div className='overflow-x-auto rounded-xl border border-gray-200'>
+                        <div className='overflow-x-auto rounded-2xl border border-[#EADBCE] bg-[#FDF7F3]'>
                             <table className='w-full text-left text-xs sm:text-sm'>
-                                <thead className='bg-purple-50/80 text-purple-900 font-bold uppercase tracking-wider text-[11px] border-b border-purple-100'>
+                                <thead className='bg-[#F3E8DE] text-gray-900 font-bold uppercase tracking-wider text-[11px] border-b border-[#EADBCE]'>
                                     <tr>
                                         <th className='p-3 sm:p-4'>Format Edition</th>
                                         <th className='p-3 sm:p-4'>Dimensions (W x H)</th>
@@ -246,11 +246,11 @@ const ProductDescription = ({ book }) => {
                                         <th className='p-3 sm:p-4'>Paper Quality</th>
                                     </tr>
                                 </thead>
-                                <tbody className='divide-y divide-gray-100 bg-white text-gray-700'>
+                                <tbody className='divide-y divide-[#EADBCE] text-gray-700'>
                                     {sizeSpecs.map((spec, index) => (
-                                        <tr key={index} className='hover:bg-slate-50 transition-colors'>
-                                            <td className='p-3 sm:p-4 font-bold text-gray-800'>{spec.edition}</td>
-                                            <td className='p-3 sm:p-4 font-mono text-purple-700'>{spec.size}</td>
+                                        <tr key={index} className='hover:bg-[#FAF5EE] transition-colors'>
+                                            <td className='p-3 sm:p-4 font-bold text-gray-900'>{spec.edition}</td>
+                                            <td className='p-3 sm:p-4 font-mono text-purple-700 font-semibold'>{spec.size}</td>
                                             <td className='p-3 sm:p-4'>{spec.pages}</td>
                                             <td className='p-3 sm:p-4 font-semibold'>{spec.weight}</td>
                                             <td className='p-3 sm:p-4 text-gray-500'>{spec.paper}</td>
@@ -261,17 +261,17 @@ const ProductDescription = ({ book }) => {
                         </div>
 
                         <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-gray-600'>
-                            <div className='p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3'>
+                            <div className='p-4 bg-[#FDF7F3] rounded-2xl border border-[#EADBCE] flex items-start gap-3'>
                                 <FaRulerCombined className='text-purple-600 text-base shrink-0 mt-0.5' />
                                 <div>
-                                    <span className='font-bold text-gray-800 block mb-0.5'>Typography & Spacing</span>
+                                    <span className='font-bold text-gray-900 block mb-0.5'>Typography & Spacing</span>
                                     Set in 11.5pt Garamond font with 1.4 line height and 0.75" outer margins for optimal reading ergonomics.
                                 </div>
                             </div>
-                            <div className='p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3'>
+                            <div className='p-4 bg-[#FDF7F3] rounded-2xl border border-[#EADBCE] flex items-start gap-3'>
                                 <FaEye className='text-purple-600 text-base shrink-0 mt-0.5' />
                                 <div>
-                                    <span className='font-bold text-gray-800 block mb-0.5'>Reading Comfort</span>
+                                    <span className='font-bold text-gray-900 block mb-0.5'>Reading Comfort</span>
                                     80 GSM warm cream pages eliminate glare from direct artificial lighting or sunlight during long reading sessions.
                                 </div>
                             </div>

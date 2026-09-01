@@ -1,8 +1,9 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import { assets } from '../../assets/assets'
 import { AdminContext } from '../../context/AdminContext'
 import { AppContext } from '../../context/AppContext'
 import { useNavigate } from 'react-router-dom'
+import DonutChart from '../../components/DonutChart'
 
 const Dashboard = () => {
   const { aToken, getDashData, cancelAppointment, dashData } = useContext(AdminContext)
@@ -12,15 +13,69 @@ const Dashboard = () => {
   useEffect(() => {
     if (aToken) {
       getDashData()
+      const interval = setInterval(() => {
+        getDashData()
+      }, 3000)
+
+      const handleFocus = () => getDashData()
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          getDashData()
+        }
+      }
+
+      window.addEventListener('focus', handleFocus)
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+
+      return () => {
+        clearInterval(interval)
+        window.removeEventListener('focus', handleFocus)
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
     }
   }, [aToken])
 
+  const defaultBookImg = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop"
+  const defaultDocImg = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&auto=format&fit=crop"
+
   const getItemImage = (item) => {
-    if (!item) return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop"
-    if (Array.isArray(item.image) && item.image.length > 0 && typeof item.image[0] === 'string' && item.image[0].startsWith('http')) return item.image[0]
-    if (typeof item.image === 'string' && item.image.startsWith('http')) return item.image
-    return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop"
+    if (!item) return defaultBookImg
+    if (Array.isArray(item.image) && item.image.length > 0) {
+      const first = item.image[0]
+      if (typeof first === 'string' && first.trim()) return first
+      if (first && typeof first.url === 'string' && first.url.trim()) return first.url
+    }
+    if (typeof item.image === 'string' && item.image.trim()) return item.image
+    return defaultBookImg
   }
+
+  // Derive appointment stats from dashData with robust fallback
+  const appointmentStats = useMemo(() => {
+    if (dashData?.appointmentStats) {
+      return dashData.appointmentStats
+    }
+    const apps = dashData?.latestAppointments || []
+    return {
+      total: dashData?.appointments || apps.length,
+      completed: apps.filter(a => !a.cancelled && a.isCompleted).length,
+      cancelled: apps.filter(a => a.cancelled).length,
+      upcoming: apps.filter(a => !a.cancelled && !a.isCompleted).length,
+    }
+  }, [dashData])
+
+  // Derive book order stats from dashData with robust fallback
+  const bookOrderStats = useMemo(() => {
+    if (dashData?.bookOrderStats) {
+      return dashData.bookOrderStats
+    }
+    const orders = dashData?.latestBookOrders || []
+    return {
+      total: dashData?.bookOrdersCount || orders.length,
+      delivered: orders.filter(o => o.status === 'Delivered').length,
+      processing: orders.filter(o => ['Order Placed', 'Packing & Preparing', 'Shipped', 'Out for Delivery', 'Processing', 'Pending'].includes(o.status) || (!['Delivered', 'Cancelled', 'Refunded'].includes(o.status))).length,
+      cancelled: orders.filter(o => ['Cancelled', 'Refunded'].includes(o.status)).length,
+    }
+  }, [dashData])
 
   return (
     dashData && (
@@ -89,6 +144,73 @@ const Dashboard = () => {
 
         </div>
 
+        {/* Visual Analytics Charts Section (Appointment & Book Orders Donut Charts) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+          {/* Chart 1: Appointment Overview */}
+          <DonutChart
+            title="Appointment Overview"
+            subtitle="Status distribution of patient consultations"
+            total={appointmentStats.total}
+            totalLabel="Appointments"
+            idPrefix="app-donut"
+            data={[
+              {
+                label: 'Completed',
+                shortLabel: 'Completed',
+                value: appointmentStats.completed,
+                color: '#10B981',
+                gradient: ['#34D399', '#059669'],
+              },
+              {
+                label: 'Cancelled',
+                shortLabel: 'Cancelled',
+                value: appointmentStats.cancelled,
+                color: '#F43F5E',
+                gradient: ['#FB7185', '#E11D48'],
+              },
+              {
+                label: 'Upcoming / Pending',
+                shortLabel: 'Upcoming',
+                value: appointmentStats.upcoming,
+                color: '#8B5CF6',
+                gradient: ['#A78BFA', '#6D28D9'],
+              },
+            ]}
+          />
+
+          {/* Chart 2: Book Orders Overview */}
+          <DonutChart
+            title="Book Orders Overview"
+            subtitle="Fulfillment and delivery status of library book orders"
+            total={bookOrderStats.total}
+            totalLabel="Orders"
+            idPrefix="order-donut"
+            data={[
+              {
+                label: 'Delivered',
+                shortLabel: 'Delivered',
+                value: bookOrderStats.delivered,
+                color: '#10B981',
+                gradient: ['#34D399', '#047857'],
+              },
+              {
+                label: 'Processing',
+                shortLabel: 'Processing',
+                value: bookOrderStats.processing,
+                color: '#F59E0B',
+                gradient: ['#FBBF24', '#D97706'],
+              },
+              {
+                label: 'Cancelled / Refunded',
+                shortLabel: 'Cancelled',
+                value: bookOrderStats.cancelled,
+                color: '#EF4444',
+                gradient: ['#F87171', '#B91C1C'],
+              },
+            ]}
+          />
+        </div>
+
         {/* Overview Panels Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           
@@ -117,8 +239,12 @@ const Dashboard = () => {
                     >
                       <img
                         className="rounded-full w-10 h-10 object-cover border border-gray-200 shrink-0"
-                        src={item.docData?.image}
+                        src={item.docData?.image || defaultDocImg}
                         alt=""
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = defaultDocImg;
+                        }}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-gray-900 font-bold truncate">{item.docData?.name}</p>
@@ -178,6 +304,10 @@ const Dashboard = () => {
                           <img 
                             src={coverImg} 
                             alt="" 
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = defaultBookImg;
+                            }}
                             className="w-full h-full object-cover object-center" 
                           />
                         </div>

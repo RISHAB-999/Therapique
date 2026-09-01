@@ -6,7 +6,10 @@ export const AdminContext = createContext();
 
 
 const AdminContextProvider = (props) => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const envBackendUrl = import.meta.env.VITE_BACKEND_URL
+  const backendUrl = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? (envBackendUrl && !envBackendUrl.includes('trycloudflare.com') ? envBackendUrl : 'http://localhost:4000')
+    : (envBackendUrl || 'http://localhost:4000');
   const [aToken, setAToken] = useState(localStorage.getItem('aToken') || null);
 
   const [appointments, setAppointments] = useState([])
@@ -48,6 +51,31 @@ const AdminContextProvider = (props) => {
     } catch (error) {
       toast.error(error.message);
     }
+  };
+
+  const updateDoctorCredentials = async (docId, { email, password }) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + '/api/admin/update-doctor-credentials',
+        { docId, email, password },
+        { headers: { aToken } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getAllDoctors();
+        return { success: true };
+      } else {
+        toast.error(data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      toast.error(error.message);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updateDoctorEmail = async (docId, email) => {
+    return updateDoctorCredentials(docId, { email });
   };
 
   // Getting all appointment data from Database using API
@@ -119,6 +147,8 @@ const AdminContextProvider = (props) => {
     doctors,
     getAllDoctors,
     changeAvailability,
+    updateDoctorEmail,
+    updateDoctorCredentials,
     appointments,
     getAllAppointments,
     getDashData,

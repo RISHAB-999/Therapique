@@ -1,116 +1,49 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import { DoctorContext } from '../../context/DoctorContext'
 import { assets } from '../../assets/assets'
 import { AppContext } from '../../context/AppContext'
-
-const CircularChartCard = ({ appointmentsCount = 0, latestAppointments = [] }) => {
-  const completedCount = latestAppointments.filter(a => a.isCompleted).length
-  const cancelledCount = latestAppointments.filter(a => a.cancelled).length
-  const total = Math.max(1, appointmentsCount)
-  const activePct = appointmentsCount === 0 ? 100 : Math.round((completedCount / total) * 100) || 75
-
-  // SVG Circle stroke dash calculations (radius = 46, circumference = 2 * PI * 46 ~ 289.03)
-  const radius = 46
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (activePct / 100) * circumference
-
-  return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between h-full">
-      <div>
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div>
-            <h3 className="font-extrabold text-gray-800 text-base">Practice Performance</h3>
-            <p className="text-xs text-gray-400 font-medium mt-0.5">Consultation Fulfillment Rate</p>
-          </div>
-          <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-100">
-            Live Stats
-          </span>
-        </div>
-
-        {/* SVG Circular Donut Chart - Perfectly Centered */}
-        <div className="relative w-44 h-44 mx-auto my-6 flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 120 120">
-            <defs>
-              <linearGradient id="purpleChartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#9333ea" />
-                <stop offset="100%" stopColor="#4f46e5" />
-              </linearGradient>
-            </defs>
-
-            {/* Background Track Circle */}
-            <circle
-              cx="60"
-              cy="60"
-              r={radius}
-              className="text-purple-50"
-              strokeWidth="10"
-              stroke="currentColor"
-              fill="none"
-            />
-            {/* Animated Progress Circle */}
-            <circle
-              cx="60"
-              cy="60"
-              r={radius}
-              stroke="url(#purpleChartGradient)"
-              strokeWidth="10"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              fill="none"
-              className="transition-all duration-1000 ease-out"
-            />
-          </svg>
-
-          {/* Center Text Badge inside donut */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-            <span className="text-3xl font-black text-gray-800 tracking-tight leading-none">
-              {activePct}%
-            </span>
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-600 mt-1">
-              Fulfillment
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Chart Breakdown Legend */}
-      <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-purple-50/60 border border-purple-100/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-600" />
-            <span className="font-semibold text-gray-700">Completed Sessions</span>
-          </div>
-          <span className="font-extrabold text-gray-900">{completedCount}</span>
-        </div>
-
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-indigo-50/60 border border-indigo-100/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-            <span className="font-semibold text-gray-700">Active Bookings</span>
-          </div>
-          <span className="font-extrabold text-gray-900">{Math.max(0, appointmentsCount - (completedCount + cancelledCount))}</span>
-        </div>
-
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-rose-50/60 border border-rose-100/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-            <span className="font-semibold text-gray-700">Cancelled Sessions</span>
-          </div>
-          <span className="font-extrabold text-gray-900">{cancelledCount}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
+import DonutChart from '../../components/DonutChart'
 
 const DoctorDashboard = () => {
   const { dToken, dashData, getDashData, cancelAppointment, completeAppointment } = useContext(DoctorContext)
   const { slotDateFormat, currency } = useContext(AppContext)
 
+  // Derive consultation stats with robust fallback
+  const appointmentStats = useMemo(() => {
+    if (dashData?.appointmentStats) {
+      return dashData.appointmentStats
+    }
+    const apps = dashData?.latestAppointments || []
+    return {
+      total: dashData?.appointments || apps.length,
+      completed: apps.filter(a => a.isCompleted && !a.cancelled).length,
+      cancelled: apps.filter(a => a.cancelled).length,
+      upcoming: apps.filter(a => !a.cancelled && !a.isCompleted).length,
+    }
+  }, [dashData])
+
   useEffect(() => {
     if (dToken) {
       getDashData()
+      const interval = setInterval(() => {
+        getDashData()
+      }, 3000)
+
+      const handleFocus = () => getDashData()
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          getDashData()
+        }
+      }
+
+      window.addEventListener('focus', handleFocus)
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+
+      return () => {
+        clearInterval(interval)
+        window.removeEventListener('focus', handleFocus)
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+      }
     }
   }, [dToken])
 
@@ -271,11 +204,39 @@ const DoctorDashboard = () => {
           </div>
         </div>
 
-        {/* Right Column (1 Col): Clean Donut Chart Card */}
+        {/* Right Column (1 Col): Clean Animated Donut Chart Card */}
         <div className="lg:col-span-1">
-          <CircularChartCard 
-            appointmentsCount={dashData.appointments || 0} 
-            latestAppointments={latestList} 
+          <DonutChart
+            title="Practice Performance"
+            subtitle="Status distribution of patient consultations"
+            total={appointmentStats.total}
+            totalLabel="Consultations"
+            idPrefix="doctor-practice-donut"
+            layout="vertical"
+            className="h-full"
+            data={[
+              {
+                label: 'Completed Sessions',
+                shortLabel: 'Completed',
+                value: appointmentStats.completed,
+                color: '#10B981',
+                gradient: ['#34D399', '#059669'],
+              },
+              {
+                label: 'Active Bookings',
+                shortLabel: 'Active',
+                value: appointmentStats.upcoming,
+                color: '#8B5CF6',
+                gradient: ['#A78BFA', '#6D28D9'],
+              },
+              {
+                label: 'Cancelled Sessions',
+                shortLabel: 'Cancelled',
+                value: appointmentStats.cancelled,
+                color: '#EF4444',
+                gradient: ['#F87171', '#DC2626'],
+              },
+            ]}
           />
         </div>
       </div>

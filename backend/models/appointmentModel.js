@@ -13,7 +13,8 @@ const appointmentSchema = new mongoose.Schema({
     payment: { type: Boolean, default: false },
     paymentId: { type: String, default: "" },
     isCompleted: { type: Boolean, default: false },
-    paidWithCoins: { type: Boolean, default: false }
+    paidWithCoins: { type: Boolean, default: false },
+    refundStatus: { type: String, default: 'none' } // 'none' | 'pending_choice' | 'refunded_tokens' | 'refunded_bank'
 })
 
 const appointmentModel = mongoose.models.appointment || mongoose.model("appointment", appointmentSchema)

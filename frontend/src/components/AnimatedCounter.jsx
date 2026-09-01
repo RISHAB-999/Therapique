@@ -35,7 +35,11 @@ const AnimatedCounter = ({ value, duration = 800 }) => {
     };
 
     const animFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animFrame);
+    return () => {
+      cancelAnimationFrame(animFrame);
+      setCount(end);
+      prevValueRef.current = end;
+    };
   }, [value, duration]);
 
   return <>{count}</>;

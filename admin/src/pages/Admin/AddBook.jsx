@@ -4,6 +4,7 @@ import { AppContext } from '../../context/AppContext'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 import { assets } from '../../assets/assets'
+import CustomDropdown from '../../components/ui/CustomDropdown'
 
 const AddBook = () => {
   const { aToken } = useContext(AdminContext)
@@ -196,7 +197,7 @@ const AddBook = () => {
               value={title}
               required
               placeholder="e.g. Overcoming Anxiety & Stress"
-              className='w-full text-xs font-medium text-gray-800 bg-slate-50 border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-purple-600'
+              className='w-full h-10 px-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-purple-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs'
             />
           </div>
 
@@ -208,7 +209,7 @@ const AddBook = () => {
               value={author}
               required
               placeholder="e.g. Dr. Arthur Aaron"
-              className='w-full text-xs font-medium text-gray-800 bg-slate-50 border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-purple-600'
+              className='w-full h-10 px-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-purple-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs'
             />
           </div>
         </div>
@@ -222,7 +223,7 @@ const AddBook = () => {
             value={description}
             required
             placeholder="Write a clear overview of the book topics, key takeaways, and target readers..."
-            className='w-full text-xs font-medium text-gray-800 bg-slate-50 border border-slate-200 p-3.5 rounded-xl focus:outline-none focus:border-purple-600 resize-none leading-relaxed'
+            className='w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 hover:bg-white hover:border-purple-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs resize-none leading-relaxed'
           />
         </div>
 
@@ -230,8 +231,8 @@ const AddBook = () => {
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-5'>
           <div className='space-y-1.5'>
             <label className='text-xs font-bold text-gray-700 block'>Price ({currency}) *</label>
-            <div className='flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200'>
-              <span className='text-sm font-extrabold text-purple-700'>{currency}</span>
+            <div className='flex items-center gap-2 h-10 bg-slate-50/80 px-3.5 rounded-xl border border-slate-200 hover:bg-white hover:border-purple-300 focus-within:bg-white focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all shadow-2xs'>
+              <span className='text-xs font-black text-purple-700'>{currency}</span>
               <input
                 type="number"
                 onChange={(e) => setPrice(e.target.value)}
@@ -245,20 +246,21 @@ const AddBook = () => {
 
           <div className='space-y-1.5'>
             <label className='text-xs font-bold text-gray-700 block'>Category *</label>
-            <select
+            <CustomDropdown
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className='w-full text-xs font-semibold text-gray-800 bg-slate-50 border border-slate-200 p-3 rounded-xl focus:outline-none focus:border-purple-600 cursor-pointer'
-            >
-              <option value="Mental Health">Mental Health</option>
-              <option value="Self-Help & Counseling">Self-Help & Counseling</option>
-              <option value="Children & Parenting">Children & Parenting</option>
-              <option value="Relationships & Family">Relationships & Family</option>
-              <option value="Trauma Recovery">Trauma Recovery</option>
-              <option value="Addiction Recovery">Addiction Recovery</option>
-              <option value="CBT & Psychology">CBT & Psychology</option>
-              <option value="Creative Therapy">Creative Therapy</option>
-            </select>
+              onChange={setCategory}
+              options={[
+                'Mental Health',
+                'Self-Help & Counseling',
+                'Children & Parenting',
+                'Relationships & Family',
+                'Trauma Recovery',
+                'Addiction Recovery',
+                'CBT & Psychology',
+                'Creative Therapy'
+              ]}
+              minWidth="w-full"
+            />
           </div>
         </div>
 

@@ -197,19 +197,18 @@ const DoctorProfile = () => {
 
             {/* Fees & Address Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-              
-              {/* Consultation Fee */}
+                          {/* Consultation Fee */}
               <div className="bg-purple-50/50 p-4 sm:p-5 rounded-2xl border border-purple-100/80 space-y-2">
                 <label className="text-[10px] sm:text-[11px] font-extrabold text-purple-700 uppercase tracking-wider block">
                   Consultation Fee
                 </label>
                 {isEdit ? (
-                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-purple-200 shadow-2xs">
-                    <span className="text-sm sm:text-base font-extrabold text-purple-700">{currency}</span>
+                  <div className="flex items-center gap-2 h-10 bg-white px-3.5 rounded-xl border border-purple-200 hover:border-purple-300 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-600 transition-all shadow-2xs">
+                    <span className="text-sm font-extrabold text-purple-700">{currency}</span>
                     <input
                       type="number"
                       onChange={(e) => setProfileData(prev => ({ ...prev, fees: e.target.value }))}
-                      className="w-full text-sm sm:text-base font-extrabold text-gray-800 focus:outline-none"
+                      className="w-full text-xs sm:text-sm font-extrabold text-gray-800 bg-transparent focus:outline-none"
                       value={profileData.fees || ''}
                     />
                   </div>
@@ -231,14 +230,14 @@ const DoctorProfile = () => {
                     <input
                       type="text"
                       onChange={(e) => setProfileData(prev => ({ ...prev, address: { ...prev.address, line1: e.target.value } }))}
-                      className="w-full text-xs font-semibold text-gray-800 bg-white p-2 sm:p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600"
+                      className="w-full h-10 px-3.5 text-xs font-semibold text-gray-800 bg-white rounded-xl border border-slate-200 hover:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs"
                       value={profileData.address?.line1 || ''}
                       placeholder="Address Line 1"
                     />
                     <input
                       type="text"
                       onChange={(e) => setProfileData(prev => ({ ...prev, address: { ...prev.address, line2: e.target.value } }))}
-                      className="w-full text-xs font-semibold text-gray-800 bg-white p-2 sm:p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-purple-600"
+                      className="w-full h-10 px-3.5 text-xs font-semibold text-gray-800 bg-white rounded-xl border border-slate-200 hover:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs"
                       value={profileData.address?.line2 || ''}
                       placeholder="City, State & Pincode"
                     />

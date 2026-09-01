@@ -9,6 +9,15 @@ import appointmentModel from "../models/appointmentModel.js";
 import razorpay from 'razorpay';
 import crypto from 'crypto';
 import orderModel from "../models/orderModel.js";
+import {
+    sendAppointmentBookingEmail,
+    sendDoctorNewAppointmentAlert,
+    sendAppointmentCancellationEmail,
+    sendRefundConfirmedEmail,
+    sendBookOrderPlacedEmail,
+    sendOrderStatusUpdateEmail,
+    sendContactFormEmails
+} from '../services/emailService.js';
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -96,31 +105,54 @@ const getProfile = async (req, res) => {
 }
 
 const updateProfile = async (req, res) => {
-
     try {
-
-        const { userId, name, phone, address, dob, gender } = req.body
+        const userId = req.userId || req.body.userId
+        const { name, phone, address, dob, gender } = req.body
         const imageFile = req.file
 
-        if (!name || !phone || !dob || !gender) {
-            return res.json({ success: false, message: "Data Missing" })
+        if (!userId) {
+            return res.json({ success: false, message: "User ID missing or unauthorized" })
         }
 
-        await userModel.findByIdAndUpdate(userId, { name, phone, address: JSON.parse(address), dob, gender })
+        let parsedAddress = address
+        if (typeof address === 'string') {
+            try {
+                parsedAddress = JSON.parse(address)
+            } catch (e) {
+                parsedAddress = address
+            }
+        }
+
+        const updateData = {}
+        if (name !== undefined) updateData.name = name
+        if (phone !== undefined) updateData.phone = phone
+        if (parsedAddress !== undefined) updateData.address = parsedAddress
+        if (dob !== undefined) updateData.dob = dob
+        if (gender !== undefined) updateData.gender = gender
 
         if (imageFile) {
-
             // upload image to cloudinary
             const imageUpload = await cloudinary.uploader.upload(imageFile.path, { resource_type: "image" })
-            const imageURL = imageUpload.secure_url
-
-            await userModel.findByIdAndUpdate(userId, { image: imageURL })
+            updateData.image = imageUpload.secure_url
         }
 
-        res.json({ success: true, message: 'Profile Updated' })
+        const updatedUser = await userModel.findByIdAndUpdate(userId, updateData, { new: true })
+
+        // Synchronize updated user profile image & info across all their past & active appointments
+        const appointmentUserUpdates = {}
+        if (updateData.image) appointmentUserUpdates["userData.image"] = updateData.image
+        if (updateData.name) appointmentUserUpdates["userData.name"] = updateData.name
+        if (updateData.phone) appointmentUserUpdates["userData.phone"] = updateData.phone
+        if (updateData.dob) appointmentUserUpdates["userData.dob"] = updateData.dob
+        if (updateData.gender) appointmentUserUpdates["userData.gender"] = updateData.gender
+        if (Object.keys(appointmentUserUpdates).length > 0) {
+            await appointmentModel.updateMany({ userId }, { $set: appointmentUserUpdates }).catch(err => console.log("Appointment user sync error:", err.message))
+        }
+
+        res.json({ success: true, message: 'Profile Updated', userData: updatedUser })
 
     } catch (error) {
-        console.log(error)
+        console.log("Error in updateProfile:", error)
         res.json({ success: false, message: error.message })
     }
 }
@@ -130,9 +162,32 @@ const listAppointment = async (req, res) => {
     try {
 
         const { userId } = req.body
-        const appointments = await appointmentModel.find({ userId })
+        const appointments = await appointmentModel.find({ userId }).lean()
 
-        res.json({ success: true, appointments })
+        // Fetch latest doctor profiles to ensure doctor profile pictures and details are always up-to-date across all appointments
+        const docIds = [...new Set(appointments.map(a => a.docId).filter(Boolean))]
+        const doctors = await doctorModel.find({ _id: { $in: docIds } }).select('image name speciality address fees').lean()
+        const docMap = new Map(doctors.map(d => [d._id.toString(), d]))
+
+        const updatedAppointments = appointments.map(app => {
+            const doc = docMap.get(app.docId?.toString())
+            if (doc) {
+                return {
+                    ...app,
+                    docData: {
+                        ...app.docData,
+                        image: doc.image || app.docData?.image,
+                        name: doc.name || app.docData?.name,
+                        speciality: doc.speciality || app.docData?.speciality,
+                        address: doc.address || app.docData?.address,
+                        fees: doc.fees !== undefined ? doc.fees : app.docData?.fees
+                    }
+                }
+            }
+            return app
+        })
+
+        res.json({ success: true, appointments: updatedAppointments })
 
     } catch (error) {
         console.log(error)
@@ -157,6 +212,9 @@ const cancelAppointment = async (req, res) => {
         }
 
         await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true })
+
+        // Fetch patient info for cancellation email
+        const patientUser = await userModel.findById(userId);
 
         // releasing doctor slot 
         const { docId, slotDate, slotTime, payment, amount, paidWithCoins } = appointmentData
@@ -184,9 +242,23 @@ const cancelAppointment = async (req, res) => {
                         date: new Date()
                     })
                     await user.save()
-                    return res.json({ success: true, message: `Appointment Cancelled. ${amount} Therapique Tokens refunded to your wallet!` })
+                    await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'refunded_tokens' })
+                    sendAppointmentCancellationEmail({
+                        appointmentId,
+                        patientEmail: patientUser?.email, patientName: patientUser?.name,
+                        doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+                        slotDate, slotTime,
+                        cancelledBy: 'user',
+                        refundMessage: `${amount} Therapique Tokens refunded to your wallet.`
+                    }).catch(e => console.log('Email error:', e.message));
+                    return res.json({ 
+                        success: true, 
+                        message: `Appointment Cancelled. ${amount} Therapique Tokens refunded to your wallet!`,
+                        therapiqueCoins: user.therapiqueCoins,
+                        refundedCoins: amount
+                    })
                 }
-            } else {
+            } else if (refundChoice === 'bank') {
                 // User chose direct Bank / UPI Refund via Razorpay
                 try {
                     if (appointmentData.paymentId && razorpayInstance) {
@@ -195,7 +267,21 @@ const cancelAppointment = async (req, res) => {
                             speed: "optimum",
                             notes: { reason: "Appointment cancelled by user" }
                         })
-                        return res.json({ success: true, message: `Appointment Cancelled. ₹${amount} refund initiated directly to your bank / UPI account via Razorpay!` })
+                        await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'refunded_bank' })
+                        sendAppointmentCancellationEmail({
+                            appointmentId,
+                            patientEmail: patientUser?.email, patientName: patientUser?.name,
+                            doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+                            slotDate, slotTime,
+                            cancelledBy: 'user',
+                            refundMessage: `₹${amount} refund initiated to your bank/UPI via Razorpay.`
+                        }).catch(e => console.log('Email error:', e.message));
+                        const user = await userModel.findById(userId).select('therapiqueCoins')
+                        return res.json({ 
+                            success: true, 
+                            message: `Appointment Cancelled. ₹${amount} refund initiated directly to your bank / UPI account via Razorpay!`,
+                            therapiqueCoins: user?.therapiqueCoins || 0
+                        })
                     }
                 } catch (razorpayErr) {
                     console.log("Razorpay Bank Refund API fallback to wallet:", razorpayErr.message)
@@ -212,12 +298,54 @@ const cancelAppointment = async (req, res) => {
                         date: new Date()
                     })
                     await user.save()
-                    return res.json({ success: true, message: `Appointment Cancelled. ₹${amount} credited as ${amount} Tokens to your wallet!` })
+                    await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'refunded_tokens' })
+                    sendAppointmentCancellationEmail({
+                        appointmentId,
+                        patientEmail: patientUser?.email, patientName: patientUser?.name,
+                        doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+                        slotDate, slotTime,
+                        cancelledBy: 'user',
+                        refundMessage: `₹${amount} credited as ${amount} Tokens to your wallet.`
+                    }).catch(e => console.log('Email error:', e.message));
+                    return res.json({ 
+                        success: true, 
+                        message: `Appointment Cancelled. ₹${amount} credited as ${amount} Tokens to your wallet!`,
+                        therapiqueCoins: user.therapiqueCoins,
+                        refundedCoins: amount
+                    })
                 }
+            } else {
+                // User cancelled without specifying choice -> mark pending_choice
+                await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'pending_choice' });
+                sendAppointmentCancellationEmail({
+                    appointmentId,
+                    patientEmail: patientUser?.email, patientName: patientUser?.name,
+                    doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+                    slotDate: appointmentData.slotDate, slotTime: appointmentData.slotTime,
+                    cancelledBy: 'user',
+                    needsRefundChoice: true,
+                    amount
+                }).catch(e => console.log('Email error:', e.message));
+                const currentUser = await userModel.findById(userId).select('therapiqueCoins')
+                return res.json({ 
+                    success: true, 
+                    message: 'Appointment Cancelled. Please choose your refund method on the website.', 
+                    therapiqueCoins: currentUser?.therapiqueCoins || 0 
+                });
             }
         }
 
-        res.json({ success: true, message: 'Appointment Cancelled' })
+        // No-payment cancellation email
+        await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'none' })
+        sendAppointmentCancellationEmail({
+            appointmentId,
+            patientEmail: patientUser?.email, patientName: patientUser?.name,
+            doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+            slotDate: appointmentData.slotDate, slotTime: appointmentData.slotTime,
+            cancelledBy: 'user'
+        }).catch(e => console.log('Email error:', e.message));
+        const currentUser = await userModel.findById(userId).select('therapiqueCoins')
+        res.json({ success: true, message: 'Appointment Cancelled', therapiqueCoins: currentUser?.therapiqueCoins || 0 })
 
     } catch (error) {
         console.log(error)
@@ -273,6 +401,29 @@ const verifyRazorpay = async (req, res) => {
                 payment: true,
                 paymentId: razorpay_payment_id || orderInfo.id || ""
             })
+
+            // Send booking confirmation emails (non-blocking)
+            const appointment = await appointmentModel.findById(orderInfo.receipt);
+            if (appointment) {
+                const patient = await userModel.findById(appointment.userId);
+                const doctor = await doctorModel.findById(appointment.docId);
+                if (patient && doctor) {
+                    sendAppointmentBookingEmail({
+                        appointmentId: appointment._id,
+                        patientEmail: patient.email, patientName: patient.name,
+                        doctorName: doctor.name, doctorSpeciality: doctor.speciality,
+                        slotDate: appointment.slotDate, slotTime: appointment.slotTime,
+                        amount: appointment.amount, paymentMethod: 'Razorpay'
+                    }).catch(e => console.log('Email error:', e.message));
+                    sendDoctorNewAppointmentAlert({
+                        appointmentId: appointment._id,
+                        doctorEmail: doctor.email, doctorName: doctor.name,
+                        patientName: patient.name,
+                        slotDate: appointment.slotDate, slotTime: appointment.slotTime
+                    }).catch(e => console.log('Email error:', e.message));
+                }
+            }
+
             res.json({ success: true, message: "Payment Successful" })
         }
         else {
@@ -378,6 +529,10 @@ const contactForm = async (req, res) => {
         });
 
         const savedContact = await contactData.save();
+
+        // Send email notifications (admin alert + user auto-reply)
+        sendContactFormEmails({ firstName, lastName, email, phone, message })
+            .catch(e => console.log('Email error:', e.message));
 
         res.json({ 
             success: true, 
@@ -562,6 +717,19 @@ const bookAppointmentWithCoins = async (req, res) => {
         // Save new slots data in docData
         await doctorModel.findByIdAndUpdate(docId, { slots_booked });
 
+        // Send booking confirmation emails (non-blocking)
+        sendAppointmentBookingEmail({
+            appointmentId: newAppointment._id,
+            patientEmail: userData.email, patientName: userData.name,
+            doctorName: docData.name, doctorSpeciality: docData.speciality,
+            slotDate, slotTime, amount: appointmentCost, paymentMethod: 'Therapique Tokens'
+        }).catch(e => console.log('Email error:', e.message));
+        sendDoctorNewAppointmentAlert({
+            appointmentId: newAppointment._id,
+            doctorEmail: docData.email, doctorName: docData.name,
+            patientName: userData.name, slotDate, slotTime
+        }).catch(e => console.log('Email error:', e.message));
+
         res.json({ 
             success: true, 
             message: 'Appointment Booked with Therapique Coins!',
@@ -627,6 +795,18 @@ const verifyBookOrderRazorpay = async (req, res) => {
 
         if (expectedSignature === razorpay_signature) {
             await orderModel.findByIdAndUpdate(orderId, { payment: true, status: 'Paid' });
+
+            // Send order invoice email (non-blocking)
+            const order = await orderModel.findById(orderId);
+            if (order) {
+                const customer = await userModel.findById(order.userId);
+                sendBookOrderPlacedEmail({
+                    userEmail: customer?.email, userName: customer?.name,
+                    orderId: order._id, items: order.items,
+                    amount: order.amount, paymentMethod: 'Razorpay', address: order.address
+                }).catch(e => console.log('Email error:', e.message));
+            }
+
             res.json({ success: true, message: "Payment Successful & Order Placed!" });
         } else {
             res.json({ success: false, message: 'Invalid Signature. Payment Failed' });
@@ -657,6 +837,14 @@ const placeBookOrderCOD = async (req, res) => {
 
         const newOrder = new orderModel(orderData);
         await newOrder.save();
+
+        // Send order invoice email (non-blocking)
+        const customer = await userModel.findById(userId);
+        sendBookOrderPlacedEmail({
+            userEmail: customer?.email, userName: customer?.name,
+            orderId: newOrder._id, items, amount,
+            paymentMethod: 'Cash on Delivery', address
+        }).catch(e => console.log('Email error:', e.message));
 
         res.json({ success: true, message: 'Order Placed Successfully via Cash on Delivery!' });
 
@@ -710,6 +898,13 @@ const placeBookOrderTokens = async (req, res) => {
         const newOrder = new orderModel(orderData);
         await newOrder.save();
 
+        // Send order invoice email (non-blocking)
+        sendBookOrderPlacedEmail({
+            userEmail: userData.email, userName: userData.name,
+            orderId: newOrder._id, items, amount: Math.round(amount),
+            paymentMethod: 'Therapique Tokens', address
+        }).catch(e => console.log('Email error:', e.message));
+
         res.json({ 
             success: true, 
             message: `Order Placed Successfully using T ${Math.round(amount)} Therapique Tokens!`,
@@ -722,6 +917,17 @@ const placeBookOrderTokens = async (req, res) => {
     }
 };
 
+const computeAutoStatus = (orderDate, currentStatus, isManualStatus = false) => {
+    if (isManualStatus) return currentStatus;
+    if (currentStatus === 'Cancelled') return 'Cancelled';
+    const elapsedHours = (Date.now() - new Date(orderDate).getTime()) / (1000 * 60 * 60);
+    if (elapsedHours < 2) return 'Order Placed';
+    if (elapsedHours < 6) return 'Packing & Preparing';
+    if (elapsedHours < 24) return 'Shipped';
+    if (elapsedHours < 48) return 'Out for Delivery';
+    return 'Delivered';
+};
+
 // API to get user book orders
 const getUserOrders = async (req, res) => {
     try {
@@ -729,14 +935,8 @@ const getUserOrders = async (req, res) => {
         let orders = await orderModel.find({ userId }).sort({ date: -1 });
         
         for (let order of orders) {
-            if (order.status !== 'Cancelled') {
-                const elapsedMinutes = (Date.now() - new Date(order.date).getTime()) / (1000 * 60);
-                let autoStatus = 'Order Placed';
-                if (elapsedMinutes >= 15) autoStatus = 'Delivered';
-                else if (elapsedMinutes >= 10) autoStatus = 'Out for Delivery';
-                else if (elapsedMinutes >= 5) autoStatus = 'Shipped';
-                else if (elapsedMinutes >= 2) autoStatus = 'Packing & Preparing';
-
+            if (order.status !== 'Cancelled' && !order.isManualStatus) {
+                const autoStatus = computeAutoStatus(order.date, order.status, order.isManualStatus);
                 if (order.status !== autoStatus) {
                     order.status = autoStatus;
                     await order.save();
@@ -774,8 +974,120 @@ const updateOrderStatus = async (req, res) => {
         if (!orderId || !status) {
             return res.json({ success: false, message: 'Missing orderId or status' });
         }
-        await orderModel.findByIdAndUpdate(orderId, { status });
+        await orderModel.findByIdAndUpdate(orderId, { status, isManualStatus: true });
+
+        // Send status update email (non-blocking)
+        const order = await orderModel.findById(orderId);
+        if (order) {
+            const customer = await userModel.findById(order.userId);
+            sendOrderStatusUpdateEmail({
+                userEmail: customer?.email, userName: customer?.name,
+                orderId: order._id, status
+            }).catch(e => console.log('Email error:', e.message));
+        }
+
         res.json({ success: true, message: `Order status updated to "${status}"` });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// API to claim pending refund for a cancelled appointment (tokens or bank)
+const claimRefund = async (req, res) => {
+    try {
+        const { userId, appointmentId, refundChoice } = req.body;
+
+        if (!appointmentId || !refundChoice) {
+            return res.json({ success: false, message: "Appointment ID and refund choice are required" });
+        }
+
+        const appointment = await appointmentModel.findById(appointmentId);
+        if (!appointment) {
+            return res.json({ success: false, message: "Appointment not found" });
+        }
+
+        if (appointment.userId !== userId) {
+            return res.json({ success: false, message: "Unauthorized action" });
+        }
+
+        if (!appointment.cancelled) {
+            return res.json({ success: false, message: "This appointment is not cancelled" });
+        }
+
+        if (appointment.refundStatus && appointment.refundStatus !== 'pending_choice') {
+            return res.json({ success: false, message: `Refund has already been processed as ${appointment.refundStatus}` });
+        }
+
+        const amount = appointment.amount || 0;
+        const user = await userModel.findById(userId);
+        const doctor = await doctorModel.findById(appointment.docId);
+
+        if (refundChoice === 'tokens') {
+            // Instant 1:1 Tokens credit
+            user.therapiqueCoins = (user.therapiqueCoins || 0) + amount;
+            user.coinsTransactions.push({
+                type: 'earn',
+                amount: amount,
+                description: `Refund for Cancelled Session (Dr. ${doctor?.name || appointment.docData?.name || 'Doctor'})`,
+                date: new Date()
+            });
+            await user.save();
+
+            appointment.refundStatus = 'refunded_tokens';
+            await appointment.save();
+
+            sendRefundConfirmedEmail({
+                appointmentId: appointment._id,
+                patientEmail: user.email,
+                patientName: user.name,
+                doctorName: doctor?.name || appointment.docData?.name,
+                amount,
+                refundMethod: 'tokens'
+            }).catch(e => console.log('Email error:', e.message));
+
+            return res.json({
+                success: true,
+                message: `₹${amount} successfully credited as ${amount} Therapique Tokens to your wallet!`,
+                therapiqueCoins: user.therapiqueCoins,
+                refundStatus: 'refunded_tokens'
+            });
+        } else if (refundChoice === 'bank') {
+            // Direct Razorpay refund
+            try {
+                if (appointment.paymentId && razorpayInstance) {
+                    await razorpayInstance.payments.refund(appointment.paymentId, {
+                        amount: amount * 100,
+                        speed: "optimum",
+                        notes: { reason: "Refund claimed by patient for cancelled appointment" }
+                    });
+                }
+            } catch (err) {
+                console.log("Razorpay refund API call error:", err.message);
+            }
+
+            appointment.refundStatus = 'refunded_bank';
+            await appointment.save();
+
+            sendRefundConfirmedEmail({
+                appointmentId: appointment._id,
+                patientEmail: user.email,
+                patientName: user.name,
+                doctorName: doctor?.name || appointment.docData?.name,
+                amount,
+                refundMethod: 'bank'
+            }).catch(e => console.log('Email error:', e.message));
+
+            return res.json({
+                success: true,
+                message: `₹${amount} refund initiated directly to your original Bank / UPI account via Razorpay!`,
+                therapiqueCoins: user.therapiqueCoins || 0,
+                refundStatus: 'refunded_bank'
+            });
+        } else {
+            return res.json({ success: false, message: "Invalid refund choice. Must be 'tokens' or 'bank'." });
+        }
+
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -789,6 +1101,7 @@ export {
     updateProfile, 
     listAppointment, 
     cancelAppointment, 
+    claimRefund,
     paymentRazorpay, 
     verifyRazorpay, 
     contactForm, 

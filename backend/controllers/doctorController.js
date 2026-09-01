@@ -5,6 +5,7 @@ import appointmentModel from "../models/appointmentModel.js";
 import userModel from "../models/userModel.js";
 import razorpay from 'razorpay'
 import { v2 as cloudinary } from 'cloudinary';
+import { sendAppointmentCancellationEmail } from '../services/emailService.js';
 
 const razorpayInstance = new razorpay({
     key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_Synr1hf0zc3IAl',
@@ -44,10 +45,33 @@ const loginDoctor = async (req, res) => {
 const appointmentsDoctor = async (req, res) => {
     try {
 
-        const { docId } = req.body
-        const appointments = await appointmentModel.find({ docId })
+        const docId = req.docId || req.body.docId
+        const appointments = await appointmentModel.find({ docId }).lean()
 
-        res.json({ success: true, appointments })
+        // Fetch latest patient profile info (image, name, dob, gender, phone) so appointments always show updated profile pics
+        const userIds = [...new Set(appointments.map(a => a.userId).filter(Boolean))]
+        const users = await userModel.find({ _id: { $in: userIds } }).select('image name dob gender phone').lean()
+        const userMap = new Map(users.map(u => [u._id.toString(), u]))
+
+        const updatedAppointments = appointments.map(app => {
+            const user = userMap.get(app.userId?.toString())
+            if (user) {
+                return {
+                    ...app,
+                    userData: {
+                        ...app.userData,
+                        image: user.image || app.userData?.image,
+                        name: user.name || app.userData?.name,
+                        dob: user.dob || app.userData?.dob,
+                        gender: user.gender || app.userData?.gender,
+                        phone: user.phone || app.userData?.phone
+                    }
+                }
+            }
+            return app
+        })
+
+        res.json({ success: true, appointments: updatedAppointments })
 
     } catch (error) {
         console.log(error)
@@ -58,7 +82,8 @@ const appointmentsDoctor = async (req, res) => {
 // API to cancel appointment for doctor panel with automatic token refund & slot release
 const appointmentCancel = async (req, res) => {
     try {
-        const { docId, appointmentId } = req.body
+        const docId = req.docId || req.body.docId
+        const { appointmentId } = req.body
 
         const appointmentData = await appointmentModel.findById(appointmentId)
         if (appointmentData && appointmentData.docId === docId) {
@@ -78,7 +103,7 @@ const appointmentCancel = async (req, res) => {
                 await doctorModel.findByIdAndUpdate(docId, { slots_booked })
             }
 
-            // 3. Automatic Refund logic based on payment method
+            // 3. Refund logic based on payment method
             if (payment && userId) {
                 if (appointmentData.paidWithCoins) {
                     const user = await userModel.findById(userId)
@@ -91,39 +116,45 @@ const appointmentCancel = async (req, res) => {
                             date: new Date()
                         })
                         await user.save()
+                        await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'refunded_tokens' })
+                        sendAppointmentCancellationEmail({
+                            appointmentId,
+                            patientEmail: user.email, patientName: user.name,
+                            doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+                            slotDate, slotTime,
+                            cancelledBy: 'doctor',
+                            refundMessage: `${amount} Therapique Tokens refunded to your wallet.`
+                        }).catch(e => console.log('Email error:', e.message));
                         return res.json({ success: true, message: `Appointment Cancelled. ${amount} Therapique Tokens refunded to patient's wallet!` })
                     }
                 } else {
-                    // Money payment via Razorpay -> Trigger Razorpay Bank Refund API
-                    try {
-                        if (appointmentData.paymentId && razorpayInstance) {
-                            await razorpayInstance.payments.refund(appointmentData.paymentId, {
-                                amount: amount * 100,
-                                speed: "optimum",
-                                notes: { reason: "Appointment cancelled by doctor" }
-                            })
-                            return res.json({ success: true, message: `Appointment Cancelled. ₹${amount} refund initiated to patient's original bank/UPI account via Razorpay!` })
-                        }
-                    } catch (err) {
-                        console.log("Razorpay refund error fallback to wallet:", err.message)
-                    }
-
-                    // Fallback to wallet if in test mode or no paymentId
-                    const user = await userModel.findById(userId)
-                    if (user) {
-                        user.therapiqueCoins = (user.therapiqueCoins || 0) + (amount || 0)
-                        user.coinsTransactions.push({
-                            type: 'earn',
-                            amount: amount,
-                            description: `Refund for Cancelled Appointment with Dr. ${doctorData?.name || 'Doctor'}`,
-                            date: new Date()
-                        })
-                        await user.save()
-                        return res.json({ success: true, message: `Appointment Cancelled. ₹${amount} credited as ${amount} Tokens to patient's wallet!` })
-                    }
+                    // Paid with real money / Razorpay -> Let patient choose their preferred refund on the website!
+                    await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'pending_choice' });
+                    const patient = await userModel.findById(userId);
+                    sendAppointmentCancellationEmail({
+                        appointmentId,
+                        patientEmail: patient?.email,
+                        patientName: patient?.name,
+                        doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+                        slotDate, slotTime,
+                        cancelledBy: 'doctor',
+                        needsRefundChoice: true,
+                        amount: appointmentData.amount
+                    }).catch(e => console.log('Email error:', e.message));
+                    return res.json({ success: true, message: `Appointment Cancelled. Patient has been notified to choose their refund method on the website.` })
                 }
             }
 
+            // No-payment cancellation email
+            await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true, refundStatus: 'none' })
+            const patient = await userModel.findById(userId);
+            sendAppointmentCancellationEmail({
+                appointmentId,
+                patientEmail: patient?.email, patientName: patient?.name,
+                doctorEmail: doctorData?.email, doctorName: doctorData?.name, 
+                slotDate, slotTime,
+                cancelledBy: 'doctor'
+            }).catch(e => console.log('Email error:', e.message));
             return res.json({ success: true, message: 'Appointment Cancelled' })
         }
 
@@ -139,7 +170,8 @@ const appointmentCancel = async (req, res) => {
 const appointmentComplete = async (req, res) => {
     try {
 
-        const { docId, appointmentId } = req.body
+        const docId = req.docId || req.body.docId
+        const { appointmentId } = req.body
 
         const appointmentData = await appointmentModel.findById(appointmentId)
         if (appointmentData && appointmentData.docId === docId) {
@@ -197,11 +229,11 @@ const changeAvailability = async (req, res) => {
 }
 
 
-// API to get doctor profile for  Doctor Panel
+// API to get doctor profile for Doctor Panel
 const doctorProfile = async (req, res) => {
     try {
 
-        const { docId } = req.body
+        const docId = req.docId || req.body.docId
         const profileData = await doctorModel.findById(docId).select('-password')
 
         res.json({ success: true, profileData })
@@ -215,14 +247,21 @@ const doctorProfile = async (req, res) => {
 // API to update doctor profile data from Doctor Panel
 const updateDoctorProfile = async (req, res) => {
     try {
-        const { docId, fees, address, available, about, image } = req.body
+        const docId = req.docId || req.body.docId
+        const { fees, address, available, about, image } = req.body
         const imageFile = req.file
+
+        if (!docId) {
+            return res.json({ success: false, message: "Doctor ID missing or unauthorized" })
+        }
 
         let parsedAddress = address
         if (typeof address === 'string') {
             try {
                 parsedAddress = JSON.parse(address)
-            } catch (e) {}
+            } catch (e) {
+                parsedAddress = address
+            }
         }
 
         let imageUrl = null
@@ -234,17 +273,36 @@ const updateDoctorProfile = async (req, res) => {
             imageUrl = imageUpload.secure_url
         }
 
-        const updateFields = { fees, address: parsedAddress || address, available, about }
+        const updateFields = {}
+        if (fees !== undefined && fees !== '') updateFields.fees = Number(fees) || fees
+        if (parsedAddress !== undefined) updateFields.address = parsedAddress
+        if (available !== undefined) updateFields.available = (available === true || available === 'true')
+        if (about !== undefined) updateFields.about = about
         if (imageUrl) {
             updateFields.image = imageUrl
         }
 
-        await doctorModel.findByIdAndUpdate(docId, updateFields)
+        const updatedDoctor = await doctorModel.findByIdAndUpdate(docId, updateFields, { new: true })
 
-        res.json({ success: true, message: 'Profile Updated Successfully' })
+        if (!updatedDoctor) {
+            return res.json({ success: false, message: "Doctor not found in database" })
+        }
+
+        // Synchronize updated doctor profile (image, fees, address, about) across all their appointments
+        const appointmentDocUpdates = {}
+        if (updateFields.image) appointmentDocUpdates["docData.image"] = updateFields.image
+        if (updateFields.name) appointmentDocUpdates["docData.name"] = updateFields.name
+        if (updateFields.fees) appointmentDocUpdates["docData.fees"] = updateFields.fees
+        if (updateFields.address) appointmentDocUpdates["docData.address"] = updateFields.address
+        if (updateFields.about) appointmentDocUpdates["docData.about"] = updateFields.about
+        if (Object.keys(appointmentDocUpdates).length > 0) {
+            await appointmentModel.updateMany({ docId }, { $set: appointmentDocUpdates }).catch(err => console.log("Appointment doc sync error:", err.message))
+        }
+
+        res.json({ success: true, message: 'Profile Updated Successfully', profileData: updatedDoctor })
 
     } catch (error) {
-        console.log(error)
+        console.log("Error in updateDoctorProfile:", error)
         res.json({ success: false, message: error.message })
     }
 }
@@ -253,14 +311,14 @@ const updateDoctorProfile = async (req, res) => {
 const doctorDashboard = async (req, res) => {
     try {
 
-        const { docId } = req.body
+        const docId = req.docId || req.body.docId
 
-        const appointments = await appointmentModel.find({ docId })
+        const appointments = await appointmentModel.find({ docId }).lean()
 
         let earnings = 0
 
         appointments.map((item) => {
-            if (item.isCompleted || item.payment) {
+            if (item.isCompleted && !item.cancelled) {
                 earnings += item.amount
             }
         })
@@ -273,11 +331,39 @@ const doctorDashboard = async (req, res) => {
             }
         })
 
+        // Fetch latest patient profile info for recent appointments table
+        const userIds = [...new Set(appointments.map(a => a.userId).filter(Boolean))]
+        const users = await userModel.find({ _id: { $in: userIds } }).select('image name dob gender phone').lean()
+        const userMap = new Map(users.map(u => [u._id.toString(), u]))
+
+        const updatedAppointments = appointments.map(app => {
+            const user = userMap.get(app.userId?.toString())
+            if (user) {
+                return {
+                    ...app,
+                    userData: {
+                        ...app.userData,
+                        image: user.image || app.userData?.image,
+                        name: user.name || app.userData?.name
+                    }
+                }
+            }
+            return app
+        })
+
+        const appointmentStats = {
+            total: appointments.length,
+            completed: appointments.filter(a => a.isCompleted && !a.cancelled).length,
+            cancelled: appointments.filter(a => a.cancelled).length,
+            upcoming: appointments.filter(a => !a.cancelled && !a.isCompleted).length
+        }
+
         const dashData = {
             earnings,
             appointments: appointments.length,
             patients: patients.length,
-            latestAppointments: appointments.reverse()
+            appointmentStats,
+            latestAppointments: updatedAppointments.reverse()
         }
 
         res.json({ success: true, dashData })
@@ -288,6 +374,31 @@ const doctorDashboard = async (req, res) => {
     }
 }
 
+// API to generate short-lived, one-time call ticket for doctor video call session
+const generateCallTicket = async (req, res) => {
+    try {
+        const docId = req.docId || req.body.docId
+        const { appointmentId } = req.body
+        const appointment = await appointmentModel.findById(appointmentId)
+
+        if (!appointment) {
+            return res.json({ success: false, message: 'Appointment not found' })
+        }
+
+        if (appointment.docId !== docId) {
+            return res.json({ success: false, message: 'Unauthorized appointment access' })
+        }
+
+        const doctor = await doctorModel.findById(docId)
+        const { createCallTicket } = await import('../socket/callTicketManager.js')
+        const ticket = createCallTicket(appointmentId, docId, doctor.name)
+
+        res.json({ success: true, ticket })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+}
 
 export {
     loginDoctor,
@@ -298,5 +409,6 @@ export {
     appointmentComplete,
     doctorDashboard,
     doctorProfile,
-    updateDoctorProfile
+    updateDoctorProfile,
+    generateCallTicket
 }

@@ -1,17 +1,31 @@
-import { useState, createContext } from "react";
+import { useState, useEffect, createContext } from "react";
 import axios from 'axios'
 import { toast } from "react-toastify";
+import { useDoctorSocket } from "../hooks/useDoctorSocket";
 
 export const DoctorContext = createContext();
 
 const DoctorContextProvider = (props) => {
   
-  const backendUrl = import.meta.env.VITE_BACKEND_URL
+  const envBackendUrl = import.meta.env.VITE_BACKEND_URL
+  const backendUrl = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? (envBackendUrl && !envBackendUrl.includes('trycloudflare.com') ? envBackendUrl : 'http://localhost:4000')
+    : (envBackendUrl || 'http://localhost:4000')
 
   const [dToken, setDToken] = useState(localStorage.getItem('dToken') ? localStorage.getItem('dToken') : '')
   const [appointments, setAppointments] = useState([])
   const [dashData, setDashData] = useState(false)
   const [profileData, setProfileData] = useState(false)
+
+  const doctorSocket = useDoctorSocket(backendUrl, dToken)
+
+  useEffect(() => {
+    if (dToken) {
+      getProfileData()
+    }
+  }, [dToken])
+
+
   
   // Getting Doctor appointment data from Database using API
   const getAppointments = async () => {
@@ -133,7 +147,8 @@ const DoctorContextProvider = (props) => {
     getProfileData,
     cancelAppointment,
     completeAppointment,
-    getDashData
+    getDashData,
+    doctorSocket
   }
   return (
     <DoctorContext.Provider value={value}>

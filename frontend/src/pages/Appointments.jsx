@@ -25,6 +25,11 @@ const Appointments = () => {
   }
 
   const getAvailableSlots = async () => {
+    if (!docInfo || !docInfo.available) {
+      setDocSlots([])
+      return
+    }
+
     //geting current date
     let today = new Date()
     let allSlots = []
@@ -91,6 +96,10 @@ const Appointments = () => {
 
 
   const bookAppointment = async () => {
+
+    if (!docInfo || !docInfo.available) {
+      return toast.error('This doctor is currently unavailable for booking.')
+    }
 
     if (!token) {
       toast.warning('Login to book appointment')
@@ -209,16 +218,41 @@ const Appointments = () => {
     <div>
       {/* -------- Doctor Details -------- */}
       <div className='flex flex-col sm:flex-row gap-4'>
-        <div>
-          <img className='bg-primary w-full sm:max-w-72 rounded-lg' src={docInfo.image} alt="" />
+        <div className='w-full sm:max-w-72 h-72 sm:h-80 bg-[#FAF5EE] rounded-3xl overflow-hidden border border-[#EADBCE] shadow-sm shrink-0 relative'>
+          <img
+            className='w-full h-full object-cover object-center'
+            src={docInfo.image || "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&auto=format&fit=crop"}
+            alt={docInfo.name}
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&auto=format&fit=crop";
+            }}
+          />
+          {/* Floating Availability Badge on Top Right */}
+          <div className="absolute top-3.5 right-3.5 z-20 bg-white/95 backdrop-blur-xs border border-[#EADBCE] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md select-none">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${docInfo.available ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.9)] animate-pulse' : 'bg-rose-500'}`} />
+            <span className={docInfo.available ? 'text-emerald-700' : 'text-rose-600'}>
+              {docInfo.available ? 'Available' : 'Currently Unavailable'}
+            </span>
+          </div>
         </div>
 
         <div className='flex-1 border border-gray-400 rounded-lg p-8 py-7 bg-white mx-2 sm:mx-0 mt-[-30px] sm:mt-0'>
           {/* -------- Doc Info -------- */}
-          <p className='flex items-center gap-2 text-2xl font-medium text-gray-900'>
-            {docInfo.name}
-            <img className='w-5' src={assets.verified_icon} alt="" />
-          </p>
+          <div className='flex flex-wrap items-center gap-3'>
+            <p className='flex items-center gap-2 text-2xl font-medium text-gray-900'>
+              {docInfo.name}
+              <img className='w-5' src={assets.verified_icon} alt="" />
+            </p>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+              docInfo.available 
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                : 'bg-rose-50 text-rose-700 border-rose-200'
+            }`}>
+              {docInfo.available ? '● Available' : '● Currently Unavailable'}
+            </span>
+          </div>
+
           <div className='flex items-center gap-2 text-sm mt-1 text-gray-600'>
             <p>{docInfo.degree} - {docInfo.speciality} </p>
             <button className='py-0.5 px-2 border text-xs rounded-full'>{docInfo.experience}</button>
@@ -239,159 +273,188 @@ const Appointments = () => {
           </p>
         </div>
       </div>
-      {/* -------- Booking Slots -------- */}
-      <div className='sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700'>
-        <p>Booking slots</p>
-        <div className='flex gap-3 items-center w-full overflow-x-scroll hide-scrollbar mt-4'>
-          {
-            docSlots.length > 0 && docSlots.map((item, index) => (
-              <div onClick={() => setSlotIndex(index)} className={`flex flex-col items-center justify-center min-w-20 px-4 py-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm
-            ${slotIndex === index
-                  ? "bg-text text-white shadow-md scale-105"
-                  : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow"
-                }`} key={index}>
-                <p className={slotIndex === index ? 'text-white' : 'text-gray-500'}>{daysOfWeek[item.date.getDay()]} </p>
-                <p className={slotIndex === index ? 'text-white' : 'text-gray-800'}>{item.date.getDate()}</p>
-              </div>
-            ))
-          }
-        </div>
 
-        <div className='flex items-center gap-3 w-full overflow-x-scroll hide-scrollbar mt-4'>
-          {docSlots.length > 0 && docSlots[slotIndex].slots.length > 0 ? (
-            docSlots[slotIndex].slots.map((item, index) => (
-              <p onClick={() => setSlotTime(item.time)} className={`text-sm flex-shrink-0 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300
-              ${item.time === slotTime
-                  ? "bg-text text-white shadow-md scale-105"
-                  : "bg-gray-50 text-gray-600 border border-gray-300 hover:border-gray-400 hover:shadow"
-                }`} key={index}>
-                {item.time.toLowerCase()}
-              </p>
-            ))
-          ) : (
-            <p className='text-sm text-gray-500 py-2'>No booking slots available for this day.</p>
-          )}
-        </div>
-
-        {/* Payment Method Selection */}
-        {slotTime && (
-          <div className='mt-6 bg-white p-6 rounded-lg border border-gray-200 shadow-sm'>
-            <h3 className='text-lg font-semibold text-gray-900 mb-4'>Choose Payment Method</h3>
-
-            <div className='space-y-3'>
-              {/* Online Payment Option */}
-              <div
-                onClick={() => setPaymentMethod('online')}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${paymentMethod === 'online'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                  }`}
-              >
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center'>
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${paymentMethod === 'online' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                      }`}>
-                      {paymentMethod === 'online' && <div className='w-2 h-2 bg-white rounded-full m-0.5'></div>}
-                    </div>
-                    <div>
-                      <p className='font-semibold text-gray-900'>Online Payment</p>
-                      <p className='text-sm text-gray-600'>Pay with card/UPI via Razorpay</p>
-                    </div>
-                  </div>
-                  <p className='text-lg font-bold text-gray-900'>{currencySymbol}{docInfo.fees}</p>
+      {/* -------- Booking Slots Section (Only shown if doctor is Available) -------- */}
+      {docInfo.available ? (
+        <div className='sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700'>
+          <p>Booking slots</p>
+          <div className='flex gap-3 items-center w-full overflow-x-scroll hide-scrollbar mt-4'>
+            {
+              docSlots.length > 0 && docSlots.map((item, index) => (
+                <div onClick={() => setSlotIndex(index)} className={`flex flex-col items-center justify-center min-w-20 px-4 py-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm
+              ${slotIndex === index
+                    ? "bg-text text-white shadow-md scale-105"
+                    : "bg-white text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow"
+                  }`} key={index}>
+                  <p className={slotIndex === index ? 'text-white' : 'text-gray-500'}>{daysOfWeek[item.date.getDay()]} </p>
+                  <p className={slotIndex === index ? 'text-white' : 'text-gray-800'}>{item.date.getDate()}</p>
                 </div>
-              </div>
+              ))
+            }
+          </div>
 
-              {/* Therapique Coins Option */}
-              <div
-                onClick={() => setPaymentMethod('coins')}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${paymentMethod === 'coins'
-                    ? 'border-yellow-500 bg-yellow-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                  }`}
-              >
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center'>
-                    <div className={`w-4 h-4 rounded-full border-2 mr-3 ${paymentMethod === 'coins' ? 'border-yellow-500 bg-yellow-500' : 'border-gray-300'
-                      }`}>
-                      {paymentMethod === 'coins' && <div className='w-2 h-2 bg-white rounded-full m-0.5'></div>}
-                    </div>
-                    <div>
-                      <p className='font-semibold text-gray-900'>Therapique Coins</p>
-                      <p className='text-sm text-gray-600'>
-                        Your therapiqueCoins: {userData.therapiqueCoins} coins
-                        {userData.therapiqueCoins < docInfo.fees && (
-                          <span className='text-red-500 ml-2'>
-                            (Need {docInfo.fees - userData.therapiqueCoins} more)
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <div className='text-right'>
-                    <div className='flex items-center gap-1'>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" fill="#FFD700" stroke="#E6B800" strokeWidth="2" />
-                        <text x="12" y="16" textAnchor="middle" fontWeight="bold" fontSize="12" fill="#8B8000" fontFamily="Arial">T</text>
-                        <circle cx="12" cy="12" r="7" stroke="#FFF8DC" strokeWidth="1" />
-                      </svg>
-                      <span className='text-lg font-bold text-gray-900'>{docInfo.fees}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Insufficient coins warning */}
-            {paymentMethod === 'coins' && userData.therapiqueCoins < docInfo.fees && (
-              <div className='mt-4 p-3 bg-red-50 border border-red-200 rounded-lg'>
-                <div className='flex items-center'>
-                  <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  <span className='text-red-700 text-sm'>
-                    Insufficient coins.
-                    <button
-                      onClick={() => navigate('/coins-shop')}
-                      className='text-red-800 underline ml-1 hover:no-underline'
-                    >
-                      Buy more coins
-                    </button>
-                  </span>
-                </div>
-              </div>
+          <div className='flex items-center gap-3 w-full overflow-x-scroll hide-scrollbar mt-4'>
+            {docSlots.length > 0 && docSlots[slotIndex].slots.length > 0 ? (
+              docSlots[slotIndex].slots.map((item, index) => (
+                <p onClick={() => setSlotTime(item.time)} className={`text-sm flex-shrink-0 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300
+                ${item.time === slotTime
+                    ? "bg-text text-white shadow-md scale-105"
+                    : "bg-gray-50 text-gray-600 border border-gray-300 hover:border-gray-400 hover:shadow"
+                  }`} key={index}>
+                  {item.time.toLowerCase()}
+                </p>
+              ))
+            ) : (
+              <p className='text-sm text-gray-500 py-2'>No booking slots available for this day.</p>
             )}
           </div>
-        )}
 
-        {slotTime && (
-          <button
-            onClick={bookAppointment}
-            disabled={paymentMethod === 'coins' && userData.therapiqueCoins < docInfo.fees}
-            className={`mt-6 px-8 py-3 rounded-full text-white font-semibold text-sm transition duration-300 ${paymentMethod === 'coins' && userData.therapiqueCoins < docInfo.fees
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-[#1c1917] hover:bg-gray-800'
-              }`}
-          >
-            {paymentMethod === 'coins' ? (
-              <div className='flex items-center'>
-                <svg className="w-4 h-4 text-white mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                </svg>
-                Book with Coins ({docInfo.fees})
+          {/* Payment Method Selection */}
+          {slotTime && (
+            <div className='mt-6 bg-white p-6 rounded-lg border border-gray-200 shadow-sm'>
+              <h3 className='text-lg font-semibold text-gray-900 mb-4'>Choose Payment Method</h3>
+
+              <div className='space-y-3'>
+                {/* Online Payment Option */}
+                <div
+                  onClick={() => setPaymentMethod('online')}
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${paymentMethod === 'online'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                >
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center'>
+                      <div className={`w-4 h-4 rounded-full border-2 mr-3 ${paymentMethod === 'online' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                        }`}>
+                        {paymentMethod === 'online' && <div className='w-2 h-2 bg-white rounded-full m-0.5'></div>}
+                      </div>
+                      <div>
+                        <p className='font-semibold text-gray-900'>Online Payment</p>
+                        <p className='text-sm text-gray-600'>Pay with card/UPI via Razorpay</p>
+                      </div>
+                    </div>
+                    <p className='text-lg font-bold text-gray-900'>{currencySymbol}{docInfo.fees}</p>
+                  </div>
+                </div>
+
+                {/* Therapique Coins Option */}
+                <div
+                  onClick={() => setPaymentMethod('coins')}
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${paymentMethod === 'coins'
+                      ? 'border-yellow-500 bg-yellow-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                >
+                  <div className='flex items-center justify-between'>
+                    <div className='flex items-center'>
+                      <div className={`w-4 h-4 rounded-full border-2 mr-3 ${paymentMethod === 'coins' ? 'border-yellow-500 bg-yellow-500' : 'border-gray-300'
+                        }`}>
+                        {paymentMethod === 'coins' && <div className='w-2 h-2 bg-white rounded-full m-0.5'></div>}
+                      </div>
+                      <div>
+                        <p className='font-semibold text-gray-900'>Therapique Coins</p>
+                        <p className='text-sm text-gray-600'>
+                          Your therapiqueCoins: {userData.therapiqueCoins} coins
+                          {userData.therapiqueCoins < docInfo.fees && (
+                            <span className='text-red-500 ml-2'>
+                              (Need {docInfo.fees - userData.therapiqueCoins} more)
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className='text-right'>
+                      <div className='flex items-center gap-1'>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                          <circle cx="12" cy="12" r="10" fill="#FFD700" stroke="#E6B800" strokeWidth="2" />
+                          <text x="12" y="16" textAnchor="middle" fontWeight="bold" fontSize="12" fill="#8B8000" fontFamily="Arial">T</text>
+                          <circle cx="12" cy="12" r="7" stroke="#FFF8DC" strokeWidth="1" />
+                        </svg>
+                        <span className='text-lg font-bold text-gray-900'>{docInfo.fees}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div className='flex items-center'>
-                <svg className="w-4 h-4 text-white mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                </svg>
-                Book & Pay Online ({currencySymbol}{docInfo.fees})
-              </div>
-            )}
-          </button>
-        )}
-      </div>
+
+              {/* Insufficient coins warning */}
+              {paymentMethod === 'coins' && userData.therapiqueCoins < docInfo.fees && (
+                <div className='mt-4 p-3 bg-red-50 border border-red-200 rounded-lg'>
+                  <div className='flex items-center'>
+                    <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span className='text-red-700 text-sm'>
+                      Insufficient coins.
+                      <button
+                        onClick={() => navigate('/coins-shop')}
+                        className='text-red-800 underline ml-1 hover:no-underline'
+                      >
+                        Buy more coins
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {slotTime && (
+            <button
+              onClick={bookAppointment}
+              disabled={paymentMethod === 'coins' && userData.therapiqueCoins < docInfo.fees}
+              className={`mt-6 px-8 py-3 rounded-full text-white font-semibold text-sm transition duration-300 ${paymentMethod === 'coins' && userData.therapiqueCoins < docInfo.fees
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-[#1c1917] hover:bg-gray-800'
+                }`}
+            >
+              {paymentMethod === 'coins' ? (
+                <div className='flex items-center'>
+                  <svg className="w-4 h-4 text-white mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                  </svg>
+                  Book with Coins ({docInfo.fees})
+                </div>
+              ) : (
+                <div className='flex items-center'>
+                  <svg className="w-4 h-4 text-white mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                  </svg>
+                  Book & Pay Online ({currencySymbol}{docInfo.fees})
+                </div>
+              )}
+            </button>
+          )}
+        </div>
+      ) : (
+        /* Doctor Unavailable Notice Banner (Replaces booking slots completely) */
+        <div className='sm:ml-72 sm:pl-4 mt-6'>
+          <div className='bg-rose-50/70 border border-rose-200 rounded-3xl p-6 sm:p-8 text-center space-y-3 shadow-xs'>
+            <div className='w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto'>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className='text-lg font-black text-gray-900'>Dr. {docInfo.name} is Currently Unavailable</h3>
+            <p className='text-sm text-gray-600 max-w-md mx-auto leading-relaxed'>
+              This specialist is currently marked as unavailable and is not accepting consultation or appointment bookings at this time. Please browse our other verified therapists below.
+            </p>
+            <div className='pt-2'>
+              <button
+                type='button'
+                onClick={() => { navigate('/doctors'); scrollTo(0, 0); }}
+                className='bg-[#1c1917] hover:bg-gray-800 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-full transition-all shadow-sm hover:shadow-md cursor-pointer inline-flex items-center gap-2'
+              >
+                <span>Find Other Available Doctors</span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* -------- Listing Related Doctors -------- */}
       <RelatedDoctors docId={docId} speciality={docInfo.speciality} />
     </div>

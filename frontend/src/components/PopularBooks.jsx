@@ -1,65 +1,64 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import Title from './Title'
-// Import Swiper React components
-import { Swiper, SwiperSlide } from 'swiper/react';
-// Import Swiper styles
-import 'swiper/css';
-// import required modules
-import { Autoplay } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react'
+import 'swiper/css'
+import { Autoplay } from 'swiper/modules'
 import Item from './Item'
+import { FadeUp } from './ScrollReveal'
 
 const PopularBooks = () => {
-  const [popularBooks, setpopularBooks] = useState([])
   const { books } = useContext(ShopContext)
-  // Getting popular books data
-  useEffect(() => {
+  
+  const popularBooks = useMemo(() => {
     const data = books.filter((item) => item.popular)
-    setpopularBooks(data.length > 0 ? data.slice(0, 11) : books.slice(0, 10))
+    return data.length > 0 ? data.slice(0, 11) : books.slice(0, 10)
   }, [books])
 
   return (
-    <section className='py-16'>
+    <section className='py-10 sm:py-14'>
       <Title
         title1={"Popular"}
         title2={"Books"}
-        para={"Check out our newest books arriving weekly with fresh ideas, exciting plots and vibrant voices."} />
+        para={"Check out our newest books arriving weekly with fresh ideas, exciting plots and vibrant voices."} 
+      />
       {/* CONTAINER */}
-      <Swiper
-        autoplay={{
-          delay: 4000,
-          disableOnInteraction: false,
-        }}
-        breakpoints={{
-          355: {
-            slidesPerView: 2,
-            spaceBetween: 20,
-          },
-          600: {
-            slidesPerView: 3,
-            spaceBetween: 30,
-          },
-          900: {
-            slidesPerView: 4,
-            spaceBetween: 30,
-          },
-          1200: {
-            slidesPerView: 5,
-            spaceBetween: 30,
-          }
-        }}
-        modules={[Autoplay]}
-        className="min-h-[380px] mt-4 py-6 px-1">
-        {
-          popularBooks.map((book) => (
-            <SwiperSlide key={book._id}>
-              <Item book={book} fromHero={true} />
+      <FadeUp delay={0.15} className="mt-2">
+        <Swiper
+          autoplay={{
+            delay: 4000,
+            disableOnInteraction: false,
+          }}
+          breakpoints={{
+            320: {
+              slidesPerView: 2,
+              spaceBetween: 14,
+            },
+            600: {
+              slidesPerView: 3,
+              spaceBetween: 20,
+            },
+            900: {
+              slidesPerView: 4,
+              spaceBetween: 24,
+            },
+            1200: {
+              slidesPerView: 5,
+              spaceBetween: 24,
+            }
+          }}
+          modules={[Autoplay]}
+          className="w-full pt-8 pb-10 px-1 sm:px-2"
+        >
+          {popularBooks.map((book) => (
+            <SwiperSlide key={book._id} className="pt-6 pb-4 px-1 flex items-stretch h-auto">
+              <Item book={book} />
             </SwiperSlide>
-          ))
-        }
-      </Swiper>
+          ))}
+        </Swiper>
+      </FadeUp>
     </section>
   )
 }
 
-export default PopularBooks 
+export default React.memo(PopularBooks)

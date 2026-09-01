@@ -3,14 +3,21 @@ import { useParams } from 'react-router-dom'
 import Title from '../components/Title'
 import Item from '../components/Item'
 import { ShopContext } from '../context/ShopContext'
-import { FiSearch } from 'react-icons/fi'
+import TypewriterSearchInput from '../components/TypewriterSearchInput'
+import PaginationControls from '../components/PaginationControls'
+
+const categoryPlaceholders = [
+  'Search in this category...',
+  'Search title or author...',
+  'Search topics & keywords...',
+]
 
 const CategoryShop = () => {
   const { books, searchQuery, setSearchQuery } = useContext(ShopContext)
   const [filteredBooks, setFilteredBooks] = useState([])
   const [currPage, setCurrPage] = useState(1)
   const [showSearch, setShowSearch] = useState(false)
-  const itemsPerPage = 5
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const { category } = useParams();
 
 
@@ -31,14 +38,14 @@ const CategoryShop = () => {
 
   useEffect(() => {
     setCurrPage(1)
-  }, [searchQuery, category])
+  }, [searchQuery, category, itemsPerPage])
 
   useEffect(() => {
     window.scrollTo({top: 0, behavior: "smooth"})
   }, [currPage])
 
   const totalPages = Math.ceil(
-    filteredBooks.filter(b => b.inStock).length / itemsPerPage
+    filteredBooks.length / itemsPerPage
   )
 
   return (
@@ -52,33 +59,22 @@ const CategoryShop = () => {
           paraStyles="mt-0"
         />
 
-        {/* Morphing Search */}
-        <div
-          className={`flex items-center transition-all duration-500 ease-in-out overflow-hidden ${showSearch ? 'w-64 px-4 py-2' : 'w-10 h-10 justify-center'
-            } bg-white border border-gray-300 rounded-full shadow-sm`}
-          style={{ minHeight: '40px' }}
-        >
-          <FiSearch
-            className='text-gray-600 cursor-pointer'
-            size={20}
-            onClick={() => setShowSearch(prev => !prev)}
-          />
-          {showSearch && (
-            <input
-              type='text'
-              placeholder='Search book...'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className='ml-2 w-full outline-none text-sm text-gray-700 bg-transparent'
-            />
-          )}
-        </div>
+        {/* Morphing Typewriter Search */}
+        <TypewriterSearchInput
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onClear={() => setSearchQuery('')}
+          placeholders={categoryPlaceholders}
+          isMorphing={true}
+          isOpen={showSearch}
+          onToggleOpen={() => setShowSearch(prev => !prev)}
+          autoFocus={true}
+        />
       </div>
 
       <div className='mt-4 md:mt-6 lg:mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 sm:gap-8'>
         {filteredBooks.length > 0 ? (
           filteredBooks
-            .filter((book) => book.inStock)
             .slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage)
             .map((book) => (
               <Item key={book._id} book={book} />
@@ -87,12 +83,24 @@ const CategoryShop = () => {
           <h4 className="h4">Oops! Nothing matched your search</h4>
         )}
       </div>
-      {/* Pagination */}
-      <div className='flex items-center justify-center gap-3 mt-10 flex-wrap'>
-        <button disabled={currPage === 1} onClick={() => setCurrPage(prev => prev - 1)} className={`${currPage === 1 && "opacity-50 cursor-not-allowed"} btn-dark !py-1 !px-3`}>Previous</button>
-        {Array.from({ length: totalPages }, (_, index) => (<button key={index + 1} onClick={() => setCurrPage(index + 1)} className={`${currPage === index + 1 && "bg-green-300 !text-white"} btn-light !py-1 !px-3`}>{index + 1}</button>))}
-        <button disabled={currPage === totalPages} onClick={() => setCurrPage(prev => prev + 1)} className={`${currPage === totalPages && "opacity-50 cursor-not-allowed"} btn-white bg-[#856C5B] !py-1 !px-3`}>Next</button>
-      </div>
+      {/* Pagination Controls */}
+      <PaginationControls
+        currentPage={currPage}
+        totalPages={totalPages}
+        totalItems={filteredBooks.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={(pg) => {
+          setCurrPage(pg)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }}
+        onItemsPerPageChange={(val) => {
+          setItemsPerPage(val)
+          setCurrPage(1)
+        }}
+        rowsOptions={[5, 10, 20]}
+        itemLabel="books"
+        className="mt-10 mb-12"
+      />
     </div>
   )
 }

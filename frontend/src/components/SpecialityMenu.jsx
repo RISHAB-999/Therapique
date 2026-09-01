@@ -1,95 +1,80 @@
-// <<<<<<< HEAD
 import React from 'react'
-import {specialityData} from '../assets/assets'
+import { Link } from 'react-router-dom'
+import { specialityData } from '../assets/assets'
 import SpecialityCard from './SpecialityCard'
+import { FadeUp, StaggerContainer, StaggerItem, SplitTextReveal } from './ScrollReveal'
 
 const SpecialityMenu = () => {
   return (
-    <div className='flex flex-col items-center gap-4 py-16 text-gray-800' id='speciality'>
-        <h1 className='text-3xl font-medium'>Find by Speciality </h1>
-        <p className='sm:w-1/3 text-center text-sm'>Simply browse through our extensive list of trusted doctors, schedule your appointment hassle-free.</p>
-        <div className='w-full grid grid-cols-auto gap-4 gap-y-6 max-w-6xl px-4'>
-          {specialityData.map((item, index) => (
-            <SpecialityCard key={index} item={item} index={index} />
-          ))}
-        </div>
+    <div className='flex flex-col items-center gap-4 py-6 sm:py-10 text-gray-800' id='speciality'>
+      <div className="text-center">
+        <SplitTextReveal 
+          text="Find by Speciality" 
+          as="h2" 
+          className="text-2xl sm:text-3xl md:text-4xl font-bold font-therapique text-gray-900 inline-block" 
+        />
+      </div>
+
+      <FadeUp delay={0.15} className="text-center max-w-xl px-4">
+        <p className='text-gray-600 text-sm sm:text-base leading-relaxed'>
+          Simply browse through our extensive list of trusted doctors, schedule your appointment hassle-free.
+        </p>
+      </FadeUp>
+
+      {/* Desktop Grid Layout (sm and up) */}
+      <StaggerContainer 
+        staggerDelay={0.07} 
+        delayChildren={0.1} 
+        className='hidden sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5 max-w-6xl px-2 sm:px-4 mt-4 w-full'
+      >
+        {specialityData.map((item, index) => (
+          <StaggerItem key={index} y={24}>
+            <SpecialityCard item={item} index={index} />
+          </StaggerItem>
+        ))}
+      </StaggerContainer>
+
+      {/* Mobile Stack Layout: 1 card at a time, each card stacks over the previous one on scroll */}
+      <div className='flex sm:hidden flex-col w-full px-4 mt-4 pb-12' style={{ gap: '2rem' }}>
+        {specialityData.map((item, index) => (
+          <div
+            key={index}
+            className='sticky w-full max-w-[340px] mx-auto'
+            style={{
+              top: `${90 + index * 6}px`,
+              zIndex: index + 10,
+            }}
+          >
+            <Link 
+              onClick={() => scrollTo(0, 0)} 
+              to={`/doctors/${item.speciality}`}
+              className="block bg-white rounded-3xl overflow-hidden shadow-xl shadow-stone-900/15 border border-[#EADBCE] group active:scale-[0.98] transition-transform duration-200"
+            >
+              <div className="relative overflow-hidden w-full h-52 bg-[#FAF5EE]">
+                <img
+                  src={item.image}
+                  alt={item.speciality}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-3 right-3 px-2.5 py-1 bg-black/60 backdrop-blur-md rounded-full text-[11px] font-semibold text-white tracking-wide">
+                  {index + 1} / {specialityData.length}
+                </div>
+              </div>
+              <div className="p-4 bg-white text-center flex flex-col items-center justify-between min-h-[80px]">
+                <h3 className="text-base font-serif font-bold text-gray-900 leading-snug">
+                  {item.speciality}
+                </h3>
+                <span className="text-xs text-orange-600 font-semibold mt-1.5 inline-flex items-center gap-1">
+                  View Specialists →
+                </span>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
 
 export default SpecialityMenu
-// =======
-// import { ArrowUpRight } from "lucide-react";
-// import { Link } from "react-router-dom"; // ✅ Import Link
-// import { assets } from "../assets/assets";
-
-// const therapies = [
-//   {
-//     title: "Individual Therapy",
-//     image: assets.founder2,
-//   },
-//   {
-//     title: "Couples Therapy",
-//     image: assets.founder2,
-//   },
-//   {
-//     title: "Teen Therapy",
-//     image: assets.founder2,
-//   },
-//   {
-//     title: "Psychiatric Therapy",
-//     image: assets.founder2,
-//   },
-// ];
-
-// const TherapyCategories = () => {
-//   return (
-//     <section className="w-full py-16 px-6 md:px-16">
-//       <div className="max-w-7xl mx-auto text-center">
-//         {/* Heading */}
-//         <h2 className="text-3xl md:text-5xl font-display text-gray-800">
-//           discover the right <br />
-//           <span className="font-bold font-display">
-//             support for your journey
-//           </span>
-//         </h2>
-
-//         {/* Grid */}
-//         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-//           {therapies.map((therapy, index) => {
-//             // Split the title safely
-//             const words = therapy.title.split(" ");
-//             const firstWord = words[0] || "";
-//             const secondWord = words[1] || "";
-
-//             return (
-//               <div key={index} className="flex flex-col items-center">
-//                 <Link to={`/doctors/${therapy.title.toLowerCase().replace(" ", "-")}`}>
-//                   <div className="w-full h-[380px] overflow-hidden">
-//                     <img
-//                       src={therapy.image}
-//                       alt={therapy.title}
-//                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-//                     />
-//                   </div>
-//                   <div className="flex items-center mt-4 justify-between w-full px-2">
-//                     <p className="text-xl font-medium text-gray-800 font-display">
-//                       {firstWord}{" "}
-//                       <span className="italic font-display">{secondWord}</span>
-//                     </p>
-//                     <span className="p-2 rounded-full border border-gray-300">
-//                       <ArrowUpRight className="size-6 text-gray-700" />
-//                     </span>
-//                   </div>
-//                 </Link>
-//               </div>
-//             );
-//           })}
-//         </div>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default TherapyCategories;
-// >>>>>>> master

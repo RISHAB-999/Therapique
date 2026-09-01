@@ -8,6 +8,7 @@ const ProfileCard = ({ image, name, title, description }) => {
         <img
           src={image}
           alt={name}
+          loading="lazy"
           className="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <button className="absolute top-4 right-4 bg-secondary rounded-full p-4  group-hover:bg-peach group-hover:opacity-08 transition duration-300">

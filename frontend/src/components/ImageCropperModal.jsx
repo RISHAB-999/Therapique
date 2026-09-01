@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 
-const ImageCropperModal = ({ isOpen, imageFile, onClose, onCropComplete }) => {
+const ImageCropperModal = ({ isOpen = true, imageFile, onClose, onCropComplete }) => {
   const [zoom, setZoom] = useState(1)
   const [offsetY, setOffsetY] = useState(0) // -100 to 100
   const [offsetX, setOffsetX] = useState(0) // -100 to 100
@@ -61,7 +61,7 @@ const ImageCropperModal = ({ isOpen, imageFile, onClose, onCropComplete }) => {
     }, 'image/jpeg', 0.95)
   }
 
-  if (!isOpen || !imageFile) return null
+  if (isOpen === false || !imageFile) return null
 
   // Render modal directly onto document.body using Portal so it covers 100% of viewport
   return ReactDOM.createPortal(
