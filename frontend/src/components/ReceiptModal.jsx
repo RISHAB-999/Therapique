@@ -10,6 +10,7 @@ import {
   ReceiptPrinterOutput,
   ReceiptPrinterPaper,
 } from './ReceiptPrinter'
+import { formatSlotDate } from '../utils/dateFormatter'
 
 // High-Precision Vector SVG Barcode with dynamic sizing
 const BarcodeSVG = ({ value = "75549462A9", compact = false }) => {
@@ -74,15 +75,6 @@ const ReceiptModal = ({ isOpen, onClose, data, type = 'order' }) => {
   }, [isOpen, data])
 
   if (!isOpen || !data) return null
-
-  // Format slot date helper (e.g. 12_8_2026 -> 12 Aug 2026)
-  const formatSlotDate = (slotDate) => {
-    if (!slotDate) return ''
-    const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    const dateArray = String(slotDate).split('_')
-    if (dateArray.length < 3) return slotDate
-    return `${dateArray[0]} ${months[Number(dateArray[1])]} ${dateArray[2]}`
-  }
 
   // Format Date and Time
   const formatDate = (rawDate) => {

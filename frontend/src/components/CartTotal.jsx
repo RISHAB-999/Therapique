@@ -4,6 +4,7 @@ import { AppContext } from '../context/AppContext'
 import { dummyAddress } from '../assets/data'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { loadRazorpay } from '../utils/loadRazorpay'
 
 const TokenCoinSVG = ({ className = "w-6 h-6" }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none">
@@ -83,7 +84,7 @@ const CartTotal = () => {
         }
     }, [userData])
 
-    const initPay = (order, orderId, token) => {
+    const initPay = async (order, orderId, token) => {
         const options = {
             key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Synr1hf0zc3IAl',
             amount: order.amount,
@@ -120,8 +121,13 @@ const CartTotal = () => {
                 color: '#81C784'
             }
         };
-        const rzp = new window.Razorpay(options);
-        rzp.open();
+        try {
+            const Razorpay = await loadRazorpay();
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch (err) {
+            toast.error('Payment service failed to load. Please try again.');
+        }
     };
 
     const handleOrder = async () => {

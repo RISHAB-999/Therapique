@@ -143,14 +143,14 @@ const AddressForm = () => {
                         </div>
                     </div>
 
-                    <div className='flex gap-3'>
+                    <div className='flex flex-col sm:flex-row gap-3'>
                         <input
                             onChange={onChangeHandler}
                             value={address.firstName}
                             type="text"
                             name='firstName'
                             placeholder='First Name'
-                            className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none w-1/2 text-sm focus:ring-purple-500 transition-all'
+                            className='w-full sm:w-1/2 h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                             required
                         />
                         <input
@@ -159,7 +159,7 @@ const AddressForm = () => {
                             type="text"
                             name='lastName'
                             placeholder='Last Name'
-                            className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none w-1/2 text-sm focus:ring-purple-500 transition-all'
+                            className='w-full sm:w-1/2 h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                             required
                         />
                     </div>
@@ -168,8 +168,8 @@ const AddressForm = () => {
                         value={address.email}
                         type="email"
                         name='email'
-                        placeholder='Email'
-                        className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none text-sm focus:ring-purple-500 transition-all'
+                        placeholder='Email Address'
+                        className='w-full h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                         required
                     />
                     <input
@@ -178,7 +178,7 @@ const AddressForm = () => {
                         type="text"
                         name='phone'
                         placeholder='Phone Number'
-                        className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none text-sm focus:ring-purple-500 transition-all'
+                        className='w-full h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                         required
                     />
                     <input
@@ -187,17 +187,17 @@ const AddressForm = () => {
                         type="text"
                         name='street'
                         placeholder='Street Address (House No, Building, Area)'
-                        className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none text-sm focus:ring-purple-500 transition-all'
+                        className='w-full h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                         required
                     />
-                    <div className='flex gap-3'>
+                    <div className='flex flex-col sm:flex-row gap-3'>
                         <input
                             onChange={onChangeHandler}
                             value={address.city}
                             type="text"
                             name='city'
                             placeholder='City'
-                            className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none w-1/2 text-sm focus:ring-purple-500 transition-all'
+                            className='w-full sm:w-1/2 h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                             required
                         />
                         <input
@@ -206,18 +206,18 @@ const AddressForm = () => {
                             type="text"
                             name='state'
                             placeholder='State'
-                            className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none w-1/2 text-sm focus:ring-purple-500 transition-all'
+                            className='w-full sm:w-1/2 h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                             required
                         />
                     </div>
-                    <div className='flex gap-3'>
+                    <div className='flex flex-col sm:flex-row gap-3'>
                         <input
                             onChange={onChangeHandler}
                             value={address.zipcode}
                             type="text"
                             name='zipcode'
                             placeholder='Zipcode / Pincode'
-                            className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none w-1/2 text-sm focus:ring-purple-500 transition-all'
+                            className='w-full sm:w-1/2 h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                             required
                         />
                         <input
@@ -226,14 +226,14 @@ const AddressForm = () => {
                             type="text"
                             name='country'
                             placeholder='Country'
-                            className='ring-1 ring-slate-900/15 p-3 rounded-xl bg-slate-50/50 focus:bg-white outline-none w-1/2 text-sm focus:ring-purple-500 transition-all'
+                            className='w-full sm:w-1/2 h-11 px-3.5 bg-[#FAF5EE] border border-[#EADBCE] rounded-xl text-xs sm:text-sm font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-[#7C3AED]/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all shadow-2xs'
                             required
                         />
                     </div>
                     <button 
                         type='submit' 
                         disabled={loading}
-                        className='bg-purple-600 hover:bg-purple-700 text-white rounded-xl w-full mt-4 py-3.5 transition-all duration-300 disabled:opacity-50 cursor-pointer font-extrabold text-sm shadow-md'
+                        className='bg-purple-600 hover:bg-purple-700 text-white rounded-xl w-full mt-4 h-12 transition-all duration-300 disabled:opacity-50 cursor-pointer font-extrabold text-xs sm:text-sm shadow-md active:scale-95 flex items-center justify-center'
                     >
                         {loading ? "Saving Address..." : "Save & Sync Delivery Address"}
                     </button>

@@ -251,16 +251,24 @@ const Dashboard = () => {
                         <p className="text-gray-500 font-medium">Booking on {slotDateFormat(item.slotDate)}</p>
                       </div>
                       {item.cancelled ? (
-                        <span className="text-red-500 text-xs font-semibold">Cancelled</span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/70 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          Cancelled
+                        </span>
                       ) : item.isCompleted ? (
-                        <span className="text-green-500 text-xs font-semibold">Completed</span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Completed
+                        </span>
                       ) : (
-                        <img
+                        <button
+                          type="button"
                           onClick={() => cancelAppointment(item._id)}
-                          className="w-8 h-8 cursor-pointer hover:scale-105 transition"
-                          src={assets.cancel_icon}
-                          alt="Cancel"
-                        />
+                          className="px-2.5 py-1 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/70 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-95 flex items-center gap-1"
+                          title="Cancel Consultation"
+                        >
+                          Cancel
+                        </button>
                       )}
                     </div>
                   ))

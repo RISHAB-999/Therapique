@@ -89,6 +89,9 @@ const Footer = () => {
                             <li onClick={() => handleNav('/coins-shop')} className="hover:text-white transition-colors cursor-pointer w-max">
                                 Token Wallet & Shop
                             </li>
+                            <li onClick={() => handleNav('/blog')} className="hover:text-white transition-colors cursor-pointer w-max">
+                                Wellness Blog
+                            </li>
                         </ul>
                     </div>
 

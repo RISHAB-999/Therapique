@@ -1,8 +1,9 @@
-import React, { useContext, useState, useRef, useEffect } from 'react'
+import React, { useContext, useState, useRef } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import Title from '../components/Title'
 import { FaMinus, FaPlus, FaTrashCan, FaChevronDown, FaBagShopping } from "react-icons/fa6"
 import CartTotal from '../components/CartTotal'
+import { useClickOutside } from '../hooks/useClickOutside'
 
 const ALL_FORMAT_DEFINITIONS = [
   { key: 'Standard Paperback', label: 'Standard Paperback', desc: '5.5" x 8.5" Paperback' },
@@ -41,15 +42,7 @@ const FormatDropdown = ({ book, cartKey, currentFormat, updateCartFormat, getBoo
 
   const selectedOption = renderedOptions.find(o => o.key === currentFormat || o.label === currentFormat) || renderedOptions[0]
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  useClickOutside(containerRef, () => setOpen(false), open)
 
   return (
     <div ref={containerRef} className='relative inline-block text-left max-w-full pt-0.5'>

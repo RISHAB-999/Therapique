@@ -50,6 +50,12 @@ const BookOrders = () => {
   const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false)
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false)
 
+  // Mobile Tab State per Order
+  const [activeMobileTabs, setActiveMobileTabs] = useState({})
+  const setOrderTab = (orderId, tab) => {
+    setActiveMobileTabs(prev => ({ ...prev, [orderId]: tab }))
+  }
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -281,7 +287,7 @@ const BookOrders = () => {
       </div>
 
       {/* Search & Category Filter Controls Header */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4 relative z-30">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Search Bar with Typewriter Animation */}
           <div className="flex-1 min-w-[280px]">
@@ -404,15 +410,16 @@ const BookOrders = () => {
           </button>
         </div>
       ) : (
-        <div className='space-y-6'>
+        <div className='space-y-6 pb-6'>
           {displayedOrders.map((order, index) => {
             const stepIdx = getStepIndex(order.status)
             const isCancelled = order.status === 'Cancelled'
+            const activeTab = activeMobileTabs[order._id] || 'books'
 
             return (
               <div
                 key={order._id || index}
-                className='bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-7 shadow-xs hover:shadow-md transition-all duration-200 space-y-6'
+                className='relative w-full bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-7 shadow-xs hover:shadow-md transition-all duration-200 space-y-4 sm:space-y-6'
               >
                 {/* 1. Improved Top Order Header Area */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
@@ -477,8 +484,8 @@ const BookOrders = () => {
                   </div>
                 </div>
 
-                {/* 2. Cleaner 2-Column Layout */}
-                <div className='grid grid-cols-1 lg:grid-cols-12 gap-6 items-start'>
+                {/* 2. Cleaner 2-Column Layout (Desktop & Tablet: >= sm) */}
+                <div className='hidden sm:grid grid-cols-1 lg:grid-cols-12 gap-6 items-start'>
                   
                   {/* LEFT SIDE (Approx 67% Width: Books List + Shipping Address) */}
                   <div className='lg:col-span-8 space-y-5'>
@@ -907,6 +914,367 @@ const BookOrders = () => {
 
                   </div>
 
+                </div>
+
+                {/* 3. Mobile Tabbed Order Layout (sm:hidden) */}
+                <div className='sm:hidden space-y-3 pt-1'>
+                  {/* Quick Summary Bar */}
+                  <div className='flex items-center justify-between bg-slate-50 border border-slate-200/80 px-3.5 py-2 rounded-xl text-xs'>
+                    <div className='flex items-center gap-1.5 font-bold text-gray-600'>
+                      <span className='text-[10px] uppercase tracking-wider font-extrabold text-purple-900'>Total:</span>
+                      <span className='text-sm font-black text-gray-900 tracking-tight'>{currency} {order.amount}</span>
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <span className='text-[10px] font-black text-purple-700 bg-purple-100/80 border border-purple-200 px-2 py-0.5 rounded-lg uppercase'>
+                        {order.paymentMethod || 'Online'}
+                      </span>
+                      <span className='text-[11px] font-black text-gray-500'>
+                        {order.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)} {order.items?.length === 1 ? 'copy' : 'copies'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Segmented Sub-Tab Switcher */}
+                  <div className='flex bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 gap-1 shadow-2xs'>
+                    <button
+                      type='button'
+                      onClick={() => setOrderTab(order._id, 'books')}
+                      className={`flex-1 py-1.5 px-1 rounded-lg text-[11px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        activeTab === 'books'
+                          ? 'bg-white text-purple-700 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-800'
+                      }`}
+                    >
+                      <span>📚</span>
+                      <span>Books ({order.items?.length || 0})</span>
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => setOrderTab(order._id, 'shipping')}
+                      className={`flex-1 py-1.5 px-1 rounded-lg text-[11px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        activeTab === 'shipping'
+                          ? 'bg-white text-purple-700 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-800'
+                      }`}
+                    >
+                      <span>📍</span>
+                      <span>Shipping</span>
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => setOrderTab(order._id, 'actions')}
+                      className={`flex-1 py-1.5 px-1 rounded-lg text-[11px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        activeTab === 'actions'
+                          ? 'bg-white text-purple-700 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-800'
+                      }`}
+                    >
+                      <span>⚡</span>
+                      <span>Actions</span>
+                    </button>
+                  </div>
+
+                  {/* Sub-Tab 1: Purchased Books */}
+                  {activeTab === 'books' && (
+                    <div className='space-y-2.5 max-h-[260px] overflow-y-auto pr-0.5'>
+                      {order.items &&
+                        order.items.map((item, idx) => {
+                          const imgUrl = getItemImage(item)
+                          const unitPrice = item.price || 0
+                          const qty = item.quantity || 1
+                          const itemTotal = unitPrice * qty
+
+                          return (
+                            <div
+                              key={idx}
+                              className='bg-slate-50/70 border border-slate-200/80 rounded-xl p-3 flex items-center gap-3 shadow-2xs'
+                            >
+                              <div className='w-14 h-18 rounded-lg overflow-hidden shrink-0 border border-slate-200 bg-slate-100'>
+                                <img
+                                  src={imgUrl}
+                                  alt={item.title || item.name || 'Book'}
+                                  onError={(e) => {
+                                    e.currentTarget.onerror = null
+                                    e.currentTarget.src = defaultBookImg
+                                  }}
+                                  className='w-full h-full object-cover object-center'
+                                />
+                              </div>
+                              <div className='flex-1 min-w-0 space-y-1'>
+                                <h5 className='font-black text-gray-900 text-xs leading-snug line-clamp-2'>
+                                  {item.title || item.name || 'Therapy Book'}
+                                </h5>
+                                <div className='flex flex-wrap items-center gap-1.5'>
+                                  {item.category && (
+                                    <span className='text-[9px] font-black text-purple-700 bg-purple-50 border border-purple-200 px-1.5 py-0.5 rounded'>
+                                      {item.category}
+                                    </span>
+                                  )}
+                                  <span className='text-[9px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded'>
+                                    {item.size || item.format || 'Paperback'}
+                                  </span>
+                                </div>
+                                <p className='text-[11px] font-semibold text-gray-500'>
+                                  Price: <span className='font-bold text-gray-800'>{currency} {unitPrice}</span> each
+                                </p>
+                              </div>
+                              <div className='flex flex-col items-end shrink-0 gap-1'>
+                                <span className='font-black text-purple-800 bg-purple-100/90 px-2 py-0.5 rounded-md text-[11px] border border-purple-200'>
+                                  x{qty}
+                                </span>
+                                <span className='text-xs font-black text-gray-900'>
+                                  {currency} {itemTotal}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  )}
+
+                  {/* Sub-Tab 2: Shipping Destination & Customer Contact */}
+                  {activeTab === 'shipping' && (() => {
+                    const customerName =
+                      order.userData?.name ||
+                      (order.address?.firstName
+                        ? `${order.address.firstName} ${order.address.lastName || ''}`.trim()
+                        : '') ||
+                      order.address?.name ||
+                      'Customer'
+
+                    const customerEmail =
+                      order.userData?.email ||
+                      order.address?.email ||
+                      (typeof order.userId === 'object' ? order.userId?.email : '') ||
+                      'rishabn090@gmail.com'
+
+                    const customerPhone =
+                      order.userData?.phone ||
+                      order.address?.phone ||
+                      order.phone ||
+                      (typeof order.userId === 'object' ? order.userId?.phone : '') ||
+                      '8130758753'
+
+                    const userProfileImg = order.userData?.image
+                    const initialChar = (customerName || 'C')[0].toUpperCase()
+
+                    return (
+                      <div className='bg-slate-50/70 border border-slate-200/80 rounded-xl p-3.5 space-y-3 shadow-2xs max-h-[260px] overflow-y-auto'>
+                        {/* Customer Header */}
+                        <div className='flex items-center gap-3'>
+                          {userProfileImg ? (
+                            <img
+                              src={userProfileImg}
+                              alt={customerName}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                                const fallback = e.currentTarget.nextElementSibling
+                                if (fallback) fallback.style.display = 'flex'
+                              }}
+                              className='w-10 h-10 rounded-full object-cover border-2 border-purple-200 shrink-0'
+                            />
+                          ) : null}
+                          <div
+                            style={{ display: userProfileImg ? 'none' : 'flex' }}
+                            className='w-10 h-10 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 text-purple-700 font-black text-xs items-center justify-center border-2 border-purple-200 shrink-0'
+                          >
+                            {initialChar}
+                          </div>
+                          <div className='min-w-0'>
+                            <p className='font-black text-gray-900 text-xs sm:text-sm truncate'>
+                              {customerName}
+                            </p>
+                            <span className='text-[10px] font-semibold text-purple-700 block truncate'>
+                              {customerEmail}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Full Delivery Address */}
+                        <div className='bg-white p-2.5 rounded-lg border border-slate-200/80 text-xs space-y-1'>
+                          <span className='text-[10px] font-black uppercase text-purple-800 tracking-wider block'>
+                            📍 Delivery Address:
+                          </span>
+                          <p className='font-bold text-gray-800 leading-snug'>
+                            {order.address?.line1 || order.address?.street || ''} {order.address?.line2 || ''}
+                          </p>
+                          <p className='text-gray-600 font-medium'>
+                            {order.address?.city || ''}, {order.address?.state || ''}{' '}
+                            {order.address?.zipcode || order.address?.pincode
+                              ? `- ${order.address?.zipcode || order.address?.pincode}`
+                              : ''}
+                          </p>
+                        </div>
+
+                        {/* Call Customer Button */}
+                        <a
+                          href={`tel:${customerPhone}`}
+                          className='inline-flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-black transition w-full justify-center'
+                        >
+                          <span>📞 Call Customer:</span>
+                          <span>{customerPhone}</span>
+                        </a>
+                      </div>
+                    )
+                  })()}
+
+                  {/* Sub-Tab 3: Actions & Lifecycle */}
+                  {activeTab === 'actions' && (
+                    <div className='bg-slate-50/70 border border-slate-200/80 rounded-xl p-3.5 space-y-3 shadow-2xs max-h-[260px] overflow-y-auto'>
+                      {/* Lifecycle Tracker */}
+                      {!isCancelled ? (
+                        <div className='bg-white p-3 rounded-lg border border-slate-200/80 space-y-2'>
+                          <div className='flex items-center justify-between text-xs'>
+                            <span className='text-[10px] font-black uppercase tracking-wider text-purple-900 flex items-center gap-1'>
+                              <span className='animate-pulse text-amber-500'>⚡</span> Lifecycle
+                            </span>
+                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${
+                              order.status === 'Delivered'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-blue-50 text-blue-700 border-blue-200'
+                            }`}>
+                              {order.status === 'Delivered' ? '● Fulfilled' : '● Live'}
+                            </span>
+                          </div>
+
+                          <div className='relative pt-1 pb-1'>
+                            <div className='flex items-center justify-between relative z-10'>
+                              {progressSteps.map((step, idx) => {
+                                const isDone = stepIdx > idx
+                                const isCurrent = stepIdx === idx || (stepIdx === 2.5 && idx === 2)
+                                return (
+                                  <div key={step.key} className='flex flex-col items-center gap-0.5'>
+                                    <div
+                                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shadow-2xs ${
+                                        isDone
+                                          ? 'bg-emerald-500 text-white'
+                                          : isCurrent
+                                          ? 'bg-purple-600 text-white ring-2 ring-purple-100 animate-pulse'
+                                          : 'bg-slate-100 text-gray-400 border border-slate-200'
+                                      }`}
+                                    >
+                                      {isDone ? '✓' : idx + 1}
+                                    </div>
+                                    <span
+                                      className={`text-[8px] font-extrabold ${
+                                        isDone
+                                          ? 'text-emerald-700'
+                                          : isCurrent
+                                          ? 'text-purple-700 font-black'
+                                          : 'text-gray-400'
+                                      }`}
+                                    >
+                                      {step.short}
+                                    </span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            <div className='absolute top-3 left-2 right-2 h-0.5 bg-slate-200 -z-0'>
+                              <div
+                                className='h-full bg-emerald-500 transition-all duration-500'
+                                style={{
+                                  width:
+                                    stepIdx === 3
+                                      ? '100%'
+                                      : stepIdx === 2.5
+                                      ? '75%'
+                                      : stepIdx === 2
+                                      ? '66%'
+                                      : stepIdx === 1
+                                      ? '33%'
+                                      : '5%'
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className='p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-center'>
+                          <p className='text-xs font-bold text-rose-700'>Order cancelled</p>
+                        </div>
+                      )}
+
+                      {/* Admin Actions */}
+                      <div className='space-y-1.5'>
+                        {order.status !== 'Delivered' && !isCancelled ? (
+                          <>
+                            {order.status === 'Order Placed' && (
+                              <>
+                                <button
+                                  type='button'
+                                  disabled={updatingOrderId === order._id}
+                                  onClick={() => handleUpdateStatus(order._id, 'Packing & Preparing')}
+                                  className='w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-black py-2 px-3 rounded-xl transition shadow-2xs flex items-center justify-center cursor-pointer'
+                                >
+                                  <span>{updatingOrderId === order._id ? 'Updating...' : 'Mark as Packed'}</span>
+                                </button>
+                                <button
+                                  type='button'
+                                  disabled={updatingOrderId === order._id}
+                                  onClick={() => handleUpdateStatus(order._id, 'Shipped')}
+                                  className='w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-black py-1.5 px-3 rounded-xl transition flex items-center justify-center cursor-pointer'
+                                >
+                                  <span>Mark as Shipped</span>
+                                </button>
+                              </>
+                            )}
+
+                            {order.status === 'Packing & Preparing' && (
+                              <button
+                                type='button'
+                                disabled={updatingOrderId === order._id}
+                                onClick={() => handleUpdateStatus(order._id, 'Shipped')}
+                                className='w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-black py-2 px-3 rounded-xl transition shadow-2xs flex items-center justify-center cursor-pointer'
+                              >
+                                <span>{updatingOrderId === order._id ? 'Updating...' : 'Mark as Shipped'}</span>
+                              </button>
+                            )}
+
+                            {order.status === 'Shipped' && (
+                              <>
+                                <button
+                                  type='button'
+                                  disabled={updatingOrderId === order._id}
+                                  onClick={() => handleUpdateStatus(order._id, 'Out for Delivery')}
+                                  className='w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-black py-2 px-3 rounded-xl transition shadow-2xs flex items-center justify-center cursor-pointer'
+                                >
+                                  <span>{updatingOrderId === order._id ? 'Updating...' : 'Mark Out for Delivery'}</span>
+                                </button>
+                                <button
+                                  type='button'
+                                  disabled={updatingOrderId === order._id}
+                                  onClick={() => handleUpdateStatus(order._id, 'Delivered')}
+                                  className='w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-black py-1.5 px-3 rounded-xl transition flex items-center justify-center cursor-pointer'
+                                >
+                                  <span>Mark as Delivered</span>
+                                </button>
+                              </>
+                            )}
+
+                            {order.status === 'Out for Delivery' && (
+                              <button
+                                type='button'
+                                disabled={updatingOrderId === order._id}
+                                onClick={() => handleUpdateStatus(order._id, 'Delivered')}
+                                className='w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black py-2 px-3 rounded-xl transition shadow-2xs flex items-center justify-center cursor-pointer'
+                              >
+                                <span>{updatingOrderId === order._id ? 'Updating...' : 'Mark as Delivered'}</span>
+                              </button>
+                            )}
+                          </>
+                        ) : order.status === 'Delivered' ? (
+                          <div className='p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-xs font-black text-emerald-700 flex items-center justify-center'>
+                            <span>✓ Order Completed & Fulfilled</span>
+                          </div>
+                        ) : (
+                          <div className='p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-center text-xs font-black text-rose-700 flex items-center justify-center'>
+                            <span>Order Cancelled</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )

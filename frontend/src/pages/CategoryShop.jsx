@@ -49,7 +49,7 @@ const CategoryShop = () => {
   )
 
   return (
-    <div className='max-padd-container py-16 pt-8 md:pt-12 lg:pt-16'>
+    <div className='max-padd-container py-12 pt-6 md:pt-10 lg:pt-12'>
       <div className='flex items-center justify-between flex-wrap gap-4 mb-6'>
         <Title
           title1={category}
@@ -72,17 +72,41 @@ const CategoryShop = () => {
         />
       </div>
 
-      <div className='mt-4 md:mt-6 lg:mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 sm:gap-8'>
-        {filteredBooks.length > 0 ? (
-          filteredBooks
-            .slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage)
-            .map((book) => (
-              <Item key={book._id} book={book} />
-            ))
-        ) : (
-          <h4 className="h4">Oops! Nothing matched your search</h4>
-        )}
-      </div>
+      {filteredBooks.length === 0 ? (
+        <div className='min-h-[40vh] flex flex-col items-center justify-center text-center p-8 bg-[#FAF5EE] rounded-3xl border border-[#EADBCE] mt-4'>
+          <p className='text-gray-700 font-serif font-bold text-lg'>No books found</p>
+          <p className='text-gray-500 text-xs mt-1'>Try adjusting your search query.</p>
+        </div>
+      ) : (
+        <>
+          {/* Desktop / Tablet Grid (sm and up) */}
+          <div className='hidden sm:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mt-4 md:mt-6'>
+            {filteredBooks
+              .slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage)
+              .map((book, index) => (
+                <Item key={book._id || index} book={book} index={index} />
+              ))}
+          </div>
+
+          {/* Mobile Stacking Card Layout (sm:hidden — matching All Books page sticky card stack animation) */}
+          <div className='flex sm:hidden flex-col w-full pb-28 mt-4' style={{ gap: '2rem' }}>
+            {filteredBooks
+              .slice((currPage - 1) * itemsPerPage, currPage * itemsPerPage)
+              .map((book, index) => (
+                <div
+                  key={book._id || index}
+                  className='sticky w-full max-w-[380px] mx-auto'
+                  style={{
+                    top: `${80 + index * 6}px`,
+                    zIndex: index + 10,
+                  }}
+                >
+                  <Item book={book} index={index} isStacked={true} />
+                </div>
+              ))}
+          </div>
+        </>
+      )}
       {/* Pagination Controls */}
       <PaginationControls
         currentPage={currPage}

@@ -81,7 +81,7 @@ const TypewriterSearchInput = ({
     <form
       action="javascript:void(0);"
       onSubmit={handleFormSubmit}
-      className={`relative flex items-center bg-slate-50 border border-slate-200 rounded-xl transition-all focus-within:border-purple-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-purple-100 ${className}`}
+      className={`relative flex items-center h-10 bg-slate-50 border border-slate-200 rounded-xl transition-all focus-within:border-purple-600 focus-within:bg-white focus-within:ring-4 focus-within:ring-purple-100 ${className}`}
     >
       <div className="pl-3.5 flex items-center pointer-events-none text-slate-500 shrink-0">
         <svg className="w-4 h-4 stroke-[2.2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">

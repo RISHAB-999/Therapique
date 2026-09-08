@@ -24,6 +24,8 @@ const CustomDropdown = ({
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [openDirection, setOpenDirection] = useState('down')
+  const [panelMaxHeight, setPanelMaxHeight] = useState(320)
   const containerRef = useRef(null)
 
   // Normalize options to uniform { value, label, count } shape
@@ -49,7 +51,25 @@ const CustomDropdown = ({
 
   const displayLabel = selectedOption ? selectedOption.label : placeholder
 
-  // Dismiss dropdown on outside click or Escape key
+  // Dynamically compute optimal dropdown open direction (up vs down) and maxHeight
+  const calculatePosition = () => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const estimatedPanelHeight = Math.min(normalizedOptions.length * 40 + 20, 280)
+
+    // If space below is less than required and there's more space above, flip upward
+    if (spaceBelow < estimatedPanelHeight && spaceAbove > spaceBelow) {
+      setOpenDirection('up')
+      setPanelMaxHeight(Math.max(130, Math.min(spaceAbove - 16, 320)))
+    } else {
+      setOpenDirection('down')
+      setPanelMaxHeight(Math.max(130, Math.min(spaceBelow - 16, 320)))
+    }
+  }
+
+  // Dismiss dropdown on outside click or Escape key & recalculate on open/resize
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -61,14 +81,19 @@ const CustomDropdown = ({
     }
 
     if (isOpen) {
+      calculatePosition()
       document.addEventListener('mousedown', handleClickOutside)
       document.addEventListener('keydown', handleKeyDown)
+      window.addEventListener('resize', calculatePosition)
+      window.addEventListener('scroll', calculatePosition, true)
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('resize', calculatePosition)
+      window.removeEventListener('scroll', calculatePosition, true)
     }
-  }, [isOpen])
+  }, [isOpen, normalizedOptions.length])
 
   const handleSelect = (optValue) => {
     if (disabled) return
@@ -82,7 +107,10 @@ const CustomDropdown = ({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) calculatePosition()
+          setIsOpen(!isOpen)
+        }}
         className={`w-full h-10 px-3.5 rounded-xl border text-xs font-bold transition-all duration-200 flex items-center justify-between gap-2 select-none cursor-pointer ${
           disabled
             ? 'bg-slate-100 border-slate-200 text-gray-400 cursor-not-allowed opacity-60'
@@ -118,7 +146,12 @@ const CustomDropdown = ({
         <div
           className={`absolute ${
             align === 'right' ? 'right-0' : 'left-0'
-          } mt-1.5 w-full min-w-[200px] max-w-xs bg-white border border-slate-200/90 rounded-2xl shadow-xl p-1.5 z-[100] space-y-0.5 max-h-80 overflow-y-auto animate-fadeIn select-none`}
+          } ${
+            openDirection === 'up' ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
+          } w-full min-w-[200px] max-w-[calc(100vw-2rem)] bg-white border border-slate-200/90 rounded-2xl shadow-xl p-1.5 z-[100] space-y-0.5 overflow-y-auto animate-fadeIn select-none`}
+          style={{
+            maxHeight: `${panelMaxHeight}px`
+          }}
         >
           {normalizedOptions.length > 0 ? (
             normalizedOptions.map((opt) => {

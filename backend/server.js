@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import compression from 'compression'
 import 'dotenv/config'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -10,6 +11,7 @@ import adminRouter from './routes/adminRoutes.js'
 import doctorRouter from './routes/doctorRoutes.js'
 import userRouter from './routes/userRoutes.js'
 import bookRouter from './routes/bookRoutes.js'
+import assistantRouter from './routes/assistantRoutes.js'
 import { initializeSocket } from './socket/index.js'
 import doctorModel from './models/doctorModel.js'
 import userModel from './models/userModel.js'
@@ -23,8 +25,8 @@ const server = http.createServer(app)
 const PORT = process.env.PORT || 4000
 
 connectDB().then(() => {
-    // Automatically synchronize all past appointments with latest doctor and user profile images
-    (async () => {
+    // Defer appointment image sync to background — runs 5s after startup to avoid blocking initial requests
+    setTimeout(async () => {
         try {
             const doctors = await doctorModel.find({}).select('image name').lean();
             for (const doc of doctors) {
@@ -47,11 +49,12 @@ connectDB().then(() => {
         } catch (e) {
             console.log("Appointment media sync info:", e.message);
         }
-    })();
+    }, 5000);
 });
 connectCloudinary();
 
 // MIDDLEWARES
+app.use(compression()) // Gzip/Brotli compress all API responses (~60-80% size reduction)
 app.use(express.json())
 app.use(cors())
 
@@ -63,6 +66,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/doctor', doctorRouter);
 app.use('/api/user', userRouter);
 app.use('/api/book', bookRouter);
+app.use('/api/assistant', assistantRouter);
 
 app.get('/', (req, res) => {
     res.send('Therapique Backend API Running');

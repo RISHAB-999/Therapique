@@ -1,12 +1,25 @@
 import React, { createContext, useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { sanitizeImageUrl as sanitizeImgHelper } from '../utils/imageHelper'
 
 export const ShopContext = createContext()
 
 const ShopContextProvider = ({ children }) => {
   const navigate = useNavigate()
-  const [books, setBooks] = useState([])
+  // LAZY INITIALIZATION: Load books from sessionStorage cache synchronously on page load / refresh
+  const [books, setBooks] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('cached_books')
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch (e) {
+      console.log('Error reading cached books:', e)
+    }
+    return []
+  })
   const [user, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const currency = import.meta.env.VITE_CURRENCY || '₹'
@@ -55,13 +68,7 @@ const ShopContextProvider = ({ children }) => {
   }, [cartItems])
 
   // Helper to rewrite hardcoded localhost:4000 URLs to active tunnel/backend URL
-  const sanitizeImageUrl = useCallback((img) => {
-    if (!img || typeof img !== 'string') return ''
-    if (img.startsWith('http://localhost:4000') || img.startsWith('http://127.0.0.1:4000')) {
-      return img.replace(/^http:\/\/(localhost|127\.0\.0\.1):4000/, backendUrl)
-    }
-    return img
-  }, [backendUrl])
+  const sanitizeImageUrl = useCallback((img) => sanitizeImgHelper(img, backendUrl), [backendUrl])
 
   // Fetch books dynamically from backend API
   const getBooksData = async () => {
@@ -93,6 +100,9 @@ const ShopContextProvider = ({ children }) => {
           }
         })
         const newBooks = Array.from(uniqueBooksMap.values())
+        try {
+          sessionStorage.setItem('cached_books', JSON.stringify(newBooks))
+        } catch (e) { }
         setBooks(prev => {
           if (prev.length === newBooks.length && prev[0]?._id === newBooks[0]?._id && prev[prev.length - 1]?._id === newBooks[newBooks.length - 1]?._id) {
             return prev
@@ -106,30 +116,38 @@ const ShopContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
+    let lastFetchTime = Date.now()
+
     getBooksData()
+
+    // Background polling every 60 seconds — book stock changes infrequently
     const interval = setInterval(() => {
       getBooksData()
-    }, 20000)
+      lastFetchTime = Date.now()
+    }, 60000)
 
-    const handleFocus = () => getBooksData()
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        getBooksData()
-      }
+    // Tab focus/visibility sync — debounced to skip if fetched within 15s
+    const handleFocusOrVisibility = () => {
+      if (document.visibilityState === 'hidden') return
+      const now = Date.now()
+      if (now - lastFetchTime < 15000) return
+      lastFetchTime = now
+      getBooksData()
     }
 
-    window.addEventListener('focus', handleFocus)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocusOrVisibility)
+    document.addEventListener('visibilitychange', handleFocusOrVisibility)
 
     return () => {
       clearInterval(interval)
-      window.removeEventListener('focus', handleFocus)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocusOrVisibility)
+      document.removeEventListener('visibilitychange', handleFocusOrVisibility)
     }
   }, [backendUrl, sanitizeImageUrl])
 
   // Helper to calculate exact price based on book and chosen edition format
-  const getBookPriceWithFormat = (book, format = 'Standard Paperback') => {
+  // Pure function — no dependencies, safe to reference without useCallback
+  const getBookPriceWithFormat = useCallback((book, format = 'Standard Paperback') => {
     if (!book) return 0
     const basePrice = Number(book.offerPrice) || Number(book.price) || 0
     if (format === 'Deluxe Hardcover' || format === 'Hardcover') return basePrice + 400
@@ -137,10 +155,10 @@ const ShopContextProvider = ({ children }) => {
     if (format === 'E-Book') return Math.max(100, basePrice - 300)
     if (format === 'Audiobook') return Math.max(100, basePrice - 100)
     return basePrice
-  }
+  }, [])
 
   // Add item with specific format to cart
-  const addToCart = (itemId, selectedFormat = 'Standard Paperback') => {
+  const addToCart = useCallback((itemId, selectedFormat = 'Standard Paperback') => {
     const targetBook = books.find(b => String(b._id) === String(itemId) || String(b.id) === String(itemId))
     if (targetBook) {
       const isFormatOut = targetBook.inStock === false || (targetBook.outOfStockSizes && targetBook.outOfStockSizes.some(s => s && s.trim().toLowerCase() === selectedFormat.trim().toLowerCase()))
@@ -155,14 +173,14 @@ const ShopContextProvider = ({ children }) => {
       updated[cartKey] = (Number(updated[cartKey]) || 0) + 1
       try {
         localStorage.setItem("cartItems", JSON.stringify(updated))
-      } catch (e) {}
+      } catch (e) { }
       return updated
     })
     toast.success('Added to cart!')
-  }
+  }, [books])
 
   // Update format edition of an existing item entry in cart
-  const updateCartFormat = (oldKey, newFormat) => {
+  const updateCartFormat = useCallback((oldKey, newFormat) => {
     const parts = oldKey.split('___')
     const itemId = parts[0]
     const newKey = `${itemId}___${newFormat}`
@@ -176,13 +194,13 @@ const ShopContextProvider = ({ children }) => {
       updated[newKey] = (Number(updated[newKey]) || 0) + qty
       try {
         localStorage.setItem("cartItems", JSON.stringify(updated))
-      } catch (e) {}
+      } catch (e) { }
       return updated
     })
-  }
+  }, [])
 
   // Update quantity of a specific cart item entry
-  const updateQuantity = (cartKey, quantity) => {
+  const updateQuantity = useCallback((cartKey, quantity) => {
     setCartItems(prev => {
       const updated = { ...(prev || {}) }
       const numQty = Number(quantity)
@@ -193,10 +211,10 @@ const ShopContextProvider = ({ children }) => {
       }
       try {
         localStorage.setItem("cartItems", JSON.stringify(updated))
-      } catch (e) {}
+      } catch (e) { }
       return updated
     })
-  }
+  }, [])
 
   // Total count of all items in cart
   const getCartCount = useCallback(() => {
@@ -216,7 +234,7 @@ const ShopContextProvider = ({ children }) => {
       const price = getBookPriceWithFormat(book, format || 'Standard Paperback')
       return total + price * quantity
     }, 0)
-  }, [cartItems, books])
+  }, [cartItems, books, getBookPriceWithFormat])
 
   const value = useMemo(() => ({
     books,
@@ -239,7 +257,7 @@ const ShopContextProvider = ({ children }) => {
     delivery_charges,
     backendUrl,
     sanitizeImageUrl
-  }), [books, navigate, user, currency, searchQuery, cartItems, updateCartFormat, addToCart, getCartAmount, getCartCount, updateQuantity, method, backendUrl, sanitizeImageUrl])
+  }), [books, navigate, user, currency, searchQuery, cartItems, updateCartFormat, addToCart, getCartAmount, getCartCount, updateQuantity, method, backendUrl, sanitizeImageUrl, getBookPriceWithFormat])
 
   return (
     <ShopContext.Provider value={value}>

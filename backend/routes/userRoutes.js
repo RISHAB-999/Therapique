@@ -1,5 +1,5 @@
 import express from 'express';
-import { getProfile, loginUser, registerUser, updateProfile, listAppointment, cancelAppointment, claimRefund, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, verifyCoinsPayment, bookAppointmentWithCoins, bookAppointmentWithPayment, createBookOrderRazorpay, verifyBookOrderRazorpay, placeBookOrderCOD, placeBookOrderTokens, getUserOrders, getSingleOrder, updateOrderStatus } from '../controllers/userController.js';
+import { getProfile, loginUser, registerUser, updateProfile, listAppointment, cancelAppointment, claimRefund, paymentRazorpay, verifyRazorpay, contactForm, purchaseCoins, verifyCoinsPayment, bookAppointmentWithCoins, bookAppointmentWithPayment, createBookOrderRazorpay, verifyBookOrderRazorpay, placeBookOrderCOD, placeBookOrderTokens, getUserOrders, getSingleOrder, updateOrderStatus, subscribeNewsletter } from '../controllers/userController.js';
 import upload from '../middlewares/multer.js';
 import authUser from '../middlewares/authUser.js';
 const userRouter = express.Router();
@@ -7,6 +7,7 @@ const userRouter = express.Router();
 userRouter.post("/register", registerUser)
 userRouter.post("/login", loginUser)
 userRouter.post("/contact", authUser, contactForm)
+userRouter.post("/newsletter-subscribe", subscribeNewsletter)
 
 userRouter.get("/get-profile", authUser, getProfile)
 userRouter.post("/update-profile", upload.single('image'), authUser, updateProfile)

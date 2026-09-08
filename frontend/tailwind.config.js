@@ -19,6 +19,7 @@ export default {
         'auto': 'repeat(auto-fill, minmax(200px,1fr))'
       },
       fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
         therapique: ["Fraunces", "serif"],
         heading: ["Fraunces", "serif"],
         body: ["Inter", "sans-serif"],

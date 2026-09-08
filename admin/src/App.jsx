@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Login from './pages/Login';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -26,6 +26,12 @@ const App = () => {
   const { aToken } = useContext(AdminContext)
   const location = useLocation()
   const navigate = useNavigate()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // Auto-close mobile drawer on route change
+  useEffect(() => {
+    setIsSidebarOpen(false)
+  }, [location.pathname])
 
   const handleAcceptIncomingCall = (callData) => {
     if (doctorSocket) {
@@ -56,10 +62,10 @@ const App = () => {
   return dToken || aToken ? (
     <div className='bg-[#F8F9FD] min-h-screen flex flex-col'>
       <ToastContainer />
-      <Navbar />
+      <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
       <div className='flex-1 flex items-start w-full relative min-h-[calc(100vh-60px)]'>
-        <Sidebar />
-        <main className='flex-1 w-full min-w-0 bg-[#F8F9FD] p-4 sm:p-6 lg:p-8 pb-20 min-h-[calc(100vh-60px)] overflow-x-hidden'>
+        <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+        <main className='flex-1 w-full min-w-0 bg-[#F8F9FD] p-3 sm:p-6 lg:p-8 pb-20 min-h-[calc(100vh-60px)] overflow-x-clip'>
           <Routes>
             {/* Space & Underscore URL Normalization Redirects */}
             <Route path='/doctor%20appointments' element={<Navigate to='/doctor-appointments' replace />} />

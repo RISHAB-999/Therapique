@@ -131,6 +131,7 @@ const Login = () => {
       <div className="min-h-[90vh] flex flex-col items-center justify-center px-4 py-8">
         <form
           onSubmit={onSubmitHandler}
+          autoComplete="off"
           className="bg-white shadow-[0_10px_35px_rgba(0,0,0,0.06)] rounded-3xl p-8 w-full max-w-md flex flex-col gap-5 border border-[#EADBCE]/60"
         >
           {/* Contextual Notice Banner */}
@@ -241,7 +242,13 @@ const Login = () => {
               <>
                 Already have an account?{' '}
                 <span
-                  onClick={() => setState('Login')}
+                  onClick={() => {
+                    setState('Login')
+                    setEmail('')
+                    setPassword('')
+                    setName('')
+                    setShowPassword(false)
+                  }}
                   className="text-gray-900 font-bold hover:underline cursor-pointer ml-1"
                 >
                   Login
@@ -251,7 +258,13 @@ const Login = () => {
               <>
                 Don’t have an account?{' '}
                 <span
-                  onClick={() => setState('Sign Up')}
+                  onClick={() => {
+                    setState('Sign Up')
+                    setEmail('')
+                    setPassword('')
+                    setName('')
+                    setShowPassword(false)
+                  }}
                   className="text-gray-900 font-bold hover:underline cursor-pointer ml-1"
                 >
                   Sign Up

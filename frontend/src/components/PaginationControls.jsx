@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { ChevronLeft, ChevronRight, ChevronDown, Check } from 'lucide-react'
+import { useClickOutside } from '../hooks/useClickOutside'
 
 /**
  * PaginationControls - Premium Pagination Component for Therapique Frontend
@@ -26,25 +27,10 @@ const PaginationControls = ({
   const rowsDropdownRef = useRef(null)
 
   // Dismiss dropdown on click outside or ESC
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (rowsDropdownRef.current && !rowsDropdownRef.current.contains(e.target)) {
-        setIsRowsOpen(false)
-      }
-    }
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') setIsRowsOpen(false)
-    }
-
-    if (isRowsOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      document.addEventListener('keydown', handleKeyDown)
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isRowsOpen])
+  useClickOutside(rowsDropdownRef, () => setIsRowsOpen(false), {
+    active: isRowsOpen,
+    onEscape: () => setIsRowsOpen(false)
+  })
 
   if (totalItems <= 0) return null
 
@@ -103,14 +89,22 @@ const PaginationControls = ({
                           onItemsPerPageChange(Number(opt))
                           setIsRowsOpen(false)
                         }}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
+                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
                           isSelected
-                            ? 'bg-[#1E1138] text-white shadow-2xs font-extrabold'
-                            : 'text-gray-700 hover:bg-[#FAF5EE] hover:text-[#1E1138]'
+                            ? 'bg-black text-white border border-black shadow-2xs font-extrabold'
+                            : 'text-gray-700 hover:bg-[#F3E8DE] hover:text-[#1E1138]'
                         }`}
                       >
-                        <span>{opt}</span>
-                        {isSelected && <Check className="w-3 h-3 stroke-[2.5]" />}
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0">
+                            {isSelected ? (
+                              <Check className="w-3 h-3 text-white stroke-[2.5]" />
+                            ) : (
+                              <span className="w-3 h-3" />
+                            )}
+                          </div>
+                          <span>{opt}</span>
+                        </div>
                       </button>
                     )
                   })}

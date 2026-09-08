@@ -61,7 +61,7 @@ const AddDoctor = () => {
   }
 
   return (
-    <form onSubmit={onSubmitHandler} className="space-y-6 w-full max-w-5xl mx-auto">
+    <form onSubmit={onSubmitHandler} autoComplete="off" className="space-y-6 w-full max-w-5xl mx-auto">
       <div className="border-b border-slate-200/80 pb-3">
         <h1 className='text-xl sm:text-2xl font-black text-gray-800 tracking-tight'>Add Doctor</h1>
         <p className="text-xs text-gray-500 font-medium mt-0.5">Register a new therapist or medical specialist to the platform</p>
@@ -86,20 +86,20 @@ const AddDoctor = () => {
           {/* Left Column */}
           <div className="flex-1 flex flex-col gap-4">
             <div>
-              <p className="text-xs font-bold text-gray-700 mb-1.5">Your Name</p>
-              <input onChange={e => setName(e.target.value)} value={name}
+              <p className="text-xs font-bold text-gray-700 mb-1.5">Doctor Name</p>
+              <input onChange={e => setName(e.target.value)} value={name} name="doc_name" autoComplete="off"
                 className="w-full h-10 px-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-purple-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs" type="text" placeholder="Dr. Full Name" required />
             </div>
 
             <div>
               <p className="text-xs font-bold text-gray-700 mb-1.5">Doctor Email</p>
-              <input onChange={e => setEmail(e.target.value)} value={email}
+              <input onChange={e => setEmail(e.target.value)} value={email} name="doc_email" autoComplete="off"
                 className="w-full h-10 px-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-purple-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs" type="email" placeholder="doctor@therapique.com" required />
             </div>
 
             <div>
               <p className="text-xs font-bold text-gray-700 mb-1.5">Set Password</p>
-              <input onChange={e => setPassword(e.target.value)} value={password}
+              <input onChange={e => setPassword(e.target.value)} value={password} name="doc_new_password" autoComplete="new-password"
                 className="w-full h-10 px-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs font-semibold text-gray-800 placeholder-gray-400 hover:bg-white hover:border-purple-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition-all shadow-2xs" type="password" placeholder="Min. 8 characters" required />
             </div>
 

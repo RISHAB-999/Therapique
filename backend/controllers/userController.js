@@ -16,8 +16,12 @@ import {
     sendRefundConfirmedEmail,
     sendBookOrderPlacedEmail,
     sendOrderStatusUpdateEmail,
-    sendContactFormEmails
+    sendContactFormEmails,
+    sendNewsletterEmails,
+    sendUserRegistrationEmails
 } from '../services/emailService.js';
+import { COIN_PACKAGES } from '../constants/coinPackages.js';
+import newsletterModel from "../models/newsletterModel.js";
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -40,19 +44,34 @@ const registerUser = async (req, res) => {
             return res.json({ success: false, message: "Please enter a strong password" })
         }
 
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Check if user already exists
+        const exists = await userModel.findOne({ email: normalizedEmail });
+        if (exists) {
+            return res.json({ success: false, message: "User already exists" });
+        }
+
         // hashing user password
         const salt = await bcrypt.genSalt(10); // the more no. round the more time it will take
         const hashedPassword = await bcrypt.hash(password, salt)
 
         const userData = {
-            name,
-            email,
+            name: name.trim(),
+            email: normalizedEmail,
             password: hashedPassword,
         }
 
         const newUser = new userModel(userData)
         const user = await newUser.save()
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET)
+
+        // Send Welcome email to user and alert to admin (therapique.official@gmail.com)
+        sendUserRegistrationEmails({
+            name: user.name,
+            email: user.email,
+            userId: user._id
+        }).catch(err => console.log('Registration email error:', err.message));
 
         res.json({ success: true, token })
 
@@ -94,7 +113,7 @@ const getProfile = async (req, res) => {
 
     try {
         const { userId } = req.body
-        const userData = await userModel.findById(userId).select('-password')
+        const userData = await userModel.findById(userId).select('-password').lean()
 
         res.json({ success: true, userData })
 
@@ -551,19 +570,11 @@ const purchaseCoins = async (req, res) => {
     try {
         const { userId, coinPackage } = req.body;
         
-        // Define coin packages with prices and bonus coins
-        const coinPackages = {
-            basic: { coins: 100, price: 99, bonus: 0 },
-            standard: { coins: 500, price: 499, bonus: 50 },
-            premium: { coins: 1000, price: 999, bonus: 150 },
-            mega: { coins: 2000, price: 1899, bonus: 400 }
-        };
-
-        if (!coinPackages[coinPackage]) {
+        if (!COIN_PACKAGES[coinPackage]) {
             return res.json({ success: false, message: 'Invalid coin package' });
         }
 
-        const packageData = coinPackages[coinPackage];
+        const packageData = COIN_PACKAGES[coinPackage];
         const totalCoins = packageData.coins + packageData.bonus;
 
         // Create Razorpay order for coin purchase
@@ -1094,6 +1105,37 @@ const claimRefund = async (req, res) => {
     }
 };
 
+// API to handle newsletter subscription
+const subscribeNewsletter = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email || !validator.isEmail(email)) {
+            return res.json({ success: false, message: 'Please provide a valid email address' });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Check if already subscribed in database
+        const existing = await newsletterModel.findOne({ email: normalizedEmail });
+        if (!existing) {
+            const newSub = new newsletterModel({ email: normalizedEmail });
+            await newSub.save();
+        }
+
+        // Send confirmation to subscriber and alert to admin (therapique.official@gmail.com)
+        await sendNewsletterEmails({ email: normalizedEmail });
+
+        res.json({
+            success: true,
+            message: 'Thank you for subscribing to our newsletter! We have sent a confirmation to your email.'
+        });
+    } catch (error) {
+        console.log('Newsletter subscription error:', error);
+        res.json({ success: false, message: error.message || 'Failed to subscribe' });
+    }
+};
+
 export { 
     registerUser, 
     loginUser, 
@@ -1115,5 +1157,6 @@ export {
     placeBookOrderTokens,
     getUserOrders,
     getSingleOrder,
-    updateOrderStatus
+    updateOrderStatus,
+    subscribeNewsletter
 }

@@ -54,7 +54,7 @@ const FeaturedBooks = () => {
           />
 
           <FadeUp delay={0.15} className='mt-6 bg-[#FAF5EE] border border-[#EADBCE] p-5 rounded-3xl shadow-xs flex flex-col sm:flex-row gap-6'>
-            <div 
+            <div
               onClick={() => handleBookClick(featuredBook)}
               className='w-full sm:w-44 h-64 shrink-0 rounded-2xl overflow-hidden bg-[#FDF7F3] border border-[#EADBCE] flexCenter p-2 shadow-2xs cursor-pointer'
             >
@@ -69,7 +69,7 @@ const FeaturedBooks = () => {
 
             <div className='flex flex-col justify-between flex-1'>
               <div className='space-y-1'>
-                <h3 
+                <h3
                   onClick={() => handleBookClick(featuredBook)}
                   className='font-therapique text-lg sm:text-xl font-bold text-gray-900 line-clamp-1 cursor-pointer hover:text-purple-700 transition-colors'
                 >
@@ -110,12 +110,12 @@ const FeaturedBooks = () => {
         </div>
 
         {/* Right Side - Grid of Random Books with Staggered Scroll Reveal */}
-        <StaggerContainer staggerDelay={0.06} className='flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4'>
+        <StaggerContainer staggerDelay={0.12} delayChildren={0.15} className='flex-1 grid grid-cols-2 sm:grid-cols-3 gap-4'>
           {otherBooks.map((book, index) => {
             const cardImg = Array.isArray(book?.image) ? book.image[0] : book?.image
             return (
-              <StaggerItem key={index}>
-                <div 
+              <StaggerItem key={index} duration={0.8}>
+                <div
                   onClick={() => handleBookClick(book)}
                   className='bg-[#FAF5EE] border border-[#EADBCE] rounded-2xl shadow-xs p-3 flex flex-col items-center text-center group transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-[0_16px_36px_rgba(70,56,48,0.1)] cursor-pointer h-full justify-between'
                 >
@@ -125,7 +125,7 @@ const FeaturedBooks = () => {
                       alt={book?.name || book?.title}
                       loading="lazy"
                       decoding="async"
-                      className='h-full w-full object-cover rounded-xl transition-all duration-500 ease-out group-hover:scale-105'
+                      className='h-full w-full object-cover rounded-xl transition-transform duration-700 ease-out group-hover:scale-105'
                     />
                   </div>
                   <div className='w-full flex-1 flex flex-col justify-between'>

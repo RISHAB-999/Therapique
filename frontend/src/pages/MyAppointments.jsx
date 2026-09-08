@@ -7,6 +7,7 @@ import RefundModal from '../components/RefundModal'
 import { Calendar, Clock, MapPin, Video, XCircle, CheckCircle2, AlertCircle } from 'lucide-react'
 import ReceiptModal from '../components/ReceiptModal'
 import PaginationControls from '../components/PaginationControls'
+import { slotDateFormat } from '../utils/dateFormatter'
 
 const TokenCoinSVG = ({ className = "w-3.5 h-3.5" }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none">
@@ -36,16 +37,6 @@ const MyAppointments = () => {
   const totalPages = Math.max(1, Math.ceil(appointments.length / itemsPerPage))
   const startIndex = (currentPage - 1) * itemsPerPage
   const displayedAppointments = appointments.slice(startIndex, startIndex + itemsPerPage)
-
-  const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
-  // Format date (e.g. 20_01_2026 => 20 Jan 2026)
-  const slotDateFormat = (slotDate) => {
-    if (!slotDate) return ''
-    const dateArray = slotDate.split('_')
-    if (dateArray.length < 3) return slotDate
-    return `${dateArray[0]} ${months[Number(dateArray[1])]} ${dateArray[2]}`
-  }
 
   // Getting User Appointments Data Using API (with silent background update support)
   const getUserAppointments = async (isSilent = false) => {

@@ -4,6 +4,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { AppContext } from '../context/AppContext'
 import { AlertCircle, X, Sparkles, Building2, Wallet } from 'lucide-react'
+import { formatSlotDate as fmtDate } from '../utils/dateFormatter'
 
 const PendingRefundModal = () => {
   const { backendUrl, token, loadUserProfileData, setUserData } = useContext(AppContext)
@@ -11,14 +12,6 @@ const PendingRefundModal = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [dismissedIds, setDismissedIds] = useState(() => new Set())
-
-  const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-  const fmtDate = (slotDate) => {
-    if (!slotDate) return ''
-    const parts = slotDate.split('_')
-    if (parts.length < 3) return slotDate
-    return `${parts[0]} ${months[Number(parts[1])]} ${parts[2]}`
-  }
 
   // Check for any cancelled appointment with refundStatus === 'pending_choice'
   const checkPendingRefunds = useCallback(async () => {

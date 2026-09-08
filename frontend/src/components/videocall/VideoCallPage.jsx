@@ -142,7 +142,10 @@ function CtrlBtn({
 }) {
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation()
+        onClick && onClick(e)
+      }}
       disabled={disabled}
       title={tip}
       className="relative flex flex-col items-center justify-center transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -307,6 +310,8 @@ const VideoCallPage = () => {
   const [chatBadge, setChatBadge] = useState(0)
   const [showEnd, setShowEnd] = useState(false)
   const [callSeconds, setCallSeconds] = useState(0)
+  const [controlsVisible, setControlsVisible] = useState(true)
+  const controlsTimerRef = useRef(null)
 
   // Toast message
   const [toastMessage, setToastMessage] = useState(null)
@@ -458,6 +463,36 @@ const VideoCallPage = () => {
     return () => { if (interval) clearInterval(interval) }
   }, [callState])
 
+  // Lock body & prevent mobile bounce / overscroll white background
+  useEffect(() => {
+    const origBodyStyle = {
+      overflow: document.body.style.overflow,
+      backgroundColor: document.body.style.backgroundColor,
+      overscrollBehavior: document.body.style.overscrollBehavior
+    }
+    const origHtmlStyle = {
+      overflow: document.documentElement.style.overflow,
+      backgroundColor: document.documentElement.style.backgroundColor,
+      overscrollBehavior: document.documentElement.style.overscrollBehavior
+    }
+
+    document.body.style.overflow = 'hidden'
+    document.body.style.backgroundColor = '#080c10'
+    document.body.style.overscrollBehavior = 'none'
+    document.documentElement.style.overflow = 'hidden'
+    document.documentElement.style.backgroundColor = '#080c10'
+    document.documentElement.style.overscrollBehavior = 'none'
+
+    return () => {
+      document.body.style.overflow = origBodyStyle.overflow
+      document.body.style.backgroundColor = origBodyStyle.backgroundColor
+      document.body.style.overscrollBehavior = origBodyStyle.overscrollBehavior
+      document.documentElement.style.overflow = origHtmlStyle.overflow
+      document.documentElement.style.backgroundColor = origHtmlStyle.backgroundColor
+      document.documentElement.style.overscrollBehavior = origHtmlStyle.overscrollBehavior
+    }
+  }, [])
+
   // Cleanup on unmount
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -570,6 +605,75 @@ const VideoCallPage = () => {
   const safeCorners = getSafeCorners(pipMinimized, chatOpen)
   const currentCoords = dragPos || safeCorners[activeCorner] || safeCorners['top-right']
 
+  // Controls auto-hide timer (4.5s of inactivity) & tap-to-toggle
+  const resetControlsTimer = useCallback(() => {
+    setControlsVisible(true)
+    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
+    if (!chatOpen && !showEnd) {
+      controlsTimerRef.current = setTimeout(() => {
+        setControlsVisible(false)
+      }, 4500)
+    }
+  }, [chatOpen, showEnd])
+
+  // Fast mobile single-tap & desktop click detection
+  const touchDataRef = useRef({ startX: 0, startY: 0, startTime: 0 })
+  const lastTapTimeRef = useRef(0)
+
+  const handleTouchStart = (e) => {
+    handleUserInteraction()
+    if (e.touches && e.touches.length === 1) {
+      touchDataRef.current = {
+        startX: e.touches[0].clientX,
+        startY: e.touches[0].clientY,
+        startTime: Date.now()
+      }
+    }
+  }
+
+  const handleTouchEnd = (e) => {
+    if (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || dragRef.current?.isDragging || dragRef.current?.moved) return
+
+    if (e.changedTouches && e.changedTouches.length === 1) {
+      const touch = e.changedTouches[0]
+      const dx = Math.abs(touch.clientX - touchDataRef.current.startX)
+      const dy = Math.abs(touch.clientY - touchDataRef.current.startY)
+      const dt = Date.now() - touchDataRef.current.startTime
+
+      // Single tap under 400ms and minimal movement (< 15px)
+      if (dx < 15 && dy < 15 && dt < 400) {
+        lastTapTimeRef.current = Date.now()
+        setControlsVisible(prev => {
+          const next = !prev
+          if (next) resetControlsTimer()
+          else if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
+          return next
+        })
+      }
+    }
+  }
+
+  const handleClick = (e) => {
+    handleUserInteraction()
+    // Suppress synthetic ghost clicks right after onTouchEnd
+    if (Date.now() - lastTapTimeRef.current < 500) return
+    if (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || dragRef.current?.isDragging || dragRef.current?.moved) return
+
+    setControlsVisible(prev => {
+      const next = !prev
+      if (next) resetControlsTimer()
+      else if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
+      return next
+    })
+  }
+
+  useEffect(() => {
+    resetControlsTimer()
+    return () => {
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current)
+    }
+  }, [resetControlsTimer, chatOpen, showEnd])
+
   // Touch / Click Audio Autoplay Enabler
   const handleUserInteraction = () => {
     if (remoteAudioRef.current && remoteAudioRef.current.paused && remoteStream) {
@@ -579,9 +683,11 @@ const VideoCallPage = () => {
 
   return (
     <div
-      onClick={handleUserInteraction}
-      onTouchStart={handleUserInteraction}
-      className="fixed inset-0 w-full h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#080c10] select-none font-sans text-white touch-none"
+      onClick={handleClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onMouseMove={resetControlsTimer}
+      className="fixed inset-0 w-full w-screen h-full h-[100dvh] min-h-screen max-h-[100dvh] overflow-hidden bg-[#080c10] overscroll-none touch-manipulation select-none font-sans text-white cursor-pointer"
     >
       {/* 0. DEDICATED CONTINUOUS REMOTE AUDIO SINK */}
       <audio
@@ -592,7 +698,7 @@ const VideoCallPage = () => {
       />
 
       {/* 1. PRIMARY REMOTE DOCTOR VIDEO (FULLSCREEN FIT - NOT ZOOMED) */}
-      <div className="absolute inset-0 z-0 bg-[#080c10] flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 z-0 bg-[#080c10] flex items-center justify-center overflow-hidden pointer-events-none">
         <video
           ref={(el) => {
             remoteVideoRef.current = el
@@ -603,7 +709,7 @@ const VideoCallPage = () => {
           }}
           autoPlay
           playsInline
-          className={`w-full h-full object-contain ${(!remoteStream || isRemoteVideoMuted) ? 'opacity-0 absolute pointer-events-none' : 'opacity-100'}`}
+          className={`w-full h-full object-contain pointer-events-none ${(!remoteStream || isRemoteVideoMuted) ? 'opacity-0 absolute' : 'opacity-100'}`}
         />
         {(!remoteStream || isRemoteVideoMuted) && (
           <div className="w-full h-full bg-[#080c10] flex flex-col items-center justify-center gap-4">
@@ -629,7 +735,9 @@ const VideoCallPage = () => {
       </div>
 
       {/* 2. TOP HEADER HUD (CLEAN CENTER PILL ONLY) */}
-      <header className="absolute top-0 left-0 right-0 z-20 flex items-center justify-center px-4 pt-3 sm:pt-4 pointer-events-none">
+      <header className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-center px-4 pt-3 sm:pt-4 pointer-events-none transition-all duration-300 ${
+        controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+      }`}>
         <div className="flex items-center gap-2 pointer-events-auto">
           {/* Timer */}
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass shadow-md">
@@ -742,7 +850,14 @@ const VideoCallPage = () => {
       </div>
 
       {/* 5. DOCTOR NAME LABEL (BOTTOM-LEFT OVERLAY) */}
-      <div className="absolute bottom-20 sm:bottom-24 left-3 sm:left-6 z-20 pointer-events-auto">
+      <div
+        className={`fixed left-3 sm:left-6 z-20 pointer-events-auto transition-all duration-300 ${
+          controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+        style={{
+          bottom: 'max(88px, calc(env(safe-area-inset-bottom, 20px) + 72px))'
+        }}
+      >
         <NameLabel
           name={doctorName}
           role="Doctor · Specialist"
@@ -753,7 +868,14 @@ const VideoCallPage = () => {
       </div>
 
       {/* 6. BOTTOM FLOATING CONTROL DOCK (BEAUTIFULLY POLISHED RED HANGUP BUTTON) */}
-      <div className="absolute bottom-3 sm:bottom-6 left-0 right-0 z-20 flex justify-center px-4 pointer-events-none">
+      <div
+        className={`fixed left-0 right-0 z-20 flex justify-center px-4 pointer-events-none transition-all duration-300 ${
+          controlsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'
+        }`}
+        style={{
+          bottom: 'max(20px, env(safe-area-inset-bottom, 20px))'
+        }}
+      >
         <div
           className="flex items-center gap-2.5 sm:gap-3.5 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-[30px] pointer-events-auto shadow-2xl"
           style={{
@@ -789,7 +911,7 @@ const VideoCallPage = () => {
 
       {/* 7. RIGHT SIDE REAL-TIME CHAT PANEL */}
       {chatOpen && (
-        <aside className="absolute top-0 right-0 bottom-0 z-40 w-full sm:w-[320px] shadow-2xl bg-[#0a0f17] border-l border-white/10 flex flex-col anim-slide-right">
+        <aside className="fixed inset-y-0 right-0 z-50 w-full sm:w-[340px] max-w-full h-full h-[100dvh] max-h-[100dvh] shadow-2xl bg-[#0a0f17] border-l border-white/10 flex flex-col anim-slide-right overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 shrink-0">
             <div>
               <p className="text-sm font-semibold text-white">Consultation Chat</p>
@@ -803,7 +925,7 @@ const VideoCallPage = () => {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 overscroll-contain">
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-4">
                 <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-teal-400 mb-2">
@@ -836,8 +958,13 @@ const VideoCallPage = () => {
             <div ref={chatBottomRef} />
           </div>
 
-          <div className="px-3 pb-3 shrink-0">
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-white/5 border border-white/10">
+          <div
+            className="px-3.5 pt-2 shrink-0 bg-[#0a0f17]/95 backdrop-blur-md border-t border-white/5"
+            style={{
+              paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))'
+            }}
+          >
+            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-white/5 border border-white/10 focus-within:border-teal-500/50 transition-colors">
               <input
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
@@ -847,7 +974,7 @@ const VideoCallPage = () => {
               />
               <button
                 onClick={handleSendMessage}
-                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-teal-500 hover:bg-teal-400 text-black font-bold cursor-pointer transition-colors"
+                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-teal-500 hover:bg-teal-400 text-black font-bold cursor-pointer transition-colors active:scale-95"
               >
                 <I.Send />
               </button>

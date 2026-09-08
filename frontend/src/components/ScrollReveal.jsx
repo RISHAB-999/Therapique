@@ -74,7 +74,7 @@ export const SplitTextReveal = ({
         initial="hidden"
         animate={animate !== undefined ? animate : undefined}
         whileInView={animate === undefined ? "visible" : undefined}
-        viewport={animate === undefined ? { once: true, amount: 0.15 } : undefined}
+        viewport={animate === undefined ? { once: true, amount: 0, margin: "200px 0px" } : undefined}
         variants={containerVariants}
         className="inline"
       >
@@ -149,7 +149,7 @@ export const TypewriterParagraph = ({
         initial="hidden"
         animate={animate !== undefined ? animate : undefined}
         whileInView={animate === undefined ? "visible" : undefined}
-        viewport={animate === undefined ? { once: true, amount: 0.15 } : undefined}
+        viewport={animate === undefined ? { once: true, amount: 0, margin: "200px 0px" } : undefined}
         variants={containerVariants}
         className="inline"
       >
@@ -197,11 +197,11 @@ export const ImageRevealMask = ({
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.92, y: 35 }}
-      animate={animate !== undefined ? (animate === "hidden" ? { opacity: 0, scale: 0.92, y: 35 } : { opacity: 1, scale: 1, y: 0 }) : undefined}
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={animate !== undefined ? (animate === "hidden" ? { opacity: 0, scale: 0.95, y: 20 } : { opacity: 1, scale: 1, y: 0 }) : undefined}
       whileInView={animate === undefined ? { opacity: 1, scale: 1, y: 0 } : undefined}
-      viewport={animate === undefined ? { once: true, amount: 0.1 } : undefined}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={animate === undefined ? { once: true, amount: 0, margin: "200px 0px" } : undefined}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
       className={`overflow-hidden transform-gpu ${className}`}
       style={{ backfaceVisibility: 'hidden' }}
       {...props}
@@ -236,19 +236,19 @@ export const ImageRevealMask = ({
 export const FadeUp = ({
   children,
   delay = 0,
-  duration = 0.5,
-  y = 25,
+  duration = 0.75,
+  y = 20,
   className = '',
   animate,
   ...props
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y }}
-      animate={animate !== undefined ? (animate === "hidden" ? { opacity: 0, y } : { opacity: 1, y: 0 }) : undefined}
+      initial={{ opacity: 0, y: 16 }}
+      animate={animate !== undefined ? (animate === "hidden" ? { opacity: 0, y: 16 } : { opacity: 1, y: 0 }) : undefined}
       whileInView={animate === undefined ? { opacity: 1, y: 0 } : undefined}
-      viewport={animate === undefined ? { once: true, amount: 0.15 } : undefined}
-      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={animate === undefined ? { once: true, amount: 0, margin: "200px 0px" } : undefined}
+      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
       className={`transform-gpu ${className}`}
       {...props}
     >
@@ -262,7 +262,7 @@ export const FadeUp = ({
  */
 export const StaggerContainer = ({
   children,
-  staggerDelay = 0.08,
+  staggerDelay = 0.1,
   delayChildren = 0,
   className = '',
   animate,
@@ -273,7 +273,7 @@ export const StaggerContainer = ({
       initial="hidden"
       animate={animate !== undefined ? animate : undefined}
       whileInView={animate === undefined ? "visible" : undefined}
-      viewport={animate === undefined ? { once: true, amount: "some" } : undefined}
+      viewport={animate === undefined ? { once: true, amount: 0, margin: "200px 0px" } : undefined}
       variants={{
         hidden: { opacity: 0 },
         visible: {
@@ -293,22 +293,23 @@ export const StaggerContainer = ({
 }
 
 /**
- * 6. Stagger Card Item with translateY(30px -> 0) & Subtle Hover Lift
+ * 6. Stagger Card Item with translateY(16px -> 0) & Smooth Natural Float
  */
 export const StaggerItem = ({
   children,
   className = '',
-  y = 30,
+  y = 16,
+  duration = 0.75,
   ...props
 }) => {
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y },
+        hidden: { opacity: 0, y: 16 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+          transition: { duration, ease: [0.16, 1, 0.3, 1] },
         },
       }}
       className={`transform-gpu ${className}`}
@@ -332,10 +333,10 @@ export const ButtonPop = ({
   return (
     <motion.button
       onClick={onClick}
-      initial={{ opacity: 0, scale: 0.94 }}
+      initial={{ opacity: 0, scale: 0.96 }}
       whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true, amount: 0.1 }}
-      transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0, margin: "200px 0px" }}
+      transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.96 }}
       className={`transform-gpu ${className}`}

@@ -16,7 +16,10 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-motion': ['motion/react'],
           'vendor-swiper': ['swiper', 'swiper/react'],
-          'vendor-icons': ['react-icons', 'lucide-react']
+          'vendor-icons': ['react-icons', 'lucide-react'],
+          'vendor-axios': ['axios'],
+          'vendor-toast': ['react-toastify'],
+          'vendor-socket': ['socket.io-client'],
         }
       }
     }

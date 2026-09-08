@@ -5,7 +5,7 @@ import appointmentModel from "../models/appointmentModel.js";
 import userModel from "../models/userModel.js";
 import razorpay from 'razorpay'
 import { v2 as cloudinary } from 'cloudinary';
-import { sendAppointmentCancellationEmail } from '../services/emailService.js';
+import { sendAppointmentCancellationEmail, sendSessionCompletedEmails } from '../services/emailService.js';
 
 const razorpayInstance = new razorpay({
     key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_Synr1hf0zc3IAl',
@@ -176,10 +176,36 @@ const appointmentComplete = async (req, res) => {
         const appointmentData = await appointmentModel.findById(appointmentId)
         if (appointmentData && appointmentData.docId === docId) {
             await appointmentModel.findByIdAndUpdate(appointmentId, { isCompleted: true })
-            return res.json({ success: true, message: 'Appointment Completed' })
+
+            // Look up patient & doctor details for completion notification emails
+            const [user, doctor] = await Promise.all([
+                userModel.findById(appointmentData.userId).lean(),
+                doctorModel.findById(docId).lean()
+            ])
+
+            const patientEmail = user?.email || appointmentData.userData?.email
+            const patientName = user?.name || appointmentData.userData?.name || 'Patient'
+            const doctorEmail = doctor?.email || appointmentData.docData?.email
+            const doctorName = doctor?.name || appointmentData.docData?.name || 'Doctor'
+            const doctorSpeciality = doctor?.speciality || appointmentData.docData?.speciality || 'Specialist'
+
+            sendSessionCompletedEmails({
+                appointmentId,
+                patientEmail,
+                patientName,
+                doctorEmail,
+                doctorName,
+                doctorSpeciality,
+                slotDate: appointmentData.slotDate,
+                slotTime: appointmentData.slotTime,
+                amount: appointmentData.amount,
+                paymentMethod: appointmentData.isCoinsPayment ? 'Therapique Coins' : (appointmentData.payment ? 'Online (Razorpay)' : 'Cash / Clinic')
+            }).catch(err => console.error('[EMAIL ERROR] sendSessionCompletedEmails failed:', err))
+
+            return res.json({ success: true, message: 'Consultation marked as completed successfully.' })
         }
 
-        return res.json({ success: false, message: 'Appointment Cancelled' })
+        return res.json({ success: false, message: 'Appointment not found or invalid' })
 
     } catch (error) {
         console.log(error)
@@ -191,7 +217,7 @@ const appointmentComplete = async (req, res) => {
 // API to get all doctors list for Frontend
 const doctorList = async (req, res) => {
     try {
-        const doctors = await doctorModel.find({}).select(['-password', '-email'])
+        const doctors = await doctorModel.find({}).select(['-password', '-email']).lean()
         res.json({ success: true, doctors })
 
     } catch (error) {

@@ -34,7 +34,7 @@ const TypewriterText = ({ text, className = '', delay = 0, speed = 0.025, mode =
       <motion.span
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0, margin: "200px 0px" }}
         variants={container}
         className="inline"
       >
@@ -82,7 +82,7 @@ const Achivements = () => {
   ]
 
   return (
-    <section className='mx-auto max-w-[1440px]'>
+    <section className='mx-auto max-w-[1440px] overflow-hidden'>
       {/* Container */}
       <div className='flex flex-col xl:flex-row gap-12'>
         
@@ -90,7 +90,7 @@ const Achivements = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95, x: -35 }}
           whileInView={{ opacity: 1, scale: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0, margin: "200px 0px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className='flex-[2] flex justify-center flex-col bg-gradient-to-l from-yellow-200 px-6 lg:px-12 py-16 will-change-transform'
         >
@@ -112,12 +112,12 @@ const Achivements = () => {
             {statistics.map((statistic, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
+                viewport={{ once: true, amount: 0, margin: "200px 0px" }}
                 transition={{
                   duration: 0.5,
-                  delay: 1.1 + index * 0.15,
+                  delay: 0.8 + index * 0.12,
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 className='p-4 rounded-lg will-change-transform'
@@ -136,7 +136,7 @@ const Achivements = () => {
         <motion.div
           initial={{ opacity: 0, x: 35 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0, margin: "200px 0px" }}
           transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
           className='flex-1 relative max-sm:pl-8 flex items-center xl:justify-center pt-5 will-change-transform'
         >
@@ -153,10 +153,10 @@ const Achivements = () => {
                   key={index}
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
+                  viewport={{ once: true, amount: 0, margin: "200px 0px" }}
                   transition={{
                     duration: 0.45,
-                    delay: 0.5 + index * 0.12,
+                    delay: 0.3 + index * 0.1,
                     ease: [0.22, 1, 0.36, 1],
                   }}
                   className='flexCenter gap-3 mb-3 will-change-transform'

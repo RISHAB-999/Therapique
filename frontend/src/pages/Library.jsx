@@ -9,7 +9,7 @@ import Achivements from '../components/Achivements'
 
 const Library = () => {
   return (
-    <>
+    <div className='w-full overflow-x-clip'>
       <Hero /> 
       <Categories />
       <NewArrivals />
@@ -17,7 +17,7 @@ const Library = () => {
       <PopularBooks />
       <Achivements />
       <NewsLetter />
-    </>
+    </div>
   )
 }
 

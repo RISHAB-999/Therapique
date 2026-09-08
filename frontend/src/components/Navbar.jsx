@@ -1,16 +1,19 @@
-import React, { useContext, useState, useRef, useEffect } from 'react'
+import React, { useContext, useState, useRef } from 'react'
 import { assets } from '../assets/assets'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import { ShopContext } from '../context/ShopContext'
 import CoinsWallet from './CoinsWallet'
 import { FaBagShopping } from "react-icons/fa6"
+import { ChevronDown, Menu, X } from 'lucide-react'
+import { useClickOutside } from '../hooks/useClickOutside'
 
 const Navbar = () => {
     const navigate = useNavigate()
     const location = useLocation()
     const { token, setToken, userData } = useContext(AppContext)
     const { getCartCount } = useContext(ShopContext)
+    const cartCount = getCartCount()
     const [showMenu, setShowMenu] = useState(false)
     const [showProfileDropdown, setShowProfileDropdown] = useState(false)
     const profileDropdownRef = useRef(null)
@@ -28,15 +31,7 @@ const Navbar = () => {
     }
 
     // Close profile dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
-                setShowProfileDropdown(false)
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [])
+    useClickOutside(profileDropdownRef, () => setShowProfileDropdown(false), showProfileDropdown)
 
     return (
         <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-[#EADBCE] gap-3'>
@@ -62,6 +57,9 @@ const Navbar = () => {
                 <NavLink to='/Library' className={({ isActive }) => `py-1 transition-colors ${isActive ? 'text-black font-bold' : 'hover:text-black'}`}>
                     <li className='whitespace-nowrap'>LIBRARY</li>
                 </NavLink>
+                <NavLink to='/blog' className={({ isActive }) => `py-1 transition-colors ${isActive ? 'text-black font-bold' : 'hover:text-black'}`}>
+                    <li className='whitespace-nowrap'>BLOG</li>
+                </NavLink>
             </ul>
 
             {/* Right Action Icons & Profile */}
@@ -70,9 +68,9 @@ const Navbar = () => {
                 <NavLink to={'/cart'} className='hidden lg:flex items-center'>
                     <div className='relative cursor-pointer p-2 rounded-full hover:bg-[#F3E8DE] transition-colors text-gray-800 flexCenter' title="Cart">
                         <FaBagShopping className='text-lg xl:text-xl text-gray-800' />
-                        {getCartCount() > 0 && (
+                        {cartCount > 0 && (
                             <div className='absolute -top-0.5 -right-0.5 bg-purple-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs ring-2 ring-[#FAF5EE]'>
-                                {getCartCount()}
+                                {cartCount}
                             </div>
                         )}
                     </div>
@@ -86,8 +84,8 @@ const Navbar = () => {
                             className='flex items-center gap-1.5 sm:gap-2 cursor-pointer relative py-1'
                         >
                             <img className='w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover object-top border border-[#EADBCE]' src={userData.image} alt="" />
-                            <img className={`w-2.5 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} src={assets.dropdown_icon} alt="" />
-                            
+                            <ChevronDown className={`w-3.5 h-3.5 text-gray-600 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180 text-purple-700' : ''}`} />
+
                             {showProfileDropdown && (
                                 <div
                                     onClick={(e) => e.stopPropagation()}
@@ -115,9 +113,9 @@ const Navbar = () => {
                                         </p>
                                         <p onClick={() => handleProfileItemClick('/cart')} className='flex lg:hidden px-3 py-2 rounded-xl hover:bg-[#F3E8DE] text-gray-800 font-semibold transition cursor-pointer items-center justify-between'>
                                             <span>Cart</span>
-                                            {getCartCount() > 0 && (
+                                            {cartCount > 0 && (
                                                 <span className='bg-purple-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full'>
-                                                    {getCartCount()}
+                                                    {cartCount}
                                                 </span>
                                             )}
                                         </p>
@@ -140,28 +138,54 @@ const Navbar = () => {
                 )}
 
                 {/* Mobile & Landscape Hamburger Button */}
-                <img onClick={() => setShowMenu(true)} className='w-6 lg:hidden cursor-pointer p-0.5' src={assets.menu_icon} alt="Menu" />
+                <button
+                    type="button"
+                    onClick={() => setShowMenu(true)}
+                    className='p-1 rounded-lg hover:bg-[#F3E8DE] text-gray-800 lg:hidden cursor-pointer transition'
+                    aria-label="Open Navigation Menu"
+                >
+                    <Menu className='w-6 h-6' />
+                </button>
 
-                {/* ---- Mobile & Landscape Drawer Menu ---- */}
-                <div className={`lg:hidden ${showMenu ? 'fixed w-full' : 'h-0 w-0'} right-0 top-0 bottom-0 z-50 overflow-y-auto bg-[#FDF7F3] transition-all`}>
-                    <div className='flex items-center justify-between px-5 py-5 border-b border-[#EADBCE]'>
-                        <h1 className="font-therapique text-2xl text-gray-900">therapique</h1>
-                        <img onClick={() => setShowMenu(false)} src={assets.cross_icon} className='w-6 sm:w-7 cursor-pointer' alt="Close" />
+                {/* ---- Mobile & Landscape Drawer Menu with Backdrop ---- */}
+                {showMenu && (
+                    <div
+                        onClick={() => setShowMenu(false)}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 lg:hidden transition-opacity"
+                    />
+                )}
+                <div
+                    className={`fixed top-0 right-0 bottom-0 z-50 w-[280px] sm:w-[320px] max-w-[85vw] bg-[#FDF7F3] border-l border-[#EADBCE] shadow-2xl transition-all duration-300 ease-in-out lg:hidden overflow-y-auto flex flex-col justify-between ${showMenu ? 'translate-x-0 opacity-100 visible pointer-events-auto' : 'translate-x-full opacity-0 invisible pointer-events-none'
+                        }`}
+                >
+                    <div>
+                        <div className='flex items-center justify-between px-5 py-5 border-b border-[#EADBCE]'>
+                            <h1 className="font-therapique text-2xl text-gray-900">therapique</h1>
+                            <button
+                                type="button"
+                                onClick={() => setShowMenu(false)}
+                                className='p-1 rounded-lg hover:bg-[#F3E8DE] text-gray-700 transition cursor-pointer'
+                                aria-label="Close Navigation Menu"
+                            >
+                                <X className='w-5 h-5' />
+                            </button>
+                        </div>
+                        <ul className='flex flex-col gap-1.5 mt-5 px-4 text-sm font-semibold'>
+                            <NavLink onClick={() => setShowMenu(false)} to='/' className={({ isActive }) => `px-4 py-2.5 rounded-xl transition ${isActive ? 'bg-[#1E1138] text-white font-bold shadow-2xs' : 'text-gray-800 hover:bg-[#F3E8DE]'}`}>HOME</NavLink>
+                            <NavLink onClick={() => setShowMenu(false)} to='/doctors' className={({ isActive }) => `px-4 py-2.5 rounded-xl transition ${isActive ? 'bg-[#1E1138] text-white font-bold shadow-2xs' : 'text-gray-800 hover:bg-[#F3E8DE]'}`}>ALL DOCTORS</NavLink>
+                            <NavLink onClick={() => setShowMenu(false)} to='/about' className={({ isActive }) => `px-4 py-2.5 rounded-xl transition ${isActive ? 'bg-[#1E1138] text-white font-bold shadow-2xs' : 'text-gray-800 hover:bg-[#F3E8DE]'}`}>ABOUT</NavLink>
+                            <NavLink onClick={() => setShowMenu(false)} to='/contact' className={({ isActive }) => `px-4 py-2.5 rounded-xl transition ${isActive ? 'bg-[#1E1138] text-white font-bold shadow-2xs' : 'text-gray-800 hover:bg-[#F3E8DE]'}`}>CONTACT</NavLink>
+                            <NavLink onClick={() => setShowMenu(false)} to='/Library' className={({ isActive }) => `px-4 py-2.5 rounded-xl transition ${isActive ? 'bg-[#1E1138] text-white font-bold shadow-2xs' : 'text-gray-800 hover:bg-[#F3E8DE]'}`}>LIBRARY</NavLink>
+                            <NavLink onClick={() => setShowMenu(false)} to='/blog' className={({ isActive }) => `px-4 py-2.5 rounded-xl transition ${isActive ? 'bg-[#1E1138] text-white font-bold shadow-2xs' : 'text-gray-800 hover:bg-[#F3E8DE]'}`}>BLOG</NavLink>
+                            {!token && (
+                                <NavLink onClick={() => setShowMenu(false)} to='/login' className='mt-4'>
+                                    <button className='w-full bg-black text-white py-3 rounded-xl font-bold text-xs shadow-md'>
+                                        Create account
+                                    </button>
+                                </NavLink>
+                            )}
+                        </ul>
                     </div>
-                    <ul className='flex flex-col items-center gap-2 sm:gap-3 mt-6 px-5 text-base sm:text-lg font-medium'>
-                        <NavLink onClick={() => setShowMenu(false)} to='/'><p className='px-5 py-2 rounded-xl hover:bg-[#F3E8DE] inline-block'>HOME</p></NavLink>
-                        <NavLink onClick={() => setShowMenu(false)} to='/doctors' ><p className='px-5 py-2 rounded-xl hover:bg-[#F3E8DE] inline-block'>ALL DOCTORS</p></NavLink>
-                        <NavLink onClick={() => setShowMenu(false)} to='/about' ><p className='px-5 py-2 rounded-xl hover:bg-[#F3E8DE] inline-block'>ABOUT</p></NavLink>
-                        <NavLink onClick={() => setShowMenu(false)} to='/contact' ><p className='px-5 py-2 rounded-xl hover:bg-[#F3E8DE] inline-block'>CONTACT</p></NavLink>
-                        <NavLink onClick={() => setShowMenu(false)} to='/Library' ><p className='px-5 py-2 rounded-xl hover:bg-[#F3E8DE] inline-block'>LIBRARY</p></NavLink>
-                        {!token && (
-                            <NavLink onClick={() => setShowMenu(false)} to='/login' className='mt-2'>
-                                <button className='bg-black text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md'>
-                                    Create account
-                                </button>
-                            </NavLink>
-                        )}
-                    </ul>
                 </div>
             </div>
         </div>

@@ -12,10 +12,9 @@
 
 /* ✅ New: let Tailwind handle fonts via config (Inter for body, Outfit only when needed) */
 body {
-  @apply font-sans bg-white text-text;
+  @apply font-sans bg-[#FDF7F3] text-text;
   /* font-sans = Inter from config */
   user-select: none;
-  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   /* Momentum scrolling on iOS */
   -webkit-tap-highlight-color: transparent;
@@ -46,11 +45,12 @@ input[type="search"]::-webkit-search-results-decoration {
   height: 0 !important;
 }
 
-/* Hardware-accelerated scrolling for all scrollable containers */
-*,
-*::before,
-*::after {
+/* GPU backface-visibility optimization — scoped to animated/transformed elements only */
+.transform-gpu,
+.will-change-transform,
+[style*="transform"] {
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Respect user preference for reduced motion (accessibility + battery savings) */

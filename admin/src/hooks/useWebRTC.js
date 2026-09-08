@@ -73,20 +73,33 @@ export const useWebRTC = () => {
         setMediaError(null)
         console.log('[DOCTOR MEDIA TEST] requesting camera + microphone')
         
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            width: { ideal: 1920, min: 1280 }, 
-            height: { ideal: 1080, min: 720 },
-            frameRate: { ideal: 30, max: 60 },
-            facingMode: 'user'
-          },
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            channelCount: 1
-          }
-        })
+        let stream
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+              width: { ideal: 1280, max: 1920 }, 
+              height: { ideal: 720, max: 1080 },
+              frameRate: { ideal: 30, max: 60 },
+              facingMode: 'user'
+            },
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+              channelCount: 1
+            }
+          })
+        } catch (highResErr) {
+          console.warn('[DOCTOR MEDIA TEST] High-res constraints failed, falling back to basic video+audio:', highResErr)
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user' },
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          })
+        }
         
         // Ensure all audio tracks are enabled
         stream.getAudioTracks().forEach(track => {

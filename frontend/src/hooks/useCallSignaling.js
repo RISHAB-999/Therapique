@@ -18,6 +18,7 @@ export const useCallSignaling = (backendUrl, authOptions = {}) => {
 
   const activeRoomIdRef = useRef(null)
   activeRoomIdRef.current = activeRoomId
+  const failSafeTimerRef = useRef(null)
 
   // Listen to WebRTC Room signaling events (bound ONCE per socket)
   useEffect(() => {
@@ -82,7 +83,8 @@ export const useCallSignaling = (backendUrl, authOptions = {}) => {
         setRemoteUserInfo(peerInfo)
 
         // Fail-safe: if peer is already in room and no offer was received within 1 sec, initiate offer
-        setTimeout(async () => {
+        if (failSafeTimerRef.current) clearTimeout(failSafeTimerRef.current)
+        failSafeTimerRef.current = setTimeout(async () => {
           const room = activeRoomIdRef.current || activeRoomId
           if (!room) return
           console.log('[PATIENT SIGNALING] Initiating fail-safe offer for existing peer in room...')
@@ -176,6 +178,10 @@ export const useCallSignaling = (backendUrl, authOptions = {}) => {
     socket.on('peer:left', handlePeerLeft)
 
     return () => {
+      if (failSafeTimerRef.current) {
+        clearTimeout(failSafeTimerRef.current)
+        failSafeTimerRef.current = null
+      }
       socket.off('webrtc:mute-status', handleMuteStatus)
       socket.off('user:joined', handleUserJoined)
       socket.off('room:joined', handleRoomJoined)
@@ -229,6 +235,10 @@ export const useCallSignaling = (backendUrl, authOptions = {}) => {
   // Leave Room
   const leaveRoom = useCallback(() => {
     console.log('[PATIENT] leaveRoom called')
+    if (failSafeTimerRef.current) {
+      clearTimeout(failSafeTimerRef.current)
+      failSafeTimerRef.current = null
+    }
     const room = activeRoomIdRef.current
     if (socket && room) {
       socket.emit('room:leave')

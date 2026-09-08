@@ -52,42 +52,41 @@ const AppContextProvider = (props) => {
 
     // Initial load + Realtime Background Polling and Focus-sync
     useEffect(() => {
+        let lastFetchTime = Date.now()
+
         getDoctorData()
         if (token) {
             loadUserProfileData()
         }
 
-        // 1. Live background polling every 15 seconds to sync availability & wallet without CPU churn
+        // 1. Background polling every 30 seconds to sync availability & wallet
         const interval = setInterval(() => {
             getDoctorData(true)
             if (token) {
                 loadUserProfileData()
             }
-        }, 15000)
+            lastFetchTime = Date.now()
+        }, 30000)
 
-        // 2. Tab switch / Window focus sync
-        const handleFocus = () => {
+        // 2. Tab switch / Window focus sync — debounced to skip if fetched within 10s
+        const handleFocusOrVisibility = () => {
+            if (document.visibilityState === 'hidden') return
+            const now = Date.now()
+            if (now - lastFetchTime < 10000) return // Skip if fetched within last 10 seconds
+            lastFetchTime = now
             getDoctorData(true)
             if (token) {
                 loadUserProfileData()
             }
         }
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
-                getDoctorData(true)
-                if (token) {
-                    loadUserProfileData()
-                }
-            }
-        }
 
-        window.addEventListener('focus', handleFocus)
-        document.addEventListener('visibilitychange', handleVisibilityChange)
+        window.addEventListener('focus', handleFocusOrVisibility)
+        document.addEventListener('visibilitychange', handleFocusOrVisibility)
 
         return () => {
             clearInterval(interval)
-            window.removeEventListener('focus', handleFocus)
-            document.removeEventListener('visibilitychange', handleVisibilityChange)
+            window.removeEventListener('focus', handleFocusOrVisibility)
+            document.removeEventListener('visibilitychange', handleFocusOrVisibility)
         }
     }, [getDoctorData, token, loadUserProfileData])
 

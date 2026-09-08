@@ -16,13 +16,14 @@ const NewArrivals = () => {
       <Title
         title1={"New"}
         title2={"Arrivals"}
-        para={"Check out our newest books arriving weekly with fresh ideas, exciting plots and vibrant voices."} 
+        para={"Check out our newest books arriving weekly with fresh ideas, exciting plots and vibrant voices."}
       />
       {/* CONTAINER */}
-      <FadeUp delay={0.15} className="mt-2">
+      <FadeUp delay={0.15} duration={0.8} className="mt-2 min-h-[320px] sm:min-h-[350px]">
         <Swiper
+          speed={850}
           autoplay={{
-            delay: 4000,
+            delay: 4500,
             disableOnInteraction: false,
           }}
           breakpoints={{

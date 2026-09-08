@@ -5,6 +5,7 @@ import { assets } from '../assets/assets'
 import RelatedDoctors from '../components/RelatedDoctors'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { loadRazorpay } from '../utils/loadRazorpay'
 
 const Appointments = () => {
   const { docId } = useParams()
@@ -155,7 +156,7 @@ const Appointments = () => {
   }
 
   // Function to initialize Razorpay Payment
-  const initPay = (order, appointmentId) => {
+  const initPay = async (order, appointmentId) => {
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: order.amount,
@@ -195,8 +196,13 @@ const Appointments = () => {
         }
       }
     };
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+    try {
+      const Razorpay = await loadRazorpay();
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error('Payment service failed to load. Please try again.');
+    }
   };
 
   useEffect(() => {
@@ -237,7 +243,7 @@ const Appointments = () => {
           </div>
         </div>
 
-        <div className='flex-1 border border-gray-400 rounded-lg p-8 py-7 bg-white mx-2 sm:mx-0 mt-[-30px] sm:mt-0'>
+        <div className='flex-1 border border-[#EADBCE] rounded-2xl p-6 sm:p-8 bg-white mx-0 shadow-sm'>
           {/* -------- Doc Info -------- */}
           <div className='flex flex-wrap items-center gap-3'>
             <p className='flex items-center gap-2 text-2xl font-medium text-gray-900'>
@@ -278,7 +284,7 @@ const Appointments = () => {
       {docInfo.available ? (
         <div className='sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700'>
           <p>Booking slots</p>
-          <div className='flex gap-3 items-center w-full overflow-x-scroll hide-scrollbar mt-4'>
+          <div className='flex gap-3 items-center w-full overflow-x-scroll hide-scrollbar mt-2 py-2.5'>
             {
               docSlots.length > 0 && docSlots.map((item, index) => (
                 <div onClick={() => setSlotIndex(index)} className={`flex flex-col items-center justify-center min-w-20 px-4 py-5 rounded-2xl cursor-pointer transition-all duration-300 shadow-sm
@@ -293,7 +299,7 @@ const Appointments = () => {
             }
           </div>
 
-          <div className='flex items-center gap-3 w-full overflow-x-scroll hide-scrollbar mt-4'>
+          <div className='flex items-center gap-3 w-full overflow-x-scroll hide-scrollbar mt-3 py-2'>
             {docSlots.length > 0 && docSlots[slotIndex].slots.length > 0 ? (
               docSlots[slotIndex].slots.map((item, index) => (
                 <p onClick={() => setSlotTime(item.time)} className={`text-sm flex-shrink-0 px-6 py-2.5 rounded-full cursor-pointer transition-all duration-300

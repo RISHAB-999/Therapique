@@ -1,5 +1,5 @@
-import React, { useState, useContext, lazy, Suspense } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import React, { useState, useContext, lazy, Suspense, useCallback } from 'react'
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence } from 'motion/react'
 import Home from './pages/Home'
 import Navbar from './components/Navbar'
@@ -12,8 +12,9 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import { PageTransition } from './components/ScrollReveal'
 import { AppContext } from './context/AppContext'
 import PendingRefundModal from './components/PendingRefundModal.jsx'
+import TherapiqueAssistant from './components/TherapiqueAssistant.jsx'
 
-// Lazy-load all non-homepage routes for faster initial load
+// Lazy-load non-critical routes for faster initial load
 const Doctors = lazy(() => import('./pages/Doctors'))
 const Login = lazy(() => import('./pages/Login'))
 const About = lazy(() => import('./pages/About'))
@@ -31,8 +32,9 @@ const Cart = lazy(() => import('./pages/Cart.jsx'))
 const AddressForm = lazy(() => import('./pages/AddressForm.jsx'))
 const MyOrders = lazy(() => import('./pages/MyOrders.jsx'))
 const TrackOrder = lazy(() => import('./pages/TrackOrder.jsx'))
-const VideoCallPage = lazy(() => import('./components/videocall/VideoCallPage.jsx'))
+import VideoCallPage from './components/videocall/VideoCallPage.jsx'
 const PrivacyTerms = lazy(() => import('./pages/PrivacyTerms.jsx'))
+const Blog = lazy(() => import('./pages/Blog.jsx'))
 
 // Minimal loading fallback that matches the site theme
 const PageLoader = () => (
@@ -57,36 +59,27 @@ const App = () => {
   };
 
   // Define routes that should NOT have navbar/footer
-  const isVideoCallRoute = 
-    location.pathname.startsWith('/video-call') || 
+  const isVideoCallRoute =
+    location.pathname.startsWith('/video-call') ||
     location.pathname.startsWith('/video_call') ||
+    location.pathname.startsWith('/video%20call') ||
     location.pathname.includes('video_call') ||
-    location.pathname.includes('video-call')
+    location.pathname.includes('video-call') ||
+    location.pathname.includes('video%20call')
 
   const hideLayoutRoutes = ["/login", "/verify"];
   const shouldHideLayout = hideLayoutRoutes.includes(location.pathname) || isVideoCallRoute;
 
-  if (isVideoCallRoute) {
-    return (
-      <>
-        <ToastContainer />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path='/video-call/:appointmentId' element={<VideoCallPage />} />
-            <Route path='/video_call/:appointmentId' element={<VideoCallPage />} />
-          </Routes>
-        </Suspense>
-      </>
-    )
-  }
-
-  const getBasePagePath = (pathname) => {
+  const getBasePagePath = useCallback((pathname) => {
     if (!pathname) return '/'
     const lower = pathname.toLowerCase()
     if (lower.startsWith('/doctors')) return '/doctors'
     if (lower.startsWith('/shop')) return '/shop'
+    if (lower.startsWith('/blog')) return '/blog'
+    if (lower.startsWith('/library')) return '/library'
+    if (lower.startsWith('/video')) return '/video-call'
     return pathname
-  }
+  }, [])
 
   return (
     <>
@@ -94,93 +87,115 @@ const App = () => {
         {showSplash && <SplashScreen onComplete={handleSplashComplete} onSplitStart={handleSplitStart} />}
       </AnimatePresence>
       <ScrollToTop />
-      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full min-h-screen'>
+      <div className={isVideoCallRoute ? 'w-full h-screen overflow-hidden' : 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full min-h-screen'}>
         <ToastContainer />
-        <PendingRefundModal />
-        <Navbar />
-          <PageTransition pathname={getBasePagePath(location.pathname)}>
-            <div key={`content-${getBasePagePath(location.pathname)}`}>
-              <Suspense fallback={<PageLoader />}>
-                <Routes location={location}>
-                  {/* Public Routes */}
-                  <Route path='/' element={<Home />} />
-                  <Route path='/doctors' element={<Doctors />} />
-                  <Route path='/doctors/:speciality' element={<Doctors />} />
-                  <Route path='/login' element={<Login />} />
-                  <Route path='/about' element={<About />} />
-                  <Route path='/contact' element={<Contact />} />
-                  <Route path='/Library' element={<Library />} />
-                  <Route path='/verify' element={<Verify />} />
-                  <Route path='/privacy-terms' element={<PrivacyTerms />} />
-                  <Route path='/privacy-policy' element={<PrivacyTerms />} />
+        {!shouldHideLayout && <PendingRefundModal />}
+        {!shouldHideLayout && <Navbar />}
+        <PageTransition pathname={getBasePagePath(location.pathname)}>
+          <div key={`content-${getBasePagePath(location.pathname)}`}>
+            <Suspense fallback={<PageLoader />}>
+              <Routes location={location}>
+                {/* Space & Underscore URL Normalization Redirects */}
+                <Route path='/my%20appointments' element={<Navigate to='/my-appointments' replace />} />
+                <Route path='/my_appointments' element={<Navigate to='/my-appointments' replace />} />
+                <Route path='/my%20profile' element={<Navigate to='/my-profile' replace />} />
+                <Route path='/my_profile' element={<Navigate to='/my-profile' replace />} />
+                <Route path='/my%20orders' element={<Navigate to='/my-orders' replace />} />
+                <Route path='/my_orders' element={<Navigate to='/my-orders' replace />} />
+                <Route path='/coins%20shop' element={<Navigate to='/coins-shop' replace />} />
+                <Route path='/coins_shop' element={<Navigate to='/coins-shop' replace />} />
+                <Route path='/address%20form' element={<Navigate to='/address-form' replace />} />
+                <Route path='/address_form' element={<Navigate to='/address-form' replace />} />
+                <Route path='/privacy%20terms' element={<Navigate to='/privacy-terms' replace />} />
+                <Route path='/privacy_terms' element={<Navigate to='/privacy-terms' replace />} />
+                <Route path='/video_call/:appointmentId' element={<Navigate to='/video-call/:appointmentId' replace />} />
+                <Route path='/video%20call/:appointmentId' element={<Navigate to='/video-call/:appointmentId' replace />} />
 
-                  {/* Protected Routes (Require Account) */}
-                  <Route path='/appointment/:docId' element={
-                    <ProtectedRoute context="doctor" title="Doctor Appointment" message="Please log in or create an account to book an appointment with a doctor">
-                      <Appointments />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/my-appointments' element={
-                    <ProtectedRoute context="consultations" title="My Consultations" message="Please log in to view and manage your consultations">
-                      <MyAppointments />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/my-profile' element={
-                    <ProtectedRoute context="profile" title="My Profile" message="Please log in to view and manage your profile">
-                      <MyProfile />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/coins-shop' element={
-                    <ProtectedRoute context="coins" title="Token Wallet & Shop" message="Please log in to visit the token wallet & shop">
-                      <CoinsShop />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/Shop' element={
-                    <ProtectedRoute context="book" title="Psychology Books" message="Please log in or create an account to explore the bookstore">
-                      <Shop />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/Shop/:category' element={
-                    <ProtectedRoute context="book" title="Book Categories" message="Please log in or create an account to browse books">
-                      <CategoryShop />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/Shop/:category/:id' element={
-                    <ProtectedRoute context="book" title="Book Details" message="Please log in or create an account to view book details">
-                      <ProductDetail />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/cart' element={
-                    <ProtectedRoute context="cart" title="Shopping Cart" message="Please log in to access your cart">
-                      <Cart />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/address-form' element={
-                    <ProtectedRoute context="checkout" title="Delivery & Checkout" message="Please log in to enter delivery address">
-                      <AddressForm />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/my-orders' element={
-                    <ProtectedRoute context="orders" title="Order Tracking" message="Please log in to view and track your orders">
-                      <MyOrders />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/track-order/:orderId' element={
-                    <ProtectedRoute context="orders" title="Order Tracking" message="Please log in to track your order">
-                      <TrackOrder />
-                    </ProtectedRoute>
-                  } />
-                  <Route path='/video-call/:appointmentId' element={
-                    <ProtectedRoute context="videocall" title="Video Consultation" message="Please log in to join your session">
-                      <VideoCallPage />
-                    </ProtectedRoute>
-                  } />
-                </Routes>
-              </Suspense>
-            </div>
-          </PageTransition>
-        </div>
+                {/* Public Routes */}
+                <Route path='/' element={<Home />} />
+                <Route path='/doctors' element={<Doctors />} />
+                <Route path='/doctors/:speciality' element={<Doctors />} />
+                <Route path='/login' element={<Login />} />
+                <Route path='/about' element={<About />} />
+                <Route path='/contact' element={<Contact />} />
+                <Route path='/Library' element={<Library />} />
+                <Route path='/library' element={<Library />} />
+                <Route path='/blog' element={<Blog />} />
+                <Route path='/verify' element={<Verify />} />
+                <Route path='/privacy-terms' element={<PrivacyTerms />} />
+                <Route path='/privacy-policy' element={<PrivacyTerms />} />
+
+                {/* Protected Routes (Require Account) */}
+                <Route path='/appointment/:docId' element={
+                  <ProtectedRoute context="doctor" title="Doctor Appointment" message="Please log in or create an account to book an appointment with a doctor">
+                    <Appointments />
+                  </ProtectedRoute>
+                } />
+                <Route path='/my-appointments' element={
+                  <ProtectedRoute context="consultations" title="My Consultations" message="Please log in to view and manage your consultations">
+                    <MyAppointments />
+                  </ProtectedRoute>
+                } />
+                <Route path='/my-profile' element={
+                  <ProtectedRoute context="profile" title="My Profile" message="Please log in to view and manage your profile">
+                    <MyProfile />
+                  </ProtectedRoute>
+                } />
+                <Route path='/coins-shop' element={
+                  <ProtectedRoute context="coins" title="Token Wallet & Shop" message="Please log in to visit the token wallet & shop">
+                    <CoinsShop />
+                  </ProtectedRoute>
+                } />
+                <Route path='/Shop' element={
+                  <ProtectedRoute context="book" title="Psychology Books" message="Please log in or create an account to explore the bookstore">
+                    <Shop />
+                  </ProtectedRoute>
+                } />
+                <Route path='/Shop/:category' element={
+                  <ProtectedRoute context="book" title="Book Categories" message="Please log in or create an account to browse books">
+                    <CategoryShop />
+                  </ProtectedRoute>
+                } />
+                <Route path='/Shop/:category/:id' element={
+                  <ProtectedRoute context="book" title="Book Details" message="Please log in or create an account to view book details">
+                    <ProductDetail />
+                  </ProtectedRoute>
+                } />
+                <Route path='/cart' element={
+                  <ProtectedRoute context="cart" title="Shopping Cart" message="Please log in to access your cart">
+                    <Cart />
+                  </ProtectedRoute>
+                } />
+                <Route path='/address-form' element={
+                  <ProtectedRoute context="checkout" title="Delivery & Checkout" message="Please log in to enter delivery address">
+                    <AddressForm />
+                  </ProtectedRoute>
+                } />
+                <Route path='/my-orders' element={
+                  <ProtectedRoute context="orders" title="Order Tracking" message="Please log in to view and track your orders">
+                    <MyOrders />
+                  </ProtectedRoute>
+                } />
+                <Route path='/track-order/:orderId' element={
+                  <ProtectedRoute context="orders" title="Order Tracking" message="Please log in to track your order">
+                    <TrackOrder />
+                  </ProtectedRoute>
+                } />
+                <Route path='/video-call/:appointmentId' element={
+                  <ProtectedRoute context="videocall" title="Video Consultation" message="Please log in to join your session">
+                    <VideoCallPage />
+                  </ProtectedRoute>
+                } />
+
+                {/* Catch-all Wildcard Route */}
+                <Route path='*' element={<Navigate to='/' replace />} />
+              </Routes>
+            </Suspense>
+          </div>
+        </PageTransition>
+      </div>
       {!shouldHideLayout && <Footer />}
+      {!shouldHideLayout && <TherapiqueAssistant />}
     </>
   )
 }

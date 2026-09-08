@@ -169,7 +169,7 @@ const BookList = () => {
       </div>
 
       {/* Search & Category Filter Controls Header */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4 relative z-30">
         {/* Top Controls Row: Search Input + Category Select Dropdown + Stock Select Dropdown */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Search Bar Input with Typewriter Animation */}

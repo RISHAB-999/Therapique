@@ -10,11 +10,13 @@ const AppContextProvider = (props) => {
     ? (envBackendUrl && !envBackendUrl.includes('trycloudflare.com') ? envBackendUrl : 'http://localhost:4000')
     : (envBackendUrl || 'http://localhost:4000')
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
   // Function to format the date eg. ( 20_01_2000 => 20 Jan 2000 )
   const slotDateFormat = (slotDate) => {
-    const dateArray = slotDate.split('_')
+    if (!slotDate) return ''
+    const dateArray = String(slotDate).split('_')
+    if (dateArray.length < 3) return slotDate
     return dateArray[0] + " " + months[Number(dateArray[1])] + " " + dateArray[2]
   }
 

@@ -4,11 +4,11 @@ import { sendMailSafe } from '../config/nodemailer.js';
 // Shared HTML wrapper — Therapique beige/brown style with Anti-Quoting Engine
 // ─────────────────────────────────────────────────
 const wrap = ({ title, preheader = '', body }) => {
-    // Generate distinct entropy tokens to guarantee Gmail's quote trimmer never folds the message
-    const nonce = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const timestamp = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  // Generate distinct entropy tokens to guarantee Gmail's quote trimmer never folds the message
+  const nonce = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const timestamp = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-    return `
+  return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -61,17 +61,17 @@ const monthNames = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", 
 
 // Formats dates cleanly as "01-09-2026 (1 Sep 2026)" with explicit hyphens and gap
 const fmtDate = (d) => {
-    if (!d) return 'TBD';
-    const parts = String(d).split('_');
-    if (parts.length === 3) {
-        const day = parts[0].padStart(2, '0');
-        const monthNum = parseInt(parts[1], 10);
-        const monthPad = parts[1].padStart(2, '0');
-        const monthStr = monthNames[monthNum] || monthPad;
-        const year = parts[2];
-        return `${day}-${monthPad}-${year} (${parseInt(day, 10)} ${monthStr} ${year})`;
-    }
-    return String(d).replace(/_/g, '-');
+  if (!d) return 'TBD';
+  const parts = String(d).split('_');
+  if (parts.length === 3) {
+    const day = parts[0].padStart(2, '0');
+    const monthNum = parseInt(parts[1], 10);
+    const monthPad = parts[1].padStart(2, '0');
+    const monthStr = monthNames[monthNum] || monthPad;
+    const year = parts[2];
+    return `${day}-${monthPad}-${year} (${parseInt(day, 10)} ${monthStr} ${year})`;
+  }
+  return String(d).replace(/_/g, '-');
 };
 
 // Robust HTML Table Row — bulletproof on mobile Gmail / Outlook with generous gap & separate alignment
@@ -90,20 +90,20 @@ const tableWrap = (rowsHtml) => `
 // 1. Appointment Booking Confirmation → Patient
 // ─────────────────────────────────────────────────
 export const sendAppointmentBookingEmail = async ({
-    appointmentId,
-    patientEmail, patientName, doctorName, doctorSpeciality,
-    slotDate, slotTime, amount, isPaid = true, paymentMethod = 'Online'
+  appointmentId,
+  patientEmail, patientName, doctorName, doctorSpeciality,
+  slotDate, slotTime, amount, isPaid = true, paymentMethod = 'Online'
 }) => {
-    if (!patientEmail) return;
-    const d = fmtDate(slotDate);
-    const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
-    return sendMailSafe({
-        to: patientEmail,
-        subject: `Appointment Confirmed with Dr. ${doctorName} — ${d} [#${shortRef}]`,
-        html: wrap({
-            title: 'Consultation Confirmed — Therapique',
-            preheader: `Session with Dr. ${doctorName} on ${d} at ${slotTime}. Ref #${shortRef}`,
-            body: `
+  if (!patientEmail) return;
+  const d = fmtDate(slotDate);
+  const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
+  return sendMailSafe({
+    to: patientEmail,
+    subject: `Appointment Confirmed with Dr. ${doctorName} — ${d} [#${shortRef}]`,
+    html: wrap({
+      title: 'Consultation Confirmed — Therapique',
+      preheader: `Session with Dr. ${doctorName} on ${d} at ${slotTime}. Ref #${shortRef}`,
+      body: `
 <h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">Consultation Confirmed ✨</h2>
 <p style="color:#4A423D;font-size:14px">Hello <b>${patientName || 'Patient'}</b>, your session with <b>Dr. ${doctorName}</b> is confirmed.</p>
 <div class="card">
@@ -121,27 +121,27 @@ export const sendAppointmentBookingEmail = async ({
   `)}
 </div>
 <p style="font-size:13px;color:#665950">💡 Please be ready 5 minutes before your slot. You can access your session anytime from <b>My Appointments</b>.</p>`
-        })
-    });
+    })
+  });
 };
 
 // ─────────────────────────────────────────────────
 // 2. New Appointment Alert → Doctor
 // ─────────────────────────────────────────────────
 export const sendDoctorNewAppointmentAlert = async ({
-    appointmentId,
-    doctorEmail, doctorName, patientName, slotDate, slotTime
+  appointmentId,
+  doctorEmail, doctorName, patientName, slotDate, slotTime
 }) => {
-    if (!doctorEmail) return;
-    const d = fmtDate(slotDate);
-    const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
-    return sendMailSafe({
-        to: doctorEmail,
-        subject: `New Appointment: ${patientName} (${d} @ ${slotTime}) [#${shortRef}]`,
-        html: wrap({
-            title: 'New Patient Booked — Therapique',
-            preheader: `${patientName} booked a session on ${d} at ${slotTime}. Ref #${shortRef}`,
-            body: `
+  if (!doctorEmail) return;
+  const d = fmtDate(slotDate);
+  const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
+  return sendMailSafe({
+    to: doctorEmail,
+    subject: `New Appointment: ${patientName} (${d} @ ${slotTime}) [#${shortRef}]`,
+    html: wrap({
+      title: 'New Patient Booked — Therapique',
+      preheader: `${patientName} booked a session on ${d} at ${slotTime}. Ref #${shortRef}`,
+      body: `
 <h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">New Session Booked 📅</h2>
 <p style="color:#4A423D;font-size:14px">Hello <b>Dr. ${doctorName}</b>, a new consultation has been scheduled with you.</p>
 <div class="card">
@@ -152,61 +152,61 @@ export const sendDoctorNewAppointmentAlert = async ({
     ${tableRow('Time', slotTime)}
   `)}
 </div>`
-        })
-    });
+    })
+  });
 };
 
 // ─────────────────────────────────────────────────
 // 3. Appointment Cancellation (Patient + Doctor + Therapique Official)
 // ─────────────────────────────────────────────────
 export const notifyAppointmentCancellation = async ({
-    appointmentId,
-    patientEmail,
-    patientName,
-    doctorEmail,
-    doctorName,
-    slotDate,
-    slotTime,
-    cancelledBy = 'user', // 'user' | 'doctor' | 'admin'
-    refundMessage = '',
-    needsRefundChoice = false,
-    amount = 0
+  appointmentId,
+  patientEmail,
+  patientName,
+  doctorEmail,
+  doctorName,
+  slotDate,
+  slotTime,
+  cancelledBy = 'user', // 'user' | 'doctor' | 'admin'
+  refundMessage = '',
+  needsRefundChoice = false,
+  amount = 0
 }) => {
-    const d = fmtDate(slotDate);
-    const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const officialEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'therapique.official@gmail.com';
+  const d = fmtDate(slotDate);
+  const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const officialEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'therapique.official@gmail.com';
 
-    // Clear role-specific labelling
-    let cancellerLabel = 'Patient';
+  // Clear role-specific labelling
+  let cancellerLabel = 'Patient';
+  if (cancelledBy === 'admin') {
+    cancellerLabel = 'Therapique Administration (Admin)';
+  } else if (cancelledBy === 'doctor') {
+    cancellerLabel = `Dr. ${doctorName || 'Doctor'}`;
+  } else {
+    cancellerLabel = `Patient (${patientName || 'User'})`;
+  }
+
+  const promises = [];
+
+  // ─────────────────────────────────────────────
+  // 1. Email to Patient
+  // ─────────────────────────────────────────────
+  if (patientEmail) {
+    let patientSubject = `Appointment Cancelled with Dr. ${doctorName || 'Doctor'} (${d} @ ${slotTime}) [#${shortRef}]`;
+    let patientIntro = `Hello <b>${patientName || 'Patient'}</b>, you have cancelled your consultation with <b>Dr. ${doctorName || 'Doctor'}</b> scheduled for <b>${d} at ${slotTime}</b>.`;
+
     if (cancelledBy === 'admin') {
-        cancellerLabel = 'Therapique Administration (Admin)';
+      patientSubject = `Appointment Cancelled by Administration: Dr. ${doctorName || 'Doctor'} (${d} @ ${slotTime}) [#${shortRef}]`;
+      patientIntro = `Hello <b>${patientName || 'Patient'}</b>, your consultation with <b>Dr. ${doctorName || 'Doctor'}</b> scheduled for <b>${d} at ${slotTime}</b> was cancelled by <b>Therapique Administration</b>.`;
     } else if (cancelledBy === 'doctor') {
-        cancellerLabel = `Dr. ${doctorName || 'Doctor'}`;
-    } else {
-        cancellerLabel = `Patient (${patientName || 'User'})`;
+      patientSubject = `Appointment Cancelled by Dr. ${doctorName || 'Doctor'} (${d} @ ${slotTime}) [#${shortRef}]`;
+      patientIntro = `Hello <b>${patientName || 'Patient'}</b>, <b>Dr. ${doctorName || 'Doctor'}</b> has cancelled the consultation scheduled for <b>${d} at ${slotTime}</b>.`;
     }
 
-    const promises = [];
-
-    // ─────────────────────────────────────────────
-    // 1. Email to Patient
-    // ─────────────────────────────────────────────
-    if (patientEmail) {
-        let patientSubject = `Appointment Cancelled with Dr. ${doctorName || 'Doctor'} (${d} @ ${slotTime}) [#${shortRef}]`;
-        let patientIntro = `Hello <b>${patientName || 'Patient'}</b>, you have cancelled your consultation with <b>Dr. ${doctorName || 'Doctor'}</b> scheduled for <b>${d} at ${slotTime}</b>.`;
-
-        if (cancelledBy === 'admin') {
-            patientSubject = `Appointment Cancelled by Administration: Dr. ${doctorName || 'Doctor'} (${d} @ ${slotTime}) [#${shortRef}]`;
-            patientIntro = `Hello <b>${patientName || 'Patient'}</b>, your consultation with <b>Dr. ${doctorName || 'Doctor'}</b> scheduled for <b>${d} at ${slotTime}</b> was cancelled by <b>Therapique Administration</b>.`;
-        } else if (cancelledBy === 'doctor') {
-            patientSubject = `Appointment Cancelled by Dr. ${doctorName || 'Doctor'} (${d} @ ${slotTime}) [#${shortRef}]`;
-            patientIntro = `Hello <b>${patientName || 'Patient'}</b>, <b>Dr. ${doctorName || 'Doctor'}</b> has cancelled the consultation scheduled for <b>${d} at ${slotTime}</b>.`;
-        }
-
-        let refundChoiceHtml = '';
-        if (needsRefundChoice && amount > 0) {
-            refundChoiceHtml = `
+    let refundChoiceHtml = '';
+    if (needsRefundChoice && amount > 0) {
+      refundChoiceHtml = `
 <div class="card" style="border: 2px solid #7C3AED; background: #FAF5FF; margin-top: 16px;">
   <span style="font-weight:800;font-size:14px;color:#6B21A8;display:block;margin-bottom:8px">⚡ Choose Your Refund Method (₹${amount})</span>
   <p style="margin:0 0 10px;font-size:13px;color:#4A423D;line-height:1.5">
@@ -225,16 +225,16 @@ export const notifyAppointmentCancellation = async ({
     </a>
   </div>
 </div>`;
-        }
+    }
 
-        promises.push(
-            sendMailSafe({
-                to: patientEmail,
-                subject: patientSubject,
-                html: wrap({
-                    title: 'Appointment Cancelled — Therapique',
-                    preheader: `Your session with Dr. ${doctorName || 'Doctor'} on ${d} has been cancelled. Ref #${shortRef}`,
-                    body: `
+    promises.push(
+      sendMailSafe({
+        to: patientEmail,
+        subject: patientSubject,
+        html: wrap({
+          title: 'Appointment Cancelled — Therapique',
+          preheader: `Your session with Dr. ${doctorName || 'Doctor'} on ${d} has been cancelled. Ref #${shortRef}`,
+          body: `
 <h2 style="font-size:20px;font-weight:800;color:#B91C1C;margin-top:0">Appointment Cancelled</h2>
 <p style="color:#4A423D;font-size:14px">${patientIntro}</p>
 <div class="card" style="background:#FEF2F2;border-color:#FCA5A5">
@@ -248,34 +248,34 @@ export const notifyAppointmentCancellation = async ({
 ${refundChoiceHtml}
 ${refundMessage && !needsRefundChoice ? `<div class="card" style="border-left:4px solid #10B981;background:#ECFDF5"><span style="font-weight:800;font-size:13px;color:#065F46;text-transform:uppercase;display:block;margin-bottom:4px">Refund Details</span><p style="margin:0;font-size:14px;color:#1E293B;font-weight:600">${refundMessage}</p></div>` : ''}
 <p style="font-size:13px;color:#665950;margin-top:16px">You can book another session anytime from the Doctors directory.</p>`
-                })
-            })
-        );
+        })
+      })
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // 2. Email to Doctor
+  // ─────────────────────────────────────────────
+  if (doctorEmail) {
+    let doctorSubject = `[Notice] Appointment Cancelled: ${patientName || 'Patient'} (${d} @ ${slotTime}) [#${shortRef}]`;
+    let doctorIntro = `Hello <b>Dr. ${doctorName || 'Doctor'}</b>, patient <b>${patientName || 'Patient'}</b> has cancelled their consultation scheduled for <b>${d} at ${slotTime}</b>.`;
+
+    if (cancelledBy === 'admin') {
+      doctorSubject = `[Admin Notice] Appointment Cancelled by Administration: ${patientName || 'Patient'} (${d} @ ${slotTime}) [#${shortRef}]`;
+      doctorIntro = `Hello <b>Dr. ${doctorName || 'Doctor'}</b>, <b>Therapique Administration</b> has cancelled the upcoming consultation with patient <b>${patientName || 'Patient'}</b> scheduled for <b>${d} at ${slotTime}</b>.`;
+    } else if (cancelledBy === 'doctor') {
+      doctorSubject = `Appointment Cancellation Confirmed: ${patientName || 'Patient'} (${d} @ ${slotTime}) [#${shortRef}]`;
+      doctorIntro = `Hello <b>Dr. ${doctorName || 'Doctor'}</b>, you have cancelled the consultation with patient <b>${patientName || 'Patient'}</b> scheduled for <b>${d} at ${slotTime}</b>.`;
     }
 
-    // ─────────────────────────────────────────────
-    // 2. Email to Doctor
-    // ─────────────────────────────────────────────
-    if (doctorEmail) {
-        let doctorSubject = `[Notice] Appointment Cancelled: ${patientName || 'Patient'} (${d} @ ${slotTime}) [#${shortRef}]`;
-        let doctorIntro = `Hello <b>Dr. ${doctorName || 'Doctor'}</b>, patient <b>${patientName || 'Patient'}</b> has cancelled their consultation scheduled for <b>${d} at ${slotTime}</b>.`;
-
-        if (cancelledBy === 'admin') {
-            doctorSubject = `[Admin Notice] Appointment Cancelled by Administration: ${patientName || 'Patient'} (${d} @ ${slotTime}) [#${shortRef}]`;
-            doctorIntro = `Hello <b>Dr. ${doctorName || 'Doctor'}</b>, <b>Therapique Administration</b> has cancelled the upcoming consultation with patient <b>${patientName || 'Patient'}</b> scheduled for <b>${d} at ${slotTime}</b>.`;
-        } else if (cancelledBy === 'doctor') {
-            doctorSubject = `Appointment Cancellation Confirmed: ${patientName || 'Patient'} (${d} @ ${slotTime}) [#${shortRef}]`;
-            doctorIntro = `Hello <b>Dr. ${doctorName || 'Doctor'}</b>, you have cancelled the consultation with patient <b>${patientName || 'Patient'}</b> scheduled for <b>${d} at ${slotTime}</b>.`;
-        }
-
-        promises.push(
-            sendMailSafe({
-                to: doctorEmail,
-                subject: doctorSubject,
-                html: wrap({
-                    title: 'Appointment Cancelled — Therapique',
-                    preheader: `Session with ${patientName || 'Patient'} on ${d} at ${slotTime} was cancelled by ${cancellerLabel}. Ref #${shortRef}`,
-                    body: `
+    promises.push(
+      sendMailSafe({
+        to: doctorEmail,
+        subject: doctorSubject,
+        html: wrap({
+          title: 'Appointment Cancelled — Therapique',
+          preheader: `Session with ${patientName || 'Patient'} on ${d} at ${slotTime} was cancelled by ${cancellerLabel}. Ref #${shortRef}`,
+          body: `
 <h2 style="font-size:20px;font-weight:800;color:#B91C1C;margin-top:0">Appointment Cancelled 📅</h2>
 <p style="color:#4A423D;font-size:14px">${doctorIntro}</p>
 <div class="card" style="background:#FEF2F2;border-color:#FCA5A5">
@@ -288,32 +288,32 @@ ${refundMessage && !needsRefundChoice ? `<div class="card" style="border-left:4p
   `)}
 </div>
 <p style="font-size:13px;color:#665950">This slot has been opened on your calendar for other patients to book.</p>`
-                })
-            })
-        );
+        })
+      })
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // 3. Email to Therapique Official / Admin
+  // ─────────────────────────────────────────────
+  if (officialEmail) {
+    let alertSubject = `[Cancellation Alert] ${patientName || 'Patient'} with Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
+    if (cancelledBy === 'admin') {
+      alertSubject = `[Admin Action] Cancelled Appointment: ${patientName || 'Patient'} with Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
+    } else if (cancelledBy === 'doctor') {
+      alertSubject = `[Doctor Action] Cancelled Appointment: ${patientName || 'Patient'} by Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
+    } else {
+      alertSubject = `[Patient Action] Cancelled Appointment by ${patientName || 'Patient'}: Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
     }
 
-    // ─────────────────────────────────────────────
-    // 3. Email to Therapique Official / Admin
-    // ─────────────────────────────────────────────
-    if (officialEmail) {
-        let alertSubject = `[Cancellation Alert] ${patientName || 'Patient'} with Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
-        if (cancelledBy === 'admin') {
-            alertSubject = `[Admin Action] Cancelled Appointment: ${patientName || 'Patient'} with Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
-        } else if (cancelledBy === 'doctor') {
-            alertSubject = `[Doctor Action] Cancelled Appointment: ${patientName || 'Patient'} by Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
-        } else {
-            alertSubject = `[Patient Action] Cancelled Appointment by ${patientName || 'Patient'}: Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`;
-        }
-
-        promises.push(
-            sendMailSafe({
-                to: officialEmail,
-                subject: alertSubject,
-                html: wrap({
-                    title: 'Appointment Cancellation Alert — Therapique',
-                    preheader: `Appointment cancelled by ${cancellerLabel} for ${d} @ ${slotTime}. Ref #${shortRef}`,
-                    body: `
+    promises.push(
+      sendMailSafe({
+        to: officialEmail,
+        subject: alertSubject,
+        html: wrap({
+          title: 'Appointment Cancellation Alert — Therapique',
+          preheader: `Appointment cancelled by ${cancellerLabel} for ${d} @ ${slotTime}. Ref #${shortRef}`,
+          body: `
 <h2 style="font-size:20px;font-weight:800;color:#B91C1C;margin-top:0">Platform Cancellation Alert ⚠️</h2>
 <p style="color:#4A423D;font-size:14px">An appointment was cancelled on the Therapique platform.</p>
 <div class="card">
@@ -327,12 +327,12 @@ ${refundMessage && !needsRefundChoice ? `<div class="card" style="border-left:4p
     ${refundMessage ? tableRow('Refund Details', refundMessage, 'color:#059669;font-weight:bold;') : ''}
   `)}
 </div>`
-                })
-            })
-        );
-    }
+        })
+      })
+    );
+  }
 
-    return Promise.all(promises);
+  return Promise.all(promises);
 };
 
 // Backwards-compatible alias for existing code
@@ -342,27 +342,27 @@ export const sendAppointmentCancellationEmail = notifyAppointmentCancellation;
 // 4. Refund Execution Confirmation → Patient
 // ─────────────────────────────────────────────────
 export const sendRefundConfirmedEmail = async ({
-    appointmentId,
-    patientEmail,
-    patientName,
-    doctorName,
-    amount = 0,
-    refundMethod = 'tokens'
+  appointmentId,
+  patientEmail,
+  patientName,
+  doctorName,
+  amount = 0,
+  refundMethod = 'tokens'
 }) => {
-    if (!patientEmail) return;
-    const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
-    const isTokens = refundMethod === 'tokens';
-    const methodDesc = isTokens
-        ? `${amount} Therapique Tokens credited instantly to your wallet.`
-        : `₹${amount} refund initiated directly to your original Bank / UPI account via Razorpay (3-5 business days).`;
+  if (!patientEmail) return;
+  const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
+  const isTokens = refundMethod === 'tokens';
+  const methodDesc = isTokens
+    ? `${amount} Therapique Tokens credited instantly to your wallet.`
+    : `₹${amount} refund initiated directly to your original Bank / UPI account via Razorpay (3-5 business days).`;
 
-    return sendMailSafe({
-        to: patientEmail,
-        subject: `Refund Confirmed: ₹${amount} — Dr. ${doctorName || 'Doctor'} [#${shortRef}]`,
-        html: wrap({
-            title: 'Refund Confirmed — Therapique',
-            preheader: `Your ₹${amount} refund has been processed as ${isTokens ? 'Tokens' : 'Bank Refund'}. Ref #${shortRef}`,
-            body: `
+  return sendMailSafe({
+    to: patientEmail,
+    subject: `Refund Confirmed: ₹${amount} — Dr. ${doctorName || 'Doctor'} [#${shortRef}]`,
+    html: wrap({
+      title: 'Refund Confirmed — Therapique',
+      preheader: `Your ₹${amount} refund has been processed as ${isTokens ? 'Tokens' : 'Bank Refund'}. Ref #${shortRef}`,
+      body: `
 <h2 style="font-size:20px;font-weight:800;color:#059669;margin-top:0">Refund Confirmed ✅</h2>
 <p style="color:#4A423D;font-size:14px">Hello <b>${patientName || 'Patient'}</b>, your refund choice has been successfully executed for the cancelled session with Dr. ${doctorName || 'Doctor'}.</p>
 <div class="card" style="background:#ECFDF5;border-color:#A7F3D0">
@@ -375,50 +375,50 @@ export const sendRefundConfirmedEmail = async ({
   `)}
 </div>
 <p style="font-size:13px;color:#665950">Thank you for choosing Therapique. We look forward to supporting your mental wellness journey.</p>`
-        })
-    });
+    })
+  });
 };
 
 // ─────────────────────────────────────────────────
 // 5. Book Order Confirmation (Customer + Therapique Official)
 // ─────────────────────────────────────────────────
 export const sendBookOrderPlacedEmail = async ({
-    userEmail, userName, orderId, items = [], amount = 0, paymentMethod = 'COD', address = {}
+  userEmail, userName, orderId, items = [], amount = 0, paymentMethod = 'COD', address = {}
 }) => {
-    const officialEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'therapique.official@gmail.com';
-    const shortId = orderId ? String(orderId).slice(-8) : Math.random().toString(36).substring(2, 8).toUpperCase();
-    const recipientName = `${address.firstName || ''} ${address.lastName || ''}`.trim() || userName || 'Customer';
-    const recipientPhone = address.phone || '';
-    const recipientEmail = userEmail || address.email;
-    const isTokens = String(paymentMethod).toLowerCase().includes('token');
-    const amountDisplay = isTokens ? `${amount} Tokens` : `₹${amount.toLocaleString('en-IN')}`;
+  const officialEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'therapique.official@gmail.com';
+  const shortId = orderId ? String(orderId).slice(-8) : Math.random().toString(36).substring(2, 8).toUpperCase();
+  const recipientName = `${address.firstName || ''} ${address.lastName || ''}`.trim() || userName || 'Customer';
+  const recipientPhone = address.phone || '';
+  const recipientEmail = userEmail || address.email;
+  const isTokens = String(paymentMethod).toLowerCase().includes('token');
+  const amountDisplay = isTokens ? `${amount} Tokens` : `₹${amount.toLocaleString('en-IN')}`;
 
-    const itemsRows = items.map(i => tableRow(
-        `${i.name || i.title || 'Book'}<br><span style="font-size:11px;color:#8C7B70">${i.format || 'Standard'} × ${i.quantity || 1}</span>`,
-        isTokens ? `${(i.price || 0) * (i.quantity || 1)} Tokens` : `₹${((i.price || 0) * (i.quantity || 1)).toLocaleString('en-IN')}`
-    )).join('');
+  const itemsRows = items.map(i => tableRow(
+    `${i.name || i.title || 'Book'}<br><span style="font-size:11px;color:#8C7B70">${i.format || 'Standard'} × ${i.quantity || 1}</span>`,
+    isTokens ? `${(i.price || 0) * (i.quantity || 1)} Tokens` : `₹${((i.price || 0) * (i.quantity || 1)).toLocaleString('en-IN')}`
+  )).join('');
 
-    const addrParts = [
-        address.street || address.line1,
-        address.city || address.line2,
-        address.state,
-        address.zipcode ? `PIN: ${address.zipcode}` : '',
-        address.country
-    ].filter(Boolean);
-    const addr = addrParts.join(', ');
+  const addrParts = [
+    address.street || address.line1,
+    address.city || address.line2,
+    address.state,
+    address.zipcode ? `PIN: ${address.zipcode}` : '',
+    address.country
+  ].filter(Boolean);
+  const addr = addrParts.join(', ');
 
-    const promises = [];
+  const promises = [];
 
-    // 1. Email to Customer / User
-    if (recipientEmail) {
-        promises.push(
-            sendMailSafe({
-                to: recipientEmail,
-                subject: `Order Confirmed #${shortId} — Therapique Bookstore`,
-                html: wrap({
-                    title: 'Order Confirmed — Therapique',
-                    preheader: `Order #${shortId} placed. Total: ${amountDisplay}`,
-                    body: `
+  // 1. Email to Customer / User
+  if (recipientEmail) {
+    promises.push(
+      sendMailSafe({
+        to: recipientEmail,
+        subject: `Order Confirmed #${shortId} — Therapique Bookstore`,
+        html: wrap({
+          title: 'Order Confirmed — Therapique',
+          preheader: `Order #${shortId} placed. Total: ${amountDisplay}`,
+          body: `
 <h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">Order Placed 📦</h2>
 <p style="color:#4A423D;font-size:14px">Thank you <b>${recipientName}</b>! Your bookstore order has been placed and is being prepared.</p>
 <div class="card">
@@ -436,24 +436,24 @@ ${addr ? `
   <p style="font-size:13px;color:#554A42;margin:0">🚚 <b>Shipping To:</b><br>${recipientName}<br>${addr}${recipientPhone ? `<br>📞 ${recipientPhone}` : ''}</p>
 </div>` : ''}
 <p style="font-size:13px;color:#665950;margin-top:14px">You can track your order anytime from <b>My Orders</b> on the Therapique website.</p>`
-                })
-            })
-        );
-    }
+        })
+      })
+    );
+  }
 
-    // 2. Email to Therapique Official / Admin
-    if (officialEmail) {
-        const isPaid = isTokens || paymentMethod.toLowerCase().includes('razorpay');
-        const paymentBadge = isPaid ? '<span class="badge bg">Paid & Confirmed</span>' : '<span class="badge ba">Cash on Delivery</span>';
+  // 2. Email to Therapique Official / Admin
+  if (officialEmail) {
+    const isPaid = isTokens || paymentMethod.toLowerCase().includes('razorpay');
+    const paymentBadge = isPaid ? '<span class="badge bg">Paid & Confirmed</span>' : '<span class="badge ba">Cash on Delivery</span>';
 
-        promises.push(
-            sendMailSafe({
-                to: officialEmail,
-                subject: `[New Order Alert] Order #${shortId} placed by ${recipientName} (${amountDisplay})`,
-                html: wrap({
-                    title: 'New Bookstore Order — Therapique',
-                    preheader: `New order #${shortId} from ${recipientName}. Total: ${amountDisplay}`,
-                    body: `
+    promises.push(
+      sendMailSafe({
+        to: officialEmail,
+        subject: `[New Order Alert] Order #${shortId} placed by ${recipientName} (${amountDisplay})`,
+        html: wrap({
+          title: 'New Bookstore Order — Therapique',
+          preheader: `New order #${shortId} from ${recipientName}. Total: ${amountDisplay}`,
+          body: `
 <h2 style="font-size:20px;font-weight:800;color:#15803D;margin-top:0">New Book Order Received 📚📦</h2>
 <p style="color:#4A423D;font-size:14px">A new bookstore order has been placed on <b>Therapique</b> and requires fulfillment.</p>
 <div class="card">
@@ -476,56 +476,56 @@ ${addr ? `
   <p style="font-size:13px;color:#334155;margin:0">🚚 <b>Shipping Destination:</b><br>${recipientName}<br>${addr}${recipientPhone ? `<br>📞 ${recipientPhone}` : ''}</p>
 </div>` : ''}
 <p style="font-size:13px;color:#73645A;margin-top:14px">You can view and update this order in the <b>Therapique Admin Panel</b> under Book Orders.</p>`
-                })
-            })
-        );
-    }
+        })
+      })
+    );
+  }
 
-    return Promise.all(promises);
+  return Promise.all(promises);
 };
 
 // ─────────────────────────────────────────────────
 // 6. Order Status Update → Customer
 // ─────────────────────────────────────────────────
 export const sendOrderStatusUpdateEmail = async ({
-    userEmail, userName, orderId, status = 'Order Placed'
+  userEmail, userName, orderId, status = 'Order Placed'
 }) => {
-    if (!userEmail) return;
-    const shortId = orderId ? String(orderId).slice(-8) : Math.random().toString(36).substring(2, 8).toUpperCase();
-    const updateNonce = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return sendMailSafe({
-        to: userEmail,
-        subject: `Order ${status}! (#${shortId}) [#${updateNonce}]`,
-        html: wrap({
-            title: `Order ${status} — Therapique`,
-            preheader: `Your order #${shortId} is now "${status}".`,
-            body: `
+  if (!userEmail) return;
+  const shortId = orderId ? String(orderId).slice(-8) : Math.random().toString(36).substring(2, 8).toUpperCase();
+  const updateNonce = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return sendMailSafe({
+    to: userEmail,
+    subject: `Order ${status}! (#${shortId}) [#${updateNonce}]`,
+    html: wrap({
+      title: `Order ${status} — Therapique`,
+      preheader: `Your order #${shortId} is now "${status}".`,
+      body: `
 <h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">Order Update 🚚</h2>
 <p style="color:#4A423D;font-size:14px">Hello <b>${userName || 'Customer'}</b>, your order <b>#${shortId}</b> has been updated:</p>
 <div class="card" style="text-align:center;padding:24px">
   <span style="font-size:12px;font-weight:700;text-transform:uppercase;color:#73645A;display:block;margin-bottom:6px">Current Status</span>
   <span class="badge bg" style="font-size:14px;padding:6px 18px">${status}</span>
 </div>`
-        })
-    });
+    })
+  });
 };
 
 // ─────────────────────────────────────────────────
 // 7. Contact Form → Admin alert + User auto-reply
 // ─────────────────────────────────────────────────
 export const sendContactFormEmails = async ({ firstName, lastName, email, phone, message }) => {
-    const name = `${firstName || ''} ${lastName || ''}`.trim() || 'Visitor';
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@therapique.com';
-    const ticketId = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const name = `${firstName || ''} ${lastName || ''}`.trim() || 'Visitor';
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@therapique.com';
+  const ticketId = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    // Alert to admin
-    sendMailSafe({
-        to: adminEmail,
-        subject: `New Inquiry from ${name} [Ticket #${ticketId}] (Contact Form)`,
-        html: wrap({
-            title: 'Contact Form Submission',
-            preheader: message ? message.slice(0, 80) : `Ticket #${ticketId}`,
-            body: `
+  // Alert to admin
+  sendMailSafe({
+    to: adminEmail,
+    subject: `New Inquiry from ${name} [Ticket #${ticketId}] (Contact Form)`,
+    html: wrap({
+      title: 'Contact Form Submission',
+      preheader: message ? message.slice(0, 80) : `Ticket #${ticketId}`,
+      body: `
 <h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">New Message 📩</h2>
 <div class="card">
   ${tableWrap(`
@@ -538,18 +538,18 @@ export const sendContactFormEmails = async ({ firstName, lastName, email, phone,
 <div style="background:#FFF8F0;padding:16px;border-radius:12px;border:1px solid #EADBCE;margin-top:12px">
   <b>Message:</b><p style="margin:8px 0 0;color:#332B25">${message}</p>
 </div>`
-        })
-    });
+    })
+  });
 
-    // Auto-reply to visitor
-    if (email) {
-        sendMailSafe({
-            to: email,
-            subject: `Thank you for contacting Therapique, ${firstName || 'there'}! [Ticket #${ticketId}]`,
-            html: wrap({
-                title: 'Message Received — Therapique',
-                preheader: `We received your inquiry. Reference #${ticketId}`,
-                body: `
+  // Auto-reply to visitor
+  if (email) {
+    sendMailSafe({
+      to: email,
+      subject: `Thank you for contacting Therapique, ${firstName || 'there'}! [Ticket #${ticketId}]`,
+      html: wrap({
+        title: 'Message Received — Therapique',
+        preheader: `We received your inquiry. Reference #${ticketId}`,
+        body: `
 <h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">We Received Your Message 💬</h2>
 <p style="color:#4A423D;font-size:14px">Hello <b>${firstName || 'there'}</b>, thank you for reaching out. Our team will respond within 24 hours.</p>
 <div class="card">
@@ -560,7 +560,288 @@ export const sendContactFormEmails = async ({ firstName, lastName, email, phone,
   `)}
 </div>
 <p style="font-size:13px;color:#665950">If your inquiry is urgent regarding a booked consultation, please mention your booking reference.</p>`
-            })
-        });
-    }
+      })
+    });
+  }
 };
+
+// ─────────────────────────────────────────────────
+// 8. Newsletter Subscription Confirmation → Subscriber & Admin Alert
+// ─────────────────────────────────────────────────
+export const sendNewsletterEmails = async ({ email }) => {
+  if (!email) return;
+
+  const adminEmail = process.env.ADMIN_EMAIL || 'therapique.official@gmail.com';
+  const subRef = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const formattedDate = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
+  // 1. Welcome email to subscriber
+  sendMailSafe({
+    to: email,
+    subject: `Welcome to the Therapique Newsletter! 🌱 [Ref #${subRef}]`,
+    html: wrap({
+      title: 'Welcome to Therapique Newsletter',
+      preheader: `Thank you for subscribing to Therapique updates & offers!`,
+      body: `
+<h2 style="font-size:22px;font-weight:800;color:#1A1715;margin-top:0">Welcome to Our Community! 🌱</h2>
+<p style="color:#4A423D;font-size:14px;line-height:1.6">
+  Thank you for subscribing to the <b>Therapique Newsletter</b>. You are now part of our growing community dedicated to mental wellness, self-care, and personal growth.
+</p>
+<div class="card">
+  ${tableWrap(`
+    ${tableRow('Subscription Ref', `#${subRef}`)}
+    ${tableRow('Subscribed Email', email)}
+    ${tableRow('Date', formattedDate)}
+    ${tableRow('Status', 'Active & Subscribed', 'color:#15803D;font-weight:bold;')}
+  `)}
+</div>
+<div style="background:#FAF5EE;padding:18px;border-radius:14px;border:1px solid #EADBCE;margin:16px 0">
+  <h4 style="margin:0 0 8px;font-size:14px;color:#1A1715;font-weight:700">What to expect in your inbox:</h4>
+  <ul style="margin:0;padding-left:20px;color:#4A423D;font-size:13px;line-height:1.7">
+    <li>📖 <b>Curated Book Releases & Reviews:</b> Hand-picked mental health & psychology titles</li>
+    <li>🧠 <b>Expert Mental Health Articles:</b> Insights from licensed clinical psychologists</li>
+    <li>🎟️ <b>Exclusive Discounts & Offers:</b> Special seasonal sales on books and consultation tokens</li>
+    <li>📅 <b>Community Events:</b> Workshops, live sessions, and mindfulness retreats</li>
+  </ul>
+</div>
+<p style="font-size:13px;color:#665950;margin-top:16px">
+  We respect your privacy. You can manage your preferences or unsubscribe at any time.
+</p>`
+    })
+  });
+
+  // 2. Alert to Admin (therapique.official@gmail.com)
+  sendMailSafe({
+    to: adminEmail,
+    subject: `New Newsletter Subscriber: ${email} 📩`,
+    html: wrap({
+      title: 'New Newsletter Subscription',
+      preheader: `New subscriber: ${email}`,
+      body: `
+<h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">New Newsletter Subscriber 📩</h2>
+<p style="color:#4A423D;font-size:14px">A new reader has subscribed to the Therapique newsletter.</p>
+<div class="card">
+  ${tableWrap(`
+    ${tableRow('Subscriber Ref', `#${subRef}`)}
+    ${tableRow('Subscriber Email', email, 'color:#7E22CE;font-weight:bold;')}
+    ${tableRow('Subscribed At', `${formattedDate} (${new Date().toLocaleTimeString('en-IN')})`)}
+    ${tableRow('Source', 'Therapique Web (Library / Home Page)')}
+  `)}
+</div>`
+    })
+  });
+};
+
+// ─────────────────────────────────────────────────
+// 9. New User Registration → Welcome Email & Admin Notification
+// ─────────────────────────────────────────────────
+export const sendUserRegistrationEmails = async ({ name, email, userId }) => {
+  if (!email) return;
+
+  const userName = name || 'Friend';
+  const adminEmail = process.env.ADMIN_EMAIL || 'therapique.official@gmail.com';
+  const userRef = userId ? String(userId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
+  const formattedDate = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+  const formattedTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  // 1. Welcome Email to New Registered User
+  sendMailSafe({
+    to: email,
+    subject: `Welcome to Therapique, ${userName}! 🌱 Your Account is Ready`,
+    html: wrap({
+      title: 'Welcome to Therapique',
+      preheader: `Your account is created. Access doctor appointments, psychology bookstore & wellness tools.`,
+      body: `
+<h2 style="font-size:22px;font-weight:800;color:#1A1715;margin-top:0">Welcome to Therapique, ${userName}! 🌱</h2>
+<p style="color:#4A423D;font-size:14px;line-height:1.6">
+  We're thrilled to have you with us. Your account is now active, giving you access to our complete mental wellness platform.
+</p>
+<div class="card">
+  ${tableWrap(`
+    ${tableRow('Account Ref', `#USR-${userRef}`)}
+    ${tableRow('Name', userName)}
+    ${tableRow('Email', email)}
+    ${tableRow('Account Status', 'Active & Verified', 'color:#15803D;font-weight:bold;')}
+    ${tableRow('Registered Date', formattedDate)}
+  `)}
+</div>
+<div style="background:#FAF5EE;padding:18px;border-radius:14px;border:1px solid #EADBCE;margin:16px 0">
+  <h4 style="margin:0 0 10px;font-size:14px;color:#1A1715;font-weight:700">What you can do on Therapique:</h4>
+  <ul style="margin:0;padding-left:20px;color:#4A423D;font-size:13px;line-height:1.7">
+    <li>👨‍⚕️ <b>Certified Specialists:</b> Consult licensed psychologists, psychiatrists, and therapists via HD video or in-clinic visits.</li>
+    <li>📚 <b>Psychology Bookstore:</b> Explore curated titles across CBT, trauma recovery, parenting, and emotional resilience.</li>
+    <li>🤖 <b>Therapique Assistant:</b> 24/7 AI-guided specialist recommendations and symptom exploration.</li>
+    <li>🪙 <b>Therapique Coins:</b> Easy wallet top-ups for instant booking and exclusive reader discounts.</li>
+  </ul>
+</div>
+<p style="font-size:13px;color:#665950;margin-top:16px">
+  If you ever have questions or need assistance, our support team is always here for you at <a href="mailto:${adminEmail}" style="color:#7E22CE;text-decoration:none;font-weight:600">${adminEmail}</a>.
+</p>`
+    })
+  });
+
+  // 2. Alert Email to Admin (therapique.official@gmail.com)
+  sendMailSafe({
+    to: adminEmail,
+    subject: `New User Registration: ${userName} (${email}) 👤`,
+    html: wrap({
+      title: 'New User Account Created',
+      preheader: `New user registration: ${userName} (${email})`,
+      body: `
+<h2 style="font-size:20px;font-weight:800;color:#1A1715;margin-top:0">New User Account Created 👤</h2>
+<p style="color:#4A423D;font-size:14px">A new patient/reader account has registered on Therapique.</p>
+<div class="card">
+  ${tableWrap(`
+    ${tableRow('User ID', userId ? String(userId) : `#USR-${userRef}`)}
+    ${tableRow('Full Name', userName)}
+    ${tableRow('Email Address', email, 'color:#7E22CE;font-weight:bold;')}
+    ${tableRow('Registered At', `${formattedDate} at ${formattedTime}`)}
+    ${tableRow('Platform', 'Therapique Web Application')}
+  `)}
+</div>`
+    })
+  });
+};
+
+// ─────────────────────────────────────────────────
+// 10. Consultation Session Completed → Patient & Doctor & Admin
+// ─────────────────────────────────────────────────
+export const sendSessionCompletedEmails = async ({
+  appointmentId,
+  patientEmail,
+  patientName,
+  doctorEmail,
+  doctorName,
+  doctorSpeciality,
+  slotDate,
+  slotTime,
+  amount,
+  paymentMethod = 'Online'
+}) => {
+  const d = fmtDate(slotDate);
+  const shortRef = appointmentId ? String(appointmentId).slice(-6).toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
+  const adminEmail = process.env.ADMIN_EMAIL || 'therapique.official@gmail.com';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+  const promises = [];
+
+  // 1. Email to Patient
+  if (patientEmail) {
+    promises.push(
+      sendMailSafe({
+        to: patientEmail,
+        subject: `Consultation Completed with Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}] 🎉`,
+        html: wrap({
+          title: 'Consultation Completed — Therapique',
+          preheader: `Your session with Dr. ${doctorName || 'Doctor'} on ${d} is completed. Ref #${shortRef}`,
+          body: `
+<h2 style="font-size:22px;font-weight:800;color:#15803D;margin-top:0">Consultation Completed ✨</h2>
+<p style="color:#4A423D;font-size:14px;line-height:1.6">
+  Hello <b>${patientName || 'Patient'}</b>, you have successfully completed your consultation session with <b>Dr. ${doctorName || 'Doctor'}</b>.
+</p>
+<div class="card" style="background:#F0FDF4;border-color:#BBF7D0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-weight:800;font-size:15px;color:#1A1715">Session Summary</span>
+    <span class="badge bg">Completed</span>
+  </div>
+  ${tableWrap(`
+    ${tableRow('Booking Ref', `#${shortRef}`)}
+    ${tableRow('Therapist', `Dr. ${doctorName || 'Doctor'}`)}
+    ${tableRow('Speciality', doctorSpeciality || 'Clinical Therapy')}
+    ${tableRow('Session Date & Time', `${d} at ${slotTime}`)}
+    ${tableRow('Session Status', 'Successfully Completed & Logged', 'color:#15803D;font-weight:bold;')}
+  `)}
+</div>
+<div style="background:#FAF5EE;padding:18px;border-radius:14px;border:1px solid #EADBCE;margin:16px 0">
+  <h4 style="margin:0 0 8px;font-size:14px;color:#1A1715;font-weight:700">🌱 Post-Session Care & Reflection:</h4>
+  <ul style="margin:0;padding-left:20px;color:#4A423D;font-size:13px;line-height:1.7">
+    <li>📝 <b>Reflect on Insights:</b> Take 5-10 minutes to jot down any key takeaways, thoughts, or actions discussed during your session.</li>
+    <li>💧 <b>Rest & Hydrate:</b> Give yourself space to process your thoughts and relax.</li>
+    <li>📅 <b>Follow-Up Booking:</b> If your doctor recommended regular follow-ups, you can book your next slot anytime from your dashboard.</li>
+  </ul>
+</div>
+<div style="text-align:center;margin:24px 0 10px">
+  <a href="${frontendUrl}/my-appointments" class="btn" style="background:#1A1715;color:#FFF!important;">
+    View My Appointments →
+  </a>
+</div>
+<p style="font-size:13px;color:#665950;margin-top:16px">
+  Thank you for trusting Therapique with your mental wellness journey.
+</p>`
+        })
+      })
+    );
+  }
+
+  // 2. Email to Doctor
+  if (doctorEmail) {
+    promises.push(
+      sendMailSafe({
+        to: doctorEmail,
+        subject: `Session Completed: ${patientName || 'Patient'} (${d} @ ${slotTime}) [#${shortRef}] ✅`,
+        html: wrap({
+          title: 'Session Marked Completed — Therapique',
+          preheader: `Consultation with ${patientName || 'Patient'} on ${d} @ ${slotTime} has been completed. Ref #${shortRef}`,
+          body: `<h2 style="font-size:20px;font-weight:800;color:#15803D;margin-top:0">Session Completed ✅</h2>
+<p style="color:#4A423D;font-size:14px">
+  Hello <b>Dr. ${doctorName || 'Doctor'}</b>, you have marked the consultation with patient <b>${patientName || 'Patient'}</b> as completed.
+</p>
+<div class="card" style="background:#F0FDF4;border-color:#BBF7D0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-weight:800;font-size:15px;color:#1A1715">Session Details</span>
+    <span class="badge bg">Completed</span>
+  </div>
+  ${tableWrap(`
+    ${tableRow('Booking Ref', `#${shortRef}`)}
+    ${tableRow('Patient Name', patientName || 'Patient')}
+    ${tableRow('Date & Time', `${d} at ${slotTime}`)}
+    ${tableRow('Consultation Fee', `₹${amount || 0} (${paymentMethod})`)}
+    ${tableRow('Status', 'Completed & Added to History', 'color:#15803D;font-weight:bold;')}
+  `)}
+</div>
+<p style="font-size:13px;color:#665950">
+  This consultation has been recorded in your dashboard analytics, earning summary, and patient history.
+</p>`
+        })
+      })
+    );
+  }
+
+  // 3. Email to Admin / Therapique Official
+  if (adminEmail) {
+    promises.push(
+      sendMailSafe({
+        to: adminEmail,
+        subject: `[Session Completed] ${patientName || 'Patient'} with Dr. ${doctorName || 'Doctor'} (${d}) [#${shortRef}]`,
+        html: wrap({
+          title: 'Consultation Completed Alert',
+          preheader: `Session completed: ${patientName} with Dr. ${doctorName} on ${d} @ ${slotTime}`,
+          body: `
+<h2 style="font-size:20px;font-weight:800;color:#15803D;margin-top:0">Consultation Completed 📋</h2>
+<p style="color:#4A423D;font-size:14px">A scheduled consultation session was completed.</p>
+<div class="card">
+  ${tableWrap(`
+    ${tableRow('Booking Ref', `#${shortRef}`)}
+    ${tableRow('Patient', `${patientName || 'Patient'} (${patientEmail || 'N/A'})`)}
+    ${tableRow('Doctor', `Dr. ${doctorName || 'Doctor'} (${doctorEmail || 'N/A'})`)}
+    ${tableRow('Date & Time', `${d} at ${slotTime}`)}
+    ${tableRow('Fee', `₹${amount || 0}`)}
+    ${tableRow('Status', 'Completed', 'color:#15803D;font-weight:bold;')}
+  `)}
+</div>`
+        })
+      })
+    );
+  }
+
+  return Promise.all(promises);
+};
+

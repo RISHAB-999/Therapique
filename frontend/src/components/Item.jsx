@@ -39,17 +39,17 @@ const Item = ({ book, index, isStacked = false, fromHero = false }) => {
   return (
     <div
       onClick={handleBookClick}
-      className={`flex flex-col justify-between h-full rounded-3xl cursor-pointer group border transition-all duration-400 ease-out will-change-transform ${
+      className={`flex flex-col justify-between h-full rounded-3xl cursor-pointer group border transition-all duration-500 ease-out will-change-transform ${
         fromHero
-          ? 'p-3.5 bg-white border-[#EADBCE] shadow-[0_4px_16px_rgba(70,56,48,0.06)] hover:bg-[#FAF5EE] hover:border-[#D4C3B3] hover:-translate-y-3 hover:scale-[1.03] hover:shadow-[0_20px_40px_-10px_rgba(70,56,48,0.16)] relative z-10 hover:z-30'
+          ? 'p-3.5 bg-white border-[#EADBCE] shadow-[0_4px_16px_rgba(70,56,48,0.06)] hover:bg-[#FAF5EE] hover:border-[#D4C3B3] hover:-translate-y-2.5 hover:scale-[1.02] hover:shadow-[0_20px_40px_-10px_rgba(70,56,48,0.16)] relative z-10 hover:z-30'
           : isStacked
           ? 'p-4 sm:p-5 bg-white border-[#EADBCE] shadow-xl shadow-stone-900/15 active:scale-[0.98]'
-          : 'p-3 sm:p-4 bg-white border-[#EADBCE] shadow-[0_2px_10px_rgba(70,56,48,0.04)] hover:-translate-y-2.5 hover:shadow-[0_16px_32px_-8px_rgba(70,56,48,0.14)] hover:bg-[#FAF5EE] hover:border-[#D4C3B3] active:scale-[0.98] relative z-10 hover:z-30'
+          : 'p-3 sm:p-4 bg-white border-[#EADBCE] shadow-[0_2px_10px_rgba(70,56,48,0.04)] hover:-translate-y-2 hover:shadow-[0_16px_32px_-8px_rgba(70,56,48,0.14)] hover:bg-[#FAF5EE] hover:border-[#D4C3B3] active:scale-[0.98] relative z-10 hover:z-30'
       }`}
     >
       {/* IMAGE CONTAINER with High Quality Portrait & Badges */}
       <div className={`w-full overflow-hidden rounded-2xl bg-[#FAF5EE] border border-[#EADBCE] relative shrink-0 flex items-center justify-center ${
-        isStacked ? 'h-[280px] sm:h-64' : 'h-56 sm:h-64'
+        isStacked ? 'h-[280px] sm:h-64' : 'h-48 sm:h-56 md:h-64'
       }`}>
         <img
           src={coverImage}
@@ -60,7 +60,7 @@ const Item = ({ book, index, isStacked = false, fromHero = false }) => {
             e.currentTarget.onerror = null;
             e.currentTarget.src = defaultBookImg;
           }}
-          className={`w-full h-full object-cover object-center rounded-2xl transition-all duration-500 ease-out group-hover:scale-[1.04] ${book.inStock === false ? 'opacity-75 grayscale-[25%]' : ''}`}
+          className={`w-full h-full object-cover object-center rounded-2xl transition-transform duration-700 ease-out group-hover:scale-[1.04] ${book.inStock === false ? 'opacity-75 grayscale-[25%]' : ''}`}
         />
         {book.inStock === false && (
           <span className="absolute top-3 right-3 bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md border border-rose-500 z-10">
@@ -70,7 +70,7 @@ const Item = ({ book, index, isStacked = false, fromHero = false }) => {
       </div>
 
       {/* INFO CONTAINER */}
-      <div className='pt-3 flex-1 flex flex-col justify-between'>
+      <div className='pt-2.5 sm:pt-3 flex-1 flex flex-col justify-between'>
         <div className='flex items-start justify-between gap-2'>
           <div className="flex-1 min-w-0 pr-1">
             <h4 className='font-serif font-bold text-base sm:text-lg text-gray-900 line-clamp-1 group-hover:text-purple-700 transition-colors duration-300'>
@@ -91,7 +91,7 @@ const Item = ({ book, index, isStacked = false, fromHero = false }) => {
           </p>
         )}
 
-        <div className='flex justify-between items-center gap-2 mt-3 pt-2.5 border-t border-[#F3E8DE]'>
+        <div className='flex justify-between items-center gap-2 mt-2 sm:mt-3 pt-2 sm:pt-2.5 border-t border-[#F3E8DE]'>
           {!isStacked ? (
             <p className='line-clamp-1 text-xs text-gray-500'>{book.description || (book.author ? `by ${book.author}` : '')}</p>
           ) : (

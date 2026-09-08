@@ -3,6 +3,7 @@ import { AppContext } from '../context/AppContext'
 import { toast } from 'react-toastify'
 import { coinPackages } from '../data'
 import axios from 'axios'
+import { loadRazorpay } from '../utils/loadRazorpay'
 import AnimatedCounter from '../components/AnimatedCounter'
 import TiltCard from '../components/TiltCard'
 
@@ -48,7 +49,7 @@ const CoinsShop = () => {
   }
 
   // Function to initialize Razorpay Payment for coins
-  const initCoinsPay = (order, packageData) => {
+  const initCoinsPay = async (order, packageData) => {
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: order.amount,
@@ -80,8 +81,13 @@ const CoinsShop = () => {
         color: "#F59E0B"
       }
     };
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+    try {
+      const Razorpay = await loadRazorpay();
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      toast.error('Payment service failed to load. Please try again.');
+    }
   };
 
   return (

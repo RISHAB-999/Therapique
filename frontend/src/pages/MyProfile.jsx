@@ -3,6 +3,8 @@ import { AppContext } from '../context/AppContext'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 import ImageCropperModal from '../components/ImageCropperModal'
+import CustomDropdown from '../components/ui/CustomDropdown'
+import DateInput from '../components/ui/DateInput'
 
 const MyProfile = () => {
     const { token, backendUrl, userData, setUserData, loadUserProfileData } = useContext(AppContext)
@@ -322,7 +324,7 @@ const MyProfile = () => {
                     </div>
 
                     {/* Basic Information */}
-                    <div className='bg-[#FDF7F3] rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 border border-[#EADBCE] space-y-4 sm:space-y-5 shadow-xs w-full max-w-full overflow-hidden'>
+                    <div className='bg-[#FDF7F3] rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 md:p-6 border border-[#EADBCE] space-y-4 sm:space-y-5 shadow-xs w-full max-w-full overflow-visible relative z-20'>
                         <h3 className='text-base sm:text-lg md:text-xl font-bold text-gray-900 flex items-center gap-2 border-b border-[#EADBCE] pb-3'>
                             <span className='w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#F3E8DE] text-gray-800 flexCenter text-xs sm:text-sm shrink-0'>👤</span>
                             <span className='truncate'>Basic Information</span>
@@ -332,15 +334,12 @@ const MyProfile = () => {
                             <div>
                                 <label className='text-[10px] sm:text-xs font-extrabold uppercase text-gray-500 block mb-1'>Gender</label>
                                 {isEdit ? (
-                                    <select 
-                                        className='w-full bg-[#FAF5EE] rounded-xl p-2.5 sm:p-3 border border-[#EADBCE] focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-xs sm:text-sm font-medium' 
-                                        onChange={(e) => setUserData(prev => ({ ...prev, gender: e.target.value }))} 
+                                    <CustomDropdown
                                         value={userData.gender || 'Not Selected'}
-                                    >
-                                        <option value="Not Selected">Not Selected</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                    </select>
+                                        onChange={(val) => setUserData(prev => ({ ...prev, gender: val }))}
+                                        options={['Not Selected', 'Male', 'Female']}
+                                        minWidth="w-full"
+                                    />
                                 ) : (
                                     <div className='bg-[#FAF5EE] rounded-xl p-2.5 sm:p-3 border border-[#EADBCE] text-xs sm:text-sm font-medium text-gray-900'>
                                         <p>{userData.gender || 'Not Specified'}</p>
@@ -351,11 +350,11 @@ const MyProfile = () => {
                             <div>
                                 <label className='text-[10px] sm:text-xs font-extrabold uppercase text-gray-500 block mb-1'>Date of Birth</label>
                                 {isEdit ? (
-                                    <input 
-                                        className='w-full bg-[#FAF5EE] rounded-xl p-2.5 sm:p-3 border border-[#EADBCE] focus:border-purple-600 focus:ring-2 focus:ring-purple-100 outline-none transition-all text-xs sm:text-sm font-medium' 
-                                        type="date" 
-                                        onChange={(e) => setUserData(prev => ({ ...prev, dob: e.target.value }))} 
-                                        value={userData.dob || ''} 
+                                    <DateInput
+                                        value={userData.dob || ''}
+                                        onChange={(e) => setUserData(prev => ({ ...prev, dob: e.target.value }))}
+                                        onClear={() => setUserData(prev => ({ ...prev, dob: '' }))}
+                                        className="w-full"
                                     />
                                 ) : (
                                     <div className='bg-[#FAF5EE] rounded-xl p-2.5 sm:p-3 border border-[#EADBCE] text-xs sm:text-sm font-medium text-gray-900'>

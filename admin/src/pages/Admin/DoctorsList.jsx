@@ -32,8 +32,6 @@ const DoctorsList = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [availabilityFilter, setAvailabilityFilter] = useState('All')
-  const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false)
-  const [isAvailabilityDropdownOpen, setIsAvailabilityDropdownOpen] = useState(false)
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1)
@@ -177,7 +175,7 @@ const DoctorsList = () => {
       </div>
 
       {/* Search & Category Filter Controls Header (Matching BookList exactly) */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4">
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs space-y-4 relative z-30">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Search Bar Input with Typewriter Animation */}
           <div className="flex-1 min-w-[260px]">
