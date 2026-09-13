@@ -72,7 +72,7 @@ const ProductDetail = () => {
     book && (
       <div className='max-padd-container py-12 pt-18'>
         <p>
-          <Link to="/" className='text-gray-500 hover:underline hover:text-green-500'>Home</Link> /
+          <Link to="/library" className='text-gray-500 hover:underline hover:text-green-500'>Library</Link> /
           <Link to="/shop" className='text-gray-500 hover:underline hover:text-green-500'>Shop</Link> /
           <Link to={`/shop/${book.category}`} className='text-gray-500 hover:underline hover:text-green-500'>{book.category}</Link> /
           <span className='medium-14 text-black'>{book.name}</span>
